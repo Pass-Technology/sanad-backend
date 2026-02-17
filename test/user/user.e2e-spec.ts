@@ -1,5 +1,6 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { INestApplication, ValidationPipe } from '@nestjs/common';
+import { useContainer } from 'class-validator';
 import { AppModule } from '../../src/app.module';
 import { PrismaService } from '../../src/prisma/prisma.service';
 import { testRequest } from '../config/request';
@@ -16,6 +17,7 @@ describe('UserController (e2e)', () => {
 
     app = moduleFixture.createNestApplication();
     prisma = moduleFixture.get<PrismaService>(PrismaService);
+    useContainer(moduleFixture, { fallbackOnErrors: true });
     app.useGlobalPipes(
       new ValidationPipe({
         whitelist: true,
@@ -83,6 +85,21 @@ describe('UserController (e2e)', () => {
       expect(res.body.message).toContain('Either email or mobile must be provided');
     });
 
+    it('should throw validation error when both email and mobile are empty', async () => {
+      const req = testRequest({
+        method: HTTP_METHODS_ENUM.POST,
+        url: '/user/register',
+        variables: {
+          email: '',
+          mobile: '',
+          password: 'password123',
+        },
+      });
+      const res = await req.expect(400);
+
+      expect(res.body.message).toContain('Either email or mobile must be provided');
+    });
+
     it('should throw validation error when password is too short', async () => {
       const req = testRequest({
         method: HTTP_METHODS_ENUM.POST,
@@ -95,7 +112,7 @@ describe('UserController (e2e)', () => {
       await req.expect(400);
     });
 
-    it('should throw conflict when user already exists', async () => {
+    it('should throw validation error when user already exists', async () => {
       const email = 'duplicate@example.com';
       const req1 = testRequest({
         method: HTTP_METHODS_ENUM.POST,
@@ -109,7 +126,8 @@ describe('UserController (e2e)', () => {
         url: '/user/register',
         variables: { email, password: 'password123' },
       });
-      await req2.expect(409);
+      const res = await req2.expect(400);
+      expect(res.body.message).toContain('User with this email or mobile already exists');
     });
   });
 
@@ -162,6 +180,21 @@ describe('UserController (e2e)', () => {
         method: HTTP_METHODS_ENUM.POST,
         url: '/user/validate-otp',
         variables: { otp: '123456' },
+      });
+      const res = await req.expect(400);
+
+      expect(res.body.message).toContain('Either email or mobile must be provided');
+    });
+
+    it('should throw validation error when both email and mobile are empty', async () => {
+      const req = testRequest({
+        method: HTTP_METHODS_ENUM.POST,
+        url: '/user/validate-otp',
+        variables: {
+          email: '',
+          mobile: '',
+          otp: '123456',
+        },
       });
       const res = await req.expect(400);
 
@@ -240,6 +273,21 @@ describe('UserController (e2e)', () => {
         method: HTTP_METHODS_ENUM.POST,
         url: '/user/auth',
         variables: { password: 'password123' },
+      });
+      const res = await req.expect(400);
+
+      expect(res.body.message).toContain('Either email or mobile must be provided');
+    });
+
+    it('should throw validation error when both email and mobile are empty', async () => {
+      const req = testRequest({
+        method: HTTP_METHODS_ENUM.POST,
+        url: '/user/auth',
+        variables: {
+          email: '',
+          mobile: '',
+          password: 'password123',
+        },
       });
       const res = await req.expect(400);
 

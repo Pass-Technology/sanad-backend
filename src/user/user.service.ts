@@ -1,6 +1,5 @@
 import {
   Injectable,
-  ConflictException,
   UnauthorizedException,
   BadRequestException,
 } from '@nestjs/common';
@@ -22,11 +21,6 @@ export class UserService {
     const identifier = dto.email ?? dto.mobile;
     if (!identifier) {
       throw new BadRequestException('Either email or mobile must be provided');
-    }
-
-    const existingUser = await this.userRepository.findByIdentifier(identifier);
-    if (existingUser) {
-      throw new ConflictException('User with this email or mobile already exists');
     }
 
     const hashedPassword = await bcrypt.hash(dto.password, 10);

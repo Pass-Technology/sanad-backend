@@ -1,10 +1,18 @@
 import { Injectable } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { User, OtpVerification } from '@prisma/client';
+import { BaseRepository } from '../shared/generics/repository.abstract';
 
 @Injectable()
-export class UserRepository {
-  constructor(private readonly prisma: PrismaService) {}
+export class UserRepository extends BaseRepository<User> {
+  constructor(private readonly prisma: PrismaService) {
+    super();
+  }
+
+  async exists(where: { email?: string; mobile?: string; id?: string }): Promise<boolean> {
+    const user = await this.prisma.user.findFirst({ where });
+    return !!user;
+  }
 
   async create(data: {
     email?: string;

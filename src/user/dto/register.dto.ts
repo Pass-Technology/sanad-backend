@@ -1,16 +1,23 @@
-import { IsEmail, IsOptional, IsString, MinLength } from 'class-validator';
-import { ValidateEmailOrMobile } from '../validators/validate-email-or-mobile.validator';
+import {
+  IsEmail,
+  IsNotEmpty,
+  IsString,
+  MinLength,
+  ValidateIf,
+} from 'class-validator';
+import { IsUserNotExisting } from '../validators/existing-user.validator';
 
 export class RegisterDto {
-  @ValidateEmailOrMobile()
-  _emailOrMobile?: string;
-
-  @IsOptional()
+  @ValidateIf((o) => !o.mobile)
+  @IsNotEmpty({ message: 'Either email or mobile must be provided' })
   @IsEmail()
+  @IsUserNotExisting({ field: 'email' })
   email?: string;
 
-  @IsOptional()
+  @ValidateIf((o) => !o.email)
+  @IsNotEmpty({ message: 'Either email or mobile must be provided' })
   @IsString()
+  @IsUserNotExisting({ field: 'mobile' })
   mobile?: string;
 
   @IsString()

@@ -1,15 +1,19 @@
-import { IsEmail, IsOptional, IsString, Length } from 'class-validator';
-import { ValidateEmailOrMobile } from '../validators/validate-email-or-mobile.validator';
+import {
+  IsEmail,
+  IsNotEmpty,
+  IsString,
+  Length,
+  ValidateIf,
+} from 'class-validator';
 
 export class ValidateOtpDto {
-  @ValidateEmailOrMobile()
-  _emailOrMobile?: string;
-
-  @IsOptional()
+  @ValidateIf((o) => !o.mobile)
+  @IsNotEmpty({ message: 'Either email or mobile must be provided' })
   @IsEmail()
   email?: string;
 
-  @IsOptional()
+  @ValidateIf((o) => !o.email)
+  @IsNotEmpty({ message: 'Either email or mobile must be provided' })
   @IsString()
   mobile?: string;
 

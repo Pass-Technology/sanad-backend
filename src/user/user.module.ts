@@ -4,6 +4,7 @@ import { ConfigModule, ConfigService } from '@nestjs/config';
 import { UserController } from './user.controller';
 import { UserService } from './user.service';
 import { UserRepository } from './user.repository';
+import { ExistingUserValidator } from './validators/existing-user.validator';
 
 @Module({
   imports: [
@@ -17,7 +18,7 @@ import { UserRepository } from './user.repository';
     }),
   ],
   controllers: [UserController],
-  providers: [UserService, UserRepository],
+  providers: [UserService, UserRepository, ExistingUserValidator],
   exports: [UserService, UserRepository],
 })
 export class UserModule {}
