@@ -2,15 +2,28 @@ import { setupE2e } from '../config/setup-e2e';
 import { testRequest } from '../config/request';
 import { HTTP_METHODS_ENUM } from '../config/request.methods.enum';
 
+interface ApiResponse {
+  body: {
+    userId?: string;
+    message?: string | string[];
+    otp?: string;
+    authToken?: string;
+  };
+}
+
+const getMessage = (res: ApiResponse): string =>
+  Array.isArray(res.body.message)
+    ? res.body.message.join(' ')
+    : (res.body.message ?? '');
+
 describe('UserController (e2e)', () => {
   beforeAll(async () => {
     await setupE2e();
   });
 
   beforeEach(async () => {
-    const prisma = (global as any).prisma;
-    await prisma.otpVerification.deleteMany();
-    await prisma.user.deleteMany();
+    await global.prisma.otpVerification.deleteMany();
+    await global.prisma.user.deleteMany();
   });
 
   describe('POST /user/register', () => {
@@ -23,13 +36,12 @@ describe('UserController (e2e)', () => {
           password: 'password123',
         },
       });
-      const res = await req.expect(201);
+      const res = (await req.expect(201)) as unknown as ApiResponse;
 
-      const body = res.body;
-      expect(body).toHaveProperty('userId');
-      expect(body).toHaveProperty('message');
-      expect(body).toHaveProperty('otp');
-      expect(body.otp).toHaveLength(6);
+      expect(res.body).toHaveProperty('userId');
+      expect(res.body).toHaveProperty('message');
+      expect(res.body).toHaveProperty('otp');
+      expect(res.body.otp).toHaveLength(6);
     });
 
     it('should register with mobile successfully', async () => {
@@ -41,11 +53,10 @@ describe('UserController (e2e)', () => {
           password: 'password123',
         },
       });
-      const res = await req.expect(201);
+      const res = (await req.expect(201)) as unknown as ApiResponse;
 
-      const body = res.body;
-      expect(body).toHaveProperty('userId');
-      expect(body).toHaveProperty('otp');
+      expect(res.body).toHaveProperty('userId');
+      expect(res.body).toHaveProperty('otp');
     });
 
     it('should throw validation error when neither email nor mobile provided', async () => {
@@ -56,9 +67,9 @@ describe('UserController (e2e)', () => {
           password: 'password123',
         },
       });
-      const res = await req.expect(400);
+      const res = (await req.expect(400)) as unknown as ApiResponse;
 
-      expect(res.body.message).toContain(
+      expect(getMessage(res)).toContain(
         'Either email or mobile must be provided',
       );
     });
@@ -73,9 +84,9 @@ describe('UserController (e2e)', () => {
           password: 'password123',
         },
       });
-      const res = await req.expect(400);
+      const res = (await req.expect(400)) as unknown as ApiResponse;
 
-      expect(res.body.message).toContain(
+      expect(getMessage(res)).toContain(
         'Either email or mobile must be provided',
       );
     });
@@ -106,8 +117,8 @@ describe('UserController (e2e)', () => {
         url: '/user/register',
         variables: { email, password: 'password123' },
       });
-      const res = await req2.expect(400);
-      expect(res.body.message).toContain(
+      const res = (await req2.expect(400)) as unknown as ApiResponse;
+      expect(getMessage(res)).toContain(
         'User with this email or mobile already exists',
       );
     });
@@ -121,16 +132,18 @@ describe('UserController (e2e)', () => {
         url: '/user/register',
         variables: { email, password: 'password123' },
       });
-      const registerRes = await registerReq.expect(201);
+      const registerRes = (await registerReq.expect(
+        201,
+      )) as unknown as ApiResponse;
 
-      const { otp } = registerRes.body;
+      const otp = registerRes.body.otp;
 
       const authReq = testRequest({
         method: HTTP_METHODS_ENUM.POST,
         url: '/user/validate-otp',
         variables: { email, otp },
       });
-      const authRes = await authReq.expect(201);
+      const authRes = (await authReq.expect(201)) as unknown as ApiResponse;
 
       expect(authRes.body).toHaveProperty('authToken');
       expect(typeof authRes.body.authToken).toBe('string');
@@ -143,16 +156,18 @@ describe('UserController (e2e)', () => {
         url: '/user/register',
         variables: { mobile, password: 'password123' },
       });
-      const registerRes = await registerReq.expect(201);
+      const registerRes = (await registerReq.expect(
+        201,
+      )) as unknown as ApiResponse;
 
-      const { otp } = registerRes.body;
+      const otp = registerRes.body.otp;
 
       const authReq = testRequest({
         method: HTTP_METHODS_ENUM.POST,
         url: '/user/validate-otp',
         variables: { mobile, otp },
       });
-      const authRes = await authReq.expect(201);
+      const authRes = (await authReq.expect(201)) as unknown as ApiResponse;
 
       expect(authRes.body).toHaveProperty('authToken');
     });
@@ -163,9 +178,9 @@ describe('UserController (e2e)', () => {
         url: '/user/validate-otp',
         variables: { otp: '123456' },
       });
-      const res = await req.expect(400);
+      const res = (await req.expect(400)) as unknown as ApiResponse;
 
-      expect(res.body.message).toContain(
+      expect(getMessage(res)).toContain(
         'Either email or mobile must be provided',
       );
     });
@@ -180,9 +195,9 @@ describe('UserController (e2e)', () => {
           otp: '123456',
         },
       });
-      const res = await req.expect(400);
+      const res = (await req.expect(400)) as unknown as ApiResponse;
 
-      expect(res.body.message).toContain(
+      expect(getMessage(res)).toContain(
         'Either email or mobile must be provided',
       );
     });
@@ -221,7 +236,7 @@ describe('UserController (e2e)', () => {
         url: '/user/auth',
         variables: { email, password },
       });
-      const authRes = await authReq.expect(201);
+      const authRes = (await authReq.expect(201)) as unknown as ApiResponse;
 
       expect(authRes.body).toHaveProperty('authToken');
     });
@@ -234,9 +249,11 @@ describe('UserController (e2e)', () => {
         url: '/user/register',
         variables: { mobile, password },
       });
-      const registerRes = await registerReq.expect(201);
+      const registerRes = (await registerReq.expect(
+        201,
+      )) as unknown as ApiResponse;
 
-      const { otp } = registerRes.body;
+      const otp = registerRes.body.otp;
       const validateReq = testRequest({
         method: HTTP_METHODS_ENUM.POST,
         url: '/user/validate-otp',
@@ -249,7 +266,7 @@ describe('UserController (e2e)', () => {
         url: '/user/auth',
         variables: { mobile, password },
       });
-      const authRes = await authReq.expect(201);
+      const authRes = (await authReq.expect(201)) as unknown as ApiResponse;
 
       expect(authRes.body).toHaveProperty('authToken');
     });
@@ -260,9 +277,9 @@ describe('UserController (e2e)', () => {
         url: '/user/auth',
         variables: { password: 'password123' },
       });
-      const res = await req.expect(400);
+      const res = (await req.expect(400)) as unknown as ApiResponse;
 
-      expect(res.body.message).toContain(
+      expect(getMessage(res)).toContain(
         'Either email or mobile must be provided',
       );
     });
@@ -277,9 +294,9 @@ describe('UserController (e2e)', () => {
           password: 'password123',
         },
       });
-      const res = await req.expect(400);
+      const res = (await req.expect(400)) as unknown as ApiResponse;
 
-      expect(res.body.message).toContain(
+      expect(getMessage(res)).toContain(
         'Either email or mobile must be provided',
       );
     });

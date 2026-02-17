@@ -54,8 +54,10 @@ export class UserService {
       throw new BadRequestException('Either email or mobile must be provided');
     }
 
-    const otpVerification =
-      await this.userRepository.findValidOtp(identifier, dto.otp);
+    const otpVerification = await this.userRepository.findValidOtp(
+      identifier,
+      dto.otp,
+    );
     if (!otpVerification) {
       throw new UnauthorizedException('Invalid or expired OTP');
     }
@@ -87,7 +89,11 @@ export class UserService {
     return { authToken: token };
   }
 
-  private generateToken(user: { id: string; email: string | null; mobile: string | null }) {
+  private generateToken(user: {
+    id: string;
+    email: string | null;
+    mobile: string | null;
+  }) {
     return this.jwtService.sign({
       sub: user.id,
       email: user.email,

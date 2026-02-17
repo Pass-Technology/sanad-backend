@@ -58,8 +58,7 @@ export class ExistingEntityRecordValidator implements ValidatorConstraintInterfa
 }
 
 export function isExistingEntityRecordValidator(
-  existingValidator: new (...args: any[]) => ExistingEntityRecordValidator,
-  defaultOptions?: Partial<ExistingEntityValidatorOptions>,
+  existingValidator: new (...args: unknown[]) => ExistingEntityRecordValidator,
 ) {
   return function createValidator(
     validationOptions?: ValidationOptions &

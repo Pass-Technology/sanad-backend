@@ -25,8 +25,8 @@ export async function setupE2e(): Promise<{
   );
   await app.init();
 
-  (global as any).app = app;
-  (global as any).prisma = prisma;
+  global.app = app;
+  global.prisma = prisma;
 
   return { app, prisma };
 }

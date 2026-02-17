@@ -9,7 +9,11 @@ export class UserRepository extends BaseRepository<User> {
     super();
   }
 
-  async exists(where: { email?: string; mobile?: string; id?: string }): Promise<boolean> {
+  async exists(where: {
+    email?: string;
+    mobile?: string;
+    id?: string;
+  }): Promise<boolean> {
     const user = await this.prisma.user.findFirst({ where });
     return !!user;
   }

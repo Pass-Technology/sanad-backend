@@ -8,13 +8,13 @@ import {
 import { IsUserNotExisting } from '../validators/existing-user.validator';
 
 export class RegisterDto {
-  @ValidateIf((o) => !o.mobile)
+  @ValidateIf((o: RegisterDto) => !o.mobile)
   @IsNotEmpty({ message: 'Either email or mobile must be provided' })
   @IsEmail()
   @IsUserNotExisting({ field: 'email' })
   email?: string;
 
-  @ValidateIf((o) => !o.email)
+  @ValidateIf((o: RegisterDto) => !o.email)
   @IsNotEmpty({ message: 'Either email or mobile must be provided' })
   @IsString()
   @IsUserNotExisting({ field: 'mobile' })

@@ -19,5 +19,4 @@ export class ExistingUserValidator extends ExistingEntityRecordValidator {
 
 export const IsUserNotExisting = isExistingEntityRecordValidator(
   ExistingUserValidator,
-  { inverse: true },
 );
