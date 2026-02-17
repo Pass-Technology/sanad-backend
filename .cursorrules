@@ -1,0 +1,50 @@
+# Sanad Backend - Project Rules
+
+## Stack & Overview
+- **Framework**: NestJS 11
+- **Database**: PostgreSQL with Prisma 5
+- **Validation**: class-validator, class-transformer
+- **Docs**: Swagger at `/api`
+- **Auth**: JWT via @nestjs/jwt
+
+## Architecture
+Use the **Controller → Service → Repository** pattern:
+
+- **Controller**: HTTP handling, DTOs, Swagger decorators
+- **Service**: Business logic, orchestration
+- **Repository**: Data access only (extend `BaseRepository`, inject `PrismaService`)
+
+## Module Structure
+Each feature module lives under `src/<module>/`:
+- `*.controller.ts` – routes
+- `*.service.ts` – business logic
+- `*.repository.ts` – Prisma queries
+- `dto/*.dto.ts` – DTOs with validation
+- `validators/` – custom validators when needed
+
+## DTOs & Validation
+- Use `class-validator` decorators on all DTOs
+- For “exactly one of A or B” (e.g. email XOR mobile), use `@ValidateIf((o) => !o.mobile)` and `@ValidateIf((o) => !o.email)` with `@IsNotEmpty`
+- Add `@ApiProperty` / `@ApiPropertyOptional` on DTO fields for Swagger
+- Prefer shared validators in `src/shared/validators/` (e.g. `ExistingEntityRecordValidator` with `inverse` for uniqueness)
+
+## Swagger
+- Add `@ApiTags` on controllers
+- Use `@ApiOperation` and `@ApiResponse` on endpoints
+- Document DTOs with `@ApiProperty` (examples, descriptions)
+
+## Shared Code
+- `src/shared/validators/existing-entity-record.validator.ts` – reusable “exists” / “unique” validator
+- `src/shared/generics/repository.abstract.ts` – base for repositories
+- Extend `BaseRepository` and implement `IEntityExistsRepository` when using `ExistingEntityRecordValidator`
+
+## E2E Tests
+- Use `testRequest` from `test/config/request.ts` with `HTTP_METHODS_ENUM`
+- `global.app` and `global.prisma` are set in `test/config/setup-e2e.ts`
+- Clear DB in `beforeEach` for isolation
+- Register setup/teardown in `test/config/jest-e2e-setup.ts`
+
+## Code Style
+- Use TypeScript strict mode
+- Use `async/await`; avoid raw `Promise` chains
+- Keep services thin; move complex logic to helpers or domain services
