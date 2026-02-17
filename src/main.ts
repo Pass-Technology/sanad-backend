@@ -6,7 +6,13 @@ import { AppModule } from './app.module';
 import { PrismaExceptionFilter } from './shared/filters/prisma-exception.filter';
 
 async function bootstrap() {
-  const app = await NestFactory.create(AppModule, { cors: true });
+  const app = await NestFactory.create(AppModule);
+  app.enableCors({
+    origin: true,
+    methods: '*',
+    allowedHeaders: '*',
+    credentials: true,
+  });
   app.useGlobalFilters(new PrismaExceptionFilter());
   useContainer(app.select(AppModule), { fallbackOnErrors: true });
   app.useGlobalPipes(

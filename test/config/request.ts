@@ -2,6 +2,7 @@ import type { Agent, Test } from 'supertest';
 // eslint-disable-next-line @typescript-eslint/no-require-imports -- supertest CommonJS default export
 const request = require('supertest') as (app: unknown) => Agent;
 import { HTTP_METHODS_ENUM } from './request.methods.enum';
+import { getE2eApp } from './e2e-context';
 import { isArray } from 'class-validator';
 import * as qs from 'qs';
 
@@ -78,7 +79,7 @@ const setRequestFiles = <T>(req: Test, input: TestRequestInput<T>): void => {
 export const testRequest = <T = Record<string, unknown>>(
   input: TestRequestInput<T>,
 ): Test => {
-  const server = request(global.app.getHttpServer());
+  const server = request(getE2eApp().getHttpServer());
   let req: Test = createRequest(server, input.method, input.url);
 
   setRequestFields(req, input);

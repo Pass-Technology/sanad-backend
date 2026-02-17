@@ -5,6 +5,7 @@ import { useContainer } from 'class-validator';
 import { AppModule } from '../../src/app.module';
 import { PrismaService } from '../../src/prisma/prisma.service';
 import { PrismaExceptionFilter } from '../../src/shared/filters/prisma-exception.filter';
+import { setE2eContext } from './e2e-context';
 
 export async function setupE2e(): Promise<{
   app: INestApplication;
@@ -27,8 +28,7 @@ export async function setupE2e(): Promise<{
   );
   await app.init();
 
-  global.app = app;
-  global.prisma = prisma;
+  setE2eContext(app, prisma);
 
   return { app, prisma };
 }

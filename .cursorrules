@@ -40,7 +40,7 @@ Each feature module lives under `src/<module>/`:
 
 ## E2E Tests
 - Use `testRequest` from `test/config/request.ts` with `HTTP_METHODS_ENUM`
-- `global.app` and `global.prisma` are set in `test/config/setup-e2e.ts`
+- `setE2eContext` / `getE2eApp` / `getE2ePrisma` from `test/config/e2e-context.ts` hold the test app and prisma instance
 - Clear DB in `beforeEach` for isolation
 - Register setup/teardown in `test/config/jest-e2e-setup.ts`
 

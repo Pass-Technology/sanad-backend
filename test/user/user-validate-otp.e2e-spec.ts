@@ -2,6 +2,7 @@ import { setupE2e } from '../config/setup-e2e';
 import { testRequest } from '../config/request';
 import { HTTP_METHODS_ENUM } from '../config/request.methods.enum';
 import { ApiResponse, getMessage } from '../helpers/api-response.helper';
+import { getE2ePrisma } from '../config/e2e-context';
 
 describe('POST /user/validate-otp', () => {
   beforeAll(async () => {
@@ -9,8 +10,9 @@ describe('POST /user/validate-otp', () => {
   });
 
   beforeEach(async () => {
-    await global.prisma.otpVerification.deleteMany();
-    await global.prisma.user.deleteMany();
+    const prisma = getE2ePrisma();
+    await prisma.otpVerification.deleteMany();
+    await prisma.user.deleteMany();
   });
 
   it('should validate OTP and return auth token', async () => {
