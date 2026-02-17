@@ -63,8 +63,13 @@ export class UserController {
     type: ErrorResponseDto,
   })
   @ApiResponse({
+    status: 400,
+    description: 'Validation error (non-existent user)',
+    type: ErrorResponseDto,
+  })
+  @ApiResponse({
     status: 401,
-    description: 'Invalid credentials',
+    description: 'Invalid password',
     type: ErrorResponseDto,
   })
   async auth(@Body() dto: AuthDto) {

@@ -110,15 +110,17 @@ describe('POST /user/auth', () => {
     await authReq.expect(401);
   });
 
-  it('should throw unauthorized for non-existent user', async () => {
-    const req = testRequest({
-      method: HTTP_METHODS_ENUM.POST,
-      url: '/user/auth',
-      variables: {
-        email: 'nonexistent@example.com',
-        password: 'password123',
-      },
+    it('should throw validation error for non-existent user', async () => {
+      const req = testRequest({
+        method: HTTP_METHODS_ENUM.POST,
+        url: '/user/auth',
+        variables: {
+          email: 'nonexistent@example.com',
+          password: 'password123',
+        },
+      });
+      const res = (await req.expect(400)) as unknown as ApiResponse;
+
+      expect(getMessage(res)).toContain('Invalid credentials');
     });
-    await req.expect(401);
-  });
 });
