@@ -31,6 +31,28 @@
 $ npm install
 ```
 
+### Database (PostgreSQL)
+
+The project uses PostgreSQL with Prisma. Start the database with Docker:
+
+```bash
+$ docker-compose up -d
+$ npm run db:push
+```
+
+Create a `.env` file (see `.env.example`):
+
+```
+DATABASE_URL="postgresql://postgres:postgres@localhost:5432/sanad_test?schema=public"
+JWT_SECRET="your-jwt-secret"
+```
+
+### User module endpoints
+
+- **POST /user/register** - Register with email or mobile and password
+- **POST /user/validate-otp** - Validate OTP and get auth token
+- **POST /user/auth** - Authenticate with email/mobile and password
+
 ## Compile and run the project
 
 ```bash
@@ -50,7 +72,7 @@ $ npm run start:prod
 # unit tests
 $ npm run test
 
-# e2e tests
+# e2e tests (requires PostgreSQL - run docker-compose up -d first)
 $ npm run test:e2e
 
 # test coverage
