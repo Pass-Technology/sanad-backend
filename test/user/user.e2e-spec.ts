@@ -1,40 +1,16 @@
-import { Test, TestingModule } from '@nestjs/testing';
-import { INestApplication, ValidationPipe } from '@nestjs/common';
-import { useContainer } from 'class-validator';
-import { AppModule } from '../../src/app.module';
-import { PrismaService } from '../../src/prisma/prisma.service';
+import { setupE2e } from '../config/setup-e2e';
 import { testRequest } from '../config/request';
 import { HTTP_METHODS_ENUM } from '../config/request.methods.enum';
 
 describe('UserController (e2e)', () => {
-  let app: INestApplication;
-  let prisma: PrismaService;
-
   beforeAll(async () => {
-    const moduleFixture: TestingModule = await Test.createTestingModule({
-      imports: [AppModule],
-    }).compile();
-
-    app = moduleFixture.createNestApplication();
-    prisma = moduleFixture.get<PrismaService>(PrismaService);
-    useContainer(moduleFixture, { fallbackOnErrors: true });
-    app.useGlobalPipes(
-      new ValidationPipe({
-        whitelist: true,
-        transform: true,
-      }),
-    );
-    await app.init();
-    (global as any).app = app;
+    await setupE2e();
   });
 
   beforeEach(async () => {
+    const prisma = (global as any).prisma;
     await prisma.otpVerification.deleteMany();
     await prisma.user.deleteMany();
-  });
-
-  afterAll(async () => {
-    await app.close();
   });
 
   describe('POST /user/register', () => {
@@ -82,7 +58,9 @@ describe('UserController (e2e)', () => {
       });
       const res = await req.expect(400);
 
-      expect(res.body.message).toContain('Either email or mobile must be provided');
+      expect(res.body.message).toContain(
+        'Either email or mobile must be provided',
+      );
     });
 
     it('should throw validation error when both email and mobile are empty', async () => {
@@ -97,7 +75,9 @@ describe('UserController (e2e)', () => {
       });
       const res = await req.expect(400);
 
-      expect(res.body.message).toContain('Either email or mobile must be provided');
+      expect(res.body.message).toContain(
+        'Either email or mobile must be provided',
+      );
     });
 
     it('should throw validation error when password is too short', async () => {
@@ -127,7 +107,9 @@ describe('UserController (e2e)', () => {
         variables: { email, password: 'password123' },
       });
       const res = await req2.expect(400);
-      expect(res.body.message).toContain('User with this email or mobile already exists');
+      expect(res.body.message).toContain(
+        'User with this email or mobile already exists',
+      );
     });
   });
 
@@ -183,7 +165,9 @@ describe('UserController (e2e)', () => {
       });
       const res = await req.expect(400);
 
-      expect(res.body.message).toContain('Either email or mobile must be provided');
+      expect(res.body.message).toContain(
+        'Either email or mobile must be provided',
+      );
     });
 
     it('should throw validation error when both email and mobile are empty', async () => {
@@ -198,7 +182,9 @@ describe('UserController (e2e)', () => {
       });
       const res = await req.expect(400);
 
-      expect(res.body.message).toContain('Either email or mobile must be provided');
+      expect(res.body.message).toContain(
+        'Either email or mobile must be provided',
+      );
     });
 
     it('should throw unauthorized for invalid OTP', async () => {
@@ -276,7 +262,9 @@ describe('UserController (e2e)', () => {
       });
       const res = await req.expect(400);
 
-      expect(res.body.message).toContain('Either email or mobile must be provided');
+      expect(res.body.message).toContain(
+        'Either email or mobile must be provided',
+      );
     });
 
     it('should throw validation error when both email and mobile are empty', async () => {
@@ -291,7 +279,9 @@ describe('UserController (e2e)', () => {
       });
       const res = await req.expect(400);
 
-      expect(res.body.message).toContain('Either email or mobile must be provided');
+      expect(res.body.message).toContain(
+        'Either email or mobile must be provided',
+      );
     });
 
     it('should throw unauthorized for invalid password', async () => {

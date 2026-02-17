@@ -27,11 +27,15 @@ export class ExistingEntityRecordValidator implements ValidatorConstraintInterfa
 
     const field: string =
       this.options?.field ??
-      (typeof args.constraints?.[0] === 'string' ? args.constraints[0] : args.property) ??
+      (typeof args.constraints?.[0] === 'string'
+        ? args.constraints[0]
+        : args.property) ??
       'id';
     const inverse: boolean =
       this.options?.inverse ??
-      (typeof args.constraints?.[1] === 'boolean' ? args.constraints[1] : false);
+      (typeof args.constraints?.[1] === 'boolean'
+        ? args.constraints[1]
+        : false);
 
     const where: Record<string, string> = { [field]: value };
     const exists = await this.repository.exists(where);
@@ -42,7 +46,9 @@ export class ExistingEntityRecordValidator implements ValidatorConstraintInterfa
   defaultMessage(args: ValidationArguments): string {
     const inverse: boolean =
       this.options?.inverse ??
-      (typeof args.constraints?.[1] === 'boolean' ? args.constraints[1] : false);
+      (typeof args.constraints?.[1] === 'boolean'
+        ? args.constraints[1]
+        : false);
     if (this.options?.message) return this.options.message;
     if (inverse) {
       return `${this.modelName} with this value already exists`;
