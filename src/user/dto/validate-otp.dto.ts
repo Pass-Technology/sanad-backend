@@ -4,6 +4,7 @@ import {
   IsNotEmpty,
   IsString,
   Length,
+  Matches,
   ValidateIf,
 } from 'class-validator';
 import { IsValidOtp } from '../validators/valid-otp.validator';
@@ -27,9 +28,10 @@ export class ValidateOtpDto {
   @IsString()
   mobile?: string;
 
-  @ApiProperty({ example: '123456', minLength: 4, maxLength: 8 })
+  @ApiProperty({ example: '12345', minLength: 4, maxLength: 5 })
   @IsString()
-  @Length(4, 8, { message: 'OTP must be between 4 and 8 characters' })
+  @Length(4, 5, { message: 'OTP must be between 4 and 5 characters' })
+  @Matches(/^\d+$/, { message: 'OTP must contain only digits' })
   @IsValidOtp()
   otp: string;
 }

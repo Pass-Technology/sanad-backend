@@ -64,7 +64,7 @@ describe('POST /user/validate-otp', () => {
     const req = testRequest({
       method: HTTP_METHODS_ENUM.POST,
       url: '/user/validate-otp',
-      variables: { otp: '123456' },
+      variables: { otp: '12345' },
     });
     const res = (await req.expect(400)) as unknown as ApiResponse;
 
@@ -80,7 +80,7 @@ describe('POST /user/validate-otp', () => {
       variables: {
         email: '',
         mobile: '',
-        otp: '123456',
+        otp: '12345',
       },
     });
     const res = (await req.expect(400)) as unknown as ApiResponse;
@@ -88,6 +88,44 @@ describe('POST /user/validate-otp', () => {
     expect(getMessage(res)).toContain(
       'Either email or mobile must be provided',
     );
+  });
+
+  it('should throw validation error when OTP length exceeds 5', async () => {
+    const email = 'longotp@example.com';
+    const registerReq = testRequest({
+      method: HTTP_METHODS_ENUM.POST,
+      url: '/user/register',
+      variables: { email, password: 'password123' },
+    });
+    await registerReq.expect(201);
+
+    const validateReq = testRequest({
+      method: HTTP_METHODS_ENUM.POST,
+      url: '/user/validate-otp',
+      variables: { email, otp: '123456' },
+    });
+    const res = (await validateReq.expect(400)) as unknown as ApiResponse;
+
+    expect(getMessage(res)).toContain('OTP must be between 4 and 5 characters');
+  });
+
+  it('should throw validation error when OTP contains non-digits', async () => {
+    const email = 'nonnumeric@example.com';
+    const registerReq = testRequest({
+      method: HTTP_METHODS_ENUM.POST,
+      url: '/user/register',
+      variables: { email, password: 'password123' },
+    });
+    await registerReq.expect(201);
+
+    const validateReq = testRequest({
+      method: HTTP_METHODS_ENUM.POST,
+      url: '/user/validate-otp',
+      variables: { email, otp: '1234a' },
+    });
+    const res = (await validateReq.expect(400)) as unknown as ApiResponse;
+
+    expect(getMessage(res)).toContain('OTP must contain only digits');
   });
 
   it('should throw validation error for invalid OTP', async () => {
@@ -102,7 +140,7 @@ describe('POST /user/validate-otp', () => {
     const validateReq = testRequest({
       method: HTTP_METHODS_ENUM.POST,
       url: '/user/validate-otp',
-      variables: { email, otp: '000000' },
+      variables: { email, otp: '00000' },
     });
     const res = (await validateReq.expect(400)) as unknown as ApiResponse;
 

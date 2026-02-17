@@ -82,7 +82,7 @@ export class UserService {
     });
   }
 
-  private generateOtp(length = 6): string {
+  private generateOtp(length = 5): string {
     const digits = '0123456789';
     let otp = '';
     for (let i = 0; i < length; i++) {

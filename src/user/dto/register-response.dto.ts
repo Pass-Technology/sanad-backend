@@ -8,7 +8,7 @@ export class RegisterResponseDto {
   userId: string;
 
   @ApiProperty({
-    example: '123456',
+    example: '12345',
     description:
       'OTP for verification (returned for testing; in production sent via SMS/email)',
   })

@@ -27,7 +27,7 @@ describe('POST /user/register', () => {
     expect(res.body).toHaveProperty('userId');
     expect(res.body).toHaveProperty('message');
     expect(res.body).toHaveProperty('otp');
-    expect(res.body.otp).toHaveLength(6);
+    expect(res.body.otp).toHaveLength(5);
   });
 
   it('should register with mobile successfully', async () => {
