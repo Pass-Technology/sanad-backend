@@ -5,6 +5,7 @@ import { UserController } from './user.controller';
 import { UserService } from './user.service';
 import { UserRepository } from './user.repository';
 import { ExistingUserValidator } from './validators/existing-user.validator';
+import { ValidOtpValidator } from './validators/valid-otp.validator';
 
 @Module({
   imports: [
@@ -18,7 +19,7 @@ import { ExistingUserValidator } from './validators/existing-user.validator';
     }),
   ],
   controllers: [UserController],
-  providers: [UserService, UserRepository, ExistingUserValidator],
+  providers: [UserService, UserRepository, ExistingUserValidator, ValidOtpValidator],
   exports: [UserService, UserRepository],
 })
 export class UserModule {}

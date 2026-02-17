@@ -202,7 +202,7 @@ describe('UserController (e2e)', () => {
       );
     });
 
-    it('should throw unauthorized for invalid OTP', async () => {
+    it('should throw validation error for invalid OTP', async () => {
       const email = 'invalidotp@example.com';
       const registerReq = testRequest({
         method: HTTP_METHODS_ENUM.POST,
@@ -216,7 +216,9 @@ describe('UserController (e2e)', () => {
         url: '/user/validate-otp',
         variables: { email, otp: '000000' },
       });
-      await validateReq.expect(401);
+      const res = (await validateReq.expect(400)) as unknown as ApiResponse;
+
+      expect(getMessage(res)).toContain('Invalid or expired OTP');
     });
   });
 

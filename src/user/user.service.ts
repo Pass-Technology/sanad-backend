@@ -1,8 +1,4 @@
-import {
-  Injectable,
-  UnauthorizedException,
-  BadRequestException,
-} from '@nestjs/common';
+import { Injectable, UnauthorizedException } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import * as bcrypt from 'bcrypt';
 import { UserRepository } from './user.repository';
@@ -18,10 +14,7 @@ export class UserService {
   ) {}
 
   async register(dto: RegisterDto) {
-    const identifier = dto.email ?? dto.mobile;
-    if (!identifier) {
-      throw new BadRequestException('Either email or mobile must be provided');
-    }
+    const identifier = dto.email ?? dto.mobile!;
 
     const hashedPassword = await bcrypt.hash(dto.password, 10);
     const user = await this.userRepository.create({
@@ -49,18 +42,12 @@ export class UserService {
   }
 
   async validateOtp(dto: ValidateOtpDto) {
-    const identifier = dto.email ?? dto.mobile;
-    if (!identifier) {
-      throw new BadRequestException('Either email or mobile must be provided');
-    }
+    const identifier = dto.email ?? dto.mobile!;
 
-    const otpVerification = await this.userRepository.findValidOtp(
+    const otpVerification = (await this.userRepository.findValidOtp(
       identifier,
       dto.otp,
-    );
-    if (!otpVerification) {
-      throw new UnauthorizedException('Invalid or expired OTP');
-    }
+    ))!;
 
     await this.userRepository.markUserVerified(otpVerification.userId);
     await this.userRepository.deleteOtpVerification(otpVerification.id);
@@ -70,10 +57,7 @@ export class UserService {
   }
 
   async auth(dto: AuthDto) {
-    const identifier = dto.email ?? dto.mobile;
-    if (!identifier) {
-      throw new BadRequestException('Either email or mobile must be provided');
-    }
+    const identifier = dto.email ?? dto.mobile!;
 
     const user = await this.userRepository.findByIdentifier(identifier);
     if (!user) {

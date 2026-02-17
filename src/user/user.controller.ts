@@ -43,12 +43,7 @@ export class UserController {
   })
   @ApiResponse({
     status: 400,
-    description: 'Validation error',
-    type: ErrorResponseDto,
-  })
-  @ApiResponse({
-    status: 401,
-    description: 'Invalid or expired OTP',
+    description: 'Validation error (invalid or expired OTP)',
     type: ErrorResponseDto,
   })
   async validateOtp(@Body() dto: ValidateOtpDto) {
