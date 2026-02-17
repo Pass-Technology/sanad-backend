@@ -5,8 +5,10 @@ const common_1 = require("@nestjs/common");
 const class_validator_1 = require("class-validator");
 const swagger_1 = require("@nestjs/swagger");
 const app_module_1 = require("./app.module");
+const prisma_exception_filter_1 = require("./shared/filters/prisma-exception.filter");
 async function bootstrap() {
     const app = await core_1.NestFactory.create(app_module_1.AppModule);
+    app.useGlobalFilters(new prisma_exception_filter_1.PrismaExceptionFilter());
     (0, class_validator_1.useContainer)(app.select(app_module_1.AppModule), { fallbackOnErrors: true });
     app.useGlobalPipes(new common_1.ValidationPipe({
         whitelist: true,

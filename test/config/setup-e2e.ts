@@ -4,6 +4,7 @@ import { ValidationPipe } from '@nestjs/common';
 import { useContainer } from 'class-validator';
 import { AppModule } from '../../src/app.module';
 import { PrismaService } from '../../src/prisma/prisma.service';
+import { PrismaExceptionFilter } from '../../src/shared/filters/prisma-exception.filter';
 
 export async function setupE2e(): Promise<{
   app: INestApplication;
@@ -16,6 +17,7 @@ export async function setupE2e(): Promise<{
   const app = moduleFixture.createNestApplication();
   const prisma = moduleFixture.get<PrismaService>(PrismaService);
 
+  app.useGlobalFilters(new PrismaExceptionFilter());
   useContainer(moduleFixture, { fallbackOnErrors: true });
   app.useGlobalPipes(
     new ValidationPipe({
