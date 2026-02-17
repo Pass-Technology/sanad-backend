@@ -23,48 +23,72 @@
 
 ## Description
 
-[Nest](https://github.com/nestjs/nest) framework TypeScript starter repository.
+[Nest](https://github.com/nestjs/nest) framework TypeScript starter repository for Sanad.
 
-## Project setup
+## Getting Started
 
-```bash
-$ npm install
-```
+### Option 1: Docker Compose (recommended)
 
-### Database (PostgreSQL)
-
-The project uses PostgreSQL with Prisma. Start the database with Docker:
+Run the entire stack (PostgreSQL + NestJS app) with one command:
 
 ```bash
-$ docker-compose up -d
-$ npm run db:push
+docker compose up
 ```
 
-Create a `.env` file (see `.env.example`):
+For detached mode (background):
+
+```bash
+docker compose up -d
+```
+
+- **API**: http://localhost:3000  
+- **Swagger docs**: http://localhost:3000/api  
+
+### Option 2: Local development
+
+1. **Install dependencies**
+
+```bash
+npm install
+```
+
+2. **Start PostgreSQL** (Docker)
+
+```bash
+docker compose up -d postgres
+```
+
+3. **Create `.env`** (or copy from `.env.example`)
 
 ```
 DATABASE_URL="postgresql://postgres:postgres@localhost:5432/sanad_test?schema=public"
 JWT_SECRET="your-jwt-secret"
 ```
 
+4. **Apply database schema**
+
+```bash
+npm run db:push
+```
+
+5. **Run the app**
+
+```bash
+# development (watch mode)
+npm run start:dev
+
+# or production
+npm run start:prod
+```
+
+- **API**: http://localhost:3000  
+- **Swagger docs**: http://localhost:3000/api  
+
 ### User module endpoints
 
 - **POST /user/register** - Register with email or mobile and password
 - **POST /user/validate-otp** - Validate OTP and get auth token
 - **POST /user/auth** - Authenticate with email/mobile and password
-
-## Compile and run the project
-
-```bash
-# development
-$ npm run start
-
-# watch mode
-$ npm run start:dev
-
-# production mode
-$ npm run start:prod
-```
 
 ## Run tests
 

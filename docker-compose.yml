@@ -1,5 +1,3 @@
-version: '3.8'
-
 services:
   postgres:
     image: postgres:16-alpine
@@ -12,6 +10,24 @@ services:
       - "5432:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 2s
+      timeout: 5s
+      retries: 5
+
+  app:
+    build: .
+    container_name: sanad-app
+    ports:
+      - "3000:3000"
+    environment:
+      DATABASE_URL: postgresql://postgres:postgres@postgres:5432/sanad_test?schema=public
+      JWT_SECRET: ${JWT_SECRET:-test-secret-key}
+      PORT: 3000
+    depends_on:
+      postgres:
+        condition: service_healthy
 
 volumes:
   postgres_data:
