@@ -1,10 +1,11 @@
-import { Injectable, UnauthorizedException } from '@nestjs/common';
+import { Injectable, UnauthorizedException, NotFoundException } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import * as bcrypt from 'bcrypt';
 import { UserRepository } from './user.repository';
 import { RegisterDto } from './dto/register.dto';
 import { ValidateOtpDto } from './dto/validate-otp.dto';
 import { AuthDto } from './dto/auth.dto';
+import { ChangePasswordDto } from './dto/change-password.dto';
 
 @Injectable()
 export class UserService {
@@ -80,6 +81,32 @@ export class UserService {
       email: user.email,
       mobile: user.mobile,
     });
+  }
+
+  async changePassword(
+    userId: string,
+    dto: ChangePasswordDto,
+  ): Promise<{ message: string }> {
+    // Verify that the authenticated user matches the email/mobile provided
+    const authenticatedUser = await this.userRepository.findById(userId);
+    if (!authenticatedUser) {
+      throw new NotFoundException('Authenticated user not found');
+    }
+
+    // Check if the provided email/mobile matches the authenticated user
+    const matchesEmail = dto.email && authenticatedUser.email === dto.email;
+    const matchesMobile = dto.mobile && authenticatedUser.mobile === dto.mobile;
+
+    if (!matchesEmail && !matchesMobile) {
+      throw new UnauthorizedException(
+        'Email or mobile does not match authenticated user',
+      );
+    }
+
+    const hashedPassword = await bcrypt.hash(dto.password, 10);
+    await this.userRepository.updatePassword(userId, hashedPassword);
+
+    return { message: 'Password changed successfully' };
   }
 
   private generateOtp(length = 5): string {

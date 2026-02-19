@@ -91,4 +91,17 @@ export class UserRepository extends BaseRepository<User> {
       data: { isVerified: true },
     });
   }
+
+  async findById(id: string): Promise<User | null> {
+    return this.prisma.user.findUnique({
+      where: { id },
+    });
+  }
+
+  async updatePassword(userId: string, hashedPassword: string): Promise<User> {
+    return this.prisma.user.update({
+      where: { id: userId },
+      data: { password: hashedPassword },
+    });
+  }
 }

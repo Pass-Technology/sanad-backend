@@ -27,6 +27,7 @@ Each feature module lives under `src/<module>/`:
 - For “exactly one of A or B” (e.g. email XOR mobile), use `@ValidateIf((o) => !o.mobile)` and `@ValidateIf((o) => !o.email)` with `@IsNotEmpty`
 - Add `@ApiProperty` / `@ApiPropertyOptional` on DTO fields for Swagger
 - Prefer shared validators in `src/shared/validators/` (e.g. `ExistingEntityRecordValidator` with `inverse` for uniqueness)
+- **IMPORTANT**: Entity existence checks (e.g., "user exists", "user not found") should be validated in DTOs using validator decorators, NOT in service methods. Create validators extending `ExistingEntityRecordValidator` and apply them to DTO fields. This ensures validation happens before business logic execution and returns proper 400 status codes.
 
 ## Swagger
 - Add `@ApiTags` on controllers

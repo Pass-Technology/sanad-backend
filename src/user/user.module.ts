@@ -1,5 +1,6 @@
 import { Module } from '@nestjs/common';
 import { JwtModule } from '@nestjs/jwt';
+import { PassportModule } from '@nestjs/passport';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { UserController } from './user.controller';
 import { UserService } from './user.service';
@@ -7,9 +8,11 @@ import { UserRepository } from './user.repository';
 import { ExistingUserValidator } from './validators/existing-user.validator';
 import { ExistingUserForAuthValidator } from './validators/existing-user-for-auth.validator';
 import { ValidOtpValidator } from './validators/valid-otp.validator';
+import { JwtStrategy } from './strategies/jwt.strategy';
 
 @Module({
   imports: [
+    PassportModule,
     JwtModule.registerAsync({
       imports: [ConfigModule],
       useFactory: (config: ConfigService) => ({
@@ -26,6 +29,7 @@ import { ValidOtpValidator } from './validators/valid-otp.validator';
     ExistingUserValidator,
     ExistingUserForAuthValidator,
     ValidOtpValidator,
+    JwtStrategy,
   ],
   exports: [UserService, UserRepository],
 })

@@ -1,12 +1,19 @@
-import { Body, Controller, Post } from '@nestjs/common';
-import { ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
+import { Body, Controller, Post, UseGuards, Request } from '@nestjs/common';
+import {
+  ApiOperation,
+  ApiResponse,
+  ApiTags,
+  ApiBearerAuth,
+} from '@nestjs/swagger';
 import { UserService } from './user.service';
 import { RegisterDto } from './dto/register.dto';
 import { ValidateOtpDto } from './dto/validate-otp.dto';
 import { AuthDto } from './dto/auth.dto';
+import { ChangePasswordDto } from './dto/change-password.dto';
 import { RegisterResponseDto } from './dto/register-response.dto';
 import { AuthTokenResponseDto } from './dto/auth-token-response.dto';
 import { ErrorResponseDto } from './dto/error-response.dto';
+import { JwtAuthGuard } from './guards/jwt-auth.guard';
 
 @ApiTags('user')
 @Controller('user')
@@ -74,5 +81,38 @@ export class UserController {
   })
   async auth(@Body() dto: AuthDto) {
     return this.userService.auth(dto);
+  }
+
+  @Post('change-password')
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth()
+  @ApiOperation({ summary: 'Change user password (requires authentication)' })
+  @ApiResponse({
+    status: 201,
+    description: 'Password changed successfully',
+    schema: {
+      type: 'object',
+      properties: {
+        message: { type: 'string', example: 'Password changed successfully' },
+      },
+    },
+  })
+  @ApiResponse({
+    status: 400,
+    description: 'Validation error',
+    type: ErrorResponseDto,
+  })
+  @ApiResponse({
+    status: 401,
+    description: 'Unauthorized - invalid token or email/mobile mismatch',
+    type: ErrorResponseDto,
+  })
+  @ApiResponse({
+    status: 404,
+    description: 'User not found',
+    type: ErrorResponseDto,
+  })
+  async changePassword(@Request() req: any, @Body() dto: ChangePasswordDto) {
+    return this.userService.changePassword(req.user.userId, dto);
   }
 }
