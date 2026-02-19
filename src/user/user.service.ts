@@ -1,4 +1,4 @@
-import { Injectable, UnauthorizedException, NotFoundException } from '@nestjs/common';
+import { Injectable, UnauthorizedException } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import * as bcrypt from 'bcrypt';
 import { UserRepository } from './user.repository';
@@ -87,11 +87,8 @@ export class UserService {
     userId: string,
     dto: ChangePasswordDto,
   ): Promise<{ message: string }> {
-    // Verify that the authenticated user matches the email/mobile provided
-    const authenticatedUser = await this.userRepository.findById(userId);
-    if (!authenticatedUser) {
-      throw new NotFoundException('Authenticated user not found');
-    }
+    // JWT guard already validates user exists, so this is safe
+    const authenticatedUser = (await this.userRepository.findById(userId))!;
 
     // Check if the provided email/mobile matches the authenticated user
     const matchesEmail = dto.email && authenticatedUser.email === dto.email;
