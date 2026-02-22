@@ -1,4 +1,11 @@
-import { Body, Controller, Post, UseGuards, Request } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Get,
+  Post,
+  UseGuards,
+  Request,
+} from '@nestjs/common';
 import {
   ApiOperation,
   ApiResponse,
@@ -12,6 +19,7 @@ import { ChangePasswordDto } from './dto/change-password.dto';
 import { RegisterResponseDto } from './dto/register-response.dto';
 import { AuthTokenResponseDto } from './dto/auth-token-response.dto';
 import { ErrorResponseDto } from './dto/error-response.dto';
+import { UserInfoResponseDto } from './dto/user-info-response.dto';
 import { JwtAuthGuard } from './guards/jwt-auth.guard';
 
 @ApiTags('user')
@@ -64,6 +72,24 @@ export class UserController {
   })
   async auth(@Body() dto: AuthDto) {
     return this.userService.auth(dto);
+  }
+
+  @Get('info')
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth()
+  @ApiOperation({ summary: 'Get current user info from token' })
+  @ApiResponse({
+    status: 200,
+    description: 'Current user details from token context',
+    type: UserInfoResponseDto,
+  })
+  @ApiResponse({
+    status: 401,
+    description: 'Unauthorized - invalid or missing token',
+    type: ErrorResponseDto,
+  })
+  getInfo(@Request() req: { user: UserInfoResponseDto }) {
+    return req.user;
   }
 
   @Post('change-password')

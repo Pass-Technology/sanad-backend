@@ -7,7 +7,7 @@ import { UserService } from './user.service';
 import { UserRepository } from './user.repository';
 import { ExistingUserValidator } from './validators/existing-user.validator';
 import { ExistingUserForAuthValidator } from './validators/existing-user-for-auth.validator';
-import { JwtStrategy } from './strategies/jwt.strategy';
+import { JwtAuthGuard } from './guards/jwt-auth.guard';
 import { OtpModule } from '../otp/otp.module';
 
 @Module({
@@ -29,7 +29,7 @@ import { OtpModule } from '../otp/otp.module';
     UserRepository,
     ExistingUserValidator,
     ExistingUserForAuthValidator,
-    JwtStrategy,
+    JwtAuthGuard,
   ],
   exports: [UserService, UserRepository],
 })

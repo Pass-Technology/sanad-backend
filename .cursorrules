@@ -36,9 +36,14 @@ Ideally **each module should only have one table connected to it** in the databa
 - Use `@ApiOperation` and `@ApiResponse` on endpoints
 - Document DTOs with `@ApiProperty` (examples, descriptions)
 
+## Types
+- **Shared types** (used in more than one module): place in `src/shared/types/` (e.g. `jwt-payload.type.ts`).
+- **Module-specific types** (used only in one module): place in `src/<module>/types/` within that module.
+
 ## Shared Code
 - `src/shared/validators/existing-entity-record.validator.ts` – reusable “exists” / “unique” validator
 - `src/shared/generics/repository.abstract.ts` – base for repositories
+- `src/shared/types/` – shared types used across the app
 - Extend `BaseRepository` and implement `IEntityExistsRepository` when using `ExistingEntityRecordValidator`
 
 ## E2E Tests
