@@ -42,6 +42,7 @@ Ideally **each module should only have one table connected to it** in the databa
 - Extend `BaseRepository` and implement `IEntityExistsRepository` when using `ExistingEntityRecordValidator`
 
 ## E2E Tests
+- **Test folder structure**: Group tests by folder parallel to the module under test. For each `src/<module>/`, put E2E specs in `test/<module>/` (e.g. `src/user/` → `test/user/`, `src/otp/` → `test/otp/`). Use `../config/...` and `../helpers/...` for shared imports from `test/<module>/`.
 - Use `testRequest` from `test/config/request.ts` with `HTTP_METHODS_ENUM`
 - `setE2eContext` / `getE2eApp` / `getE2ePrisma` from `test/config/e2e-context.ts` hold the test app and prisma instance
 - Clear DB in `beforeEach` for isolation
