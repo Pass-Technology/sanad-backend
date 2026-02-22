@@ -1,4 +1,4 @@
-import { Injectable, Inject, forwardRef } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { OtpRepository } from './otp.repository';
 import { UserService } from '../user/user.service';
@@ -8,7 +8,6 @@ import { ValidateOtpDto } from './dto/validate-otp.dto';
 export class OtpService {
   constructor(
     private readonly otpRepository: OtpRepository,
-    @Inject(forwardRef(() => UserService))
     private readonly userService: UserService,
     private readonly configService: ConfigService,
   ) {}

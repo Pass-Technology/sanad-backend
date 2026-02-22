@@ -1,19 +1,20 @@
-import { Injectable, UnauthorizedException, Inject, forwardRef } from '@nestjs/common';
+import { Injectable, UnauthorizedException } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
+import { EventEmitter2 } from '@nestjs/event-emitter';
 import * as bcrypt from 'bcrypt';
 import { UserRepository } from './user.repository';
-import { OtpService } from '../otp/otp.service';
 import { RegisterDto } from './dto/register.dto';
 import { AuthDto } from './dto/auth.dto';
 import { ChangePasswordDto } from './dto/change-password.dto';
+import { USER_REGISTERED_EVENT } from './constants/events.constants';
+import { UserRegisteredEvent } from './events/user-registered.event';
 
 @Injectable()
 export class UserService {
   constructor(
     private readonly userRepository: UserRepository,
     private readonly jwtService: JwtService,
-    @Inject(forwardRef(() => OtpService))
-    private readonly otpService: OtpService,
+    private readonly eventEmitter: EventEmitter2,
   ) {}
 
   async register(dto: RegisterDto) {
@@ -26,15 +27,15 @@ export class UserService {
       password: hashedPassword,
     });
 
-    const { otp } = await this.otpService.createOtpForUser(
-      user.id,
-      identifier,
-    );
+    const event = new UserRegisteredEvent();
+    event.userId = user.id;
+    event.identifier = identifier;
+    await this.eventEmitter.emitAsync(USER_REGISTERED_EVENT, event);
 
     return {
       message: 'Registration successful. Please verify your OTP.',
       userId: user.id,
-      otp,
+      otp: event.otp!,
     };
   }
 

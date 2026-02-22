@@ -14,11 +14,25 @@ Use the **Controller → Service → Repository** pattern:
 - **Service**: Business logic, orchestration
 - **Repository**: Data access only (extend `BaseRepository`, inject `PrismaService`)
 
+- **Avoid `forwardRef`**: Prefer decoupling modules with `@nestjs/event-emitter`. Have the producer module emit events and the consumer module listen with `@OnEvent()`. Use `emitAsync()` when the emitter needs to wait for the listener (e.g. to get a value back via a mutable event instance). This keeps dependencies one-way and avoids circular module references.
+
+## Event emitter (NestJS sample [30-event-emitter](https://github.com/nestjs/nest/tree/master/sample/30-event-emitter/src))
+Follow the structure and placement from the official sample:
+
+- **Event payloads**: Define in `src/<module>/events/` as **classes** in `*.event.ts` files (e.g. `user-registered.event.ts` with `UserRegisteredEvent`). The emitter creates `new MyEvent()`, sets properties, and passes the instance to `emit()` or `emitAsync()`.
+- **Event name constants**: Never use magic strings for event names. Define constants in a **constants file in the module that owns the event**: `src/<module>/constants/events.constants.ts`. User events (e.g. `user.registered`) live in the user module’s constants file; OTP events in the otp module’s constants file; and so on. Emitters and listeners (in any module) import and use these constants (e.g. `@OnEvent(USER_REGISTERED_EVENT)`, `emitAsync(USER_REGISTERED_EVENT, event)`).
+- **Listeners**: Place in `src/<module>/listeners/` in `*.listener.ts` files (e.g. `user-registered.listener.ts` with `UserRegisteredListener`). Use `@OnEvent(EVENT_CONSTANT)` and inject the handler with the event class type. Do **not** put `@OnEvent` handlers inside services; keep them in dedicated listener classes under `listeners/`.
+- **Registration**: Register each listener in the module’s `providers` array (e.g. `providers: [OrdersService, OrderCreatedListener]`).
+- **Emitting**: Services that emit inject `EventEmitter2` and call `this.eventEmitter.emit(EVENT_CONSTANT, eventInstance)` or `this.eventEmitter.emitAsync(EVENT_CONSTANT, ...)` when they need to wait for listeners.
+
 ## Module Structure
 Each feature module lives under `src/<module>/`:
 - `*.controller.ts` – routes
 - `*.service.ts` – business logic
 - `*.repository.ts` – Prisma queries
+- `constants/events.constants.ts` – event name constants for this module’s events (imported by emitters and listeners)
+- `events/*.event.ts` – event payload classes (for event-emitter)
+- `listeners/*.listener.ts` – event listeners (`@OnEvent()`); do not put listeners in services
 - `dto/*.dto.ts` – DTOs with validation
 - `validators/` – custom validators when needed
 
