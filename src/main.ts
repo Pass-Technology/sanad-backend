@@ -11,7 +11,6 @@ async function bootstrap() {
     origin: true,
     methods: '*',
     allowedHeaders: '*',
-    credentials: true,
   });
   app.useGlobalFilters(new PrismaExceptionFilter());
   useContainer(app.select(AppModule), { fallbackOnErrors: true });
