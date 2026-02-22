@@ -32,9 +32,10 @@ Ideally **each module should only have one table connected to it** in the databa
 - **IMPORTANT**: Entity existence checks (e.g., "user exists", "user not found") should be validated in DTOs using validator decorators, NOT in service methods. Create validators extending `ExistingEntityRecordValidator` and apply them to DTO fields. This ensures validation happens before business logic execution and returns proper 400 status codes.
 
 ## Swagger
-- Add `@ApiTags` on controllers
-- Use `@ApiOperation` and `@ApiResponse` on endpoints
-- Document DTOs with `@ApiProperty` (examples, descriptions)
+- Add `@ApiTags` on controllers and `@ApiOperation` on each endpoint
+- **Return types**: Always add explicit TypeScript return types to controller methods (e.g. `Promise<RegisterResponseDto>`). The Swagger module will infer success response schemas from these types, so do **not** add `@ApiResponse` decorators for successful (2xx) responses
+- **Error responses**: Do **not** add `@ApiResponse` decorators for failing responses (400, 401, 403, 404, etc.); keep the docs focused on success shapes
+- Document DTOs with `@ApiProperty` / `@ApiPropertyOptional` (examples, descriptions) so request/response bodies are documented
 
 ## Types
 - **Shared types** (used in more than one module): place in `src/shared/types/` (e.g. `jwt-payload.type.ts`).
