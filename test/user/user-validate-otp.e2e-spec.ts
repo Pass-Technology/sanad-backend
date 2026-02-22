@@ -39,6 +39,60 @@ describe('POST /otp/validate-otp', () => {
     expect(typeof authRes.body.authToken).toBe('string');
   });
 
+  it('should set user isVerified to true after validating OTP with email', async () => {
+    const email = 'verify-email@example.com';
+    const registerReq = testRequest({
+      method: HTTP_METHODS_ENUM.POST,
+      url: '/user/register',
+      variables: { email, password: 'password123' },
+    });
+    const registerRes = (await registerReq.expect(
+      201,
+    )) as unknown as ApiResponse;
+
+    const otp = registerRes.body.otp;
+
+    const prisma = getE2ePrisma();
+    const userBefore = await prisma.user.findUnique({ where: { email } });
+    expect(userBefore?.isVerified).toBe(false);
+
+    await testRequest({
+      method: HTTP_METHODS_ENUM.POST,
+      url: '/otp/validate-otp',
+      variables: { email, otp },
+    }).expect(201);
+
+    const userAfter = await prisma.user.findUnique({ where: { email } });
+    expect(userAfter?.isVerified).toBe(true);
+  });
+
+  it('should set user isVerified to true after validating OTP with mobile', async () => {
+    const mobile = '+1777777777';
+    const registerReq = testRequest({
+      method: HTTP_METHODS_ENUM.POST,
+      url: '/user/register',
+      variables: { mobile, password: 'password123' },
+    });
+    const registerRes = (await registerReq.expect(
+      201,
+    )) as unknown as ApiResponse;
+
+    const otp = registerRes.body.otp;
+
+    const prisma = getE2ePrisma();
+    const userBefore = await prisma.user.findUnique({ where: { mobile } });
+    expect(userBefore?.isVerified).toBe(false);
+
+    await testRequest({
+      method: HTTP_METHODS_ENUM.POST,
+      url: '/otp/validate-otp',
+      variables: { mobile, otp },
+    }).expect(201);
+
+    const userAfter = await prisma.user.findUnique({ where: { mobile } });
+    expect(userAfter?.isVerified).toBe(true);
+  });
+
   it('should validate OTP with mobile', async () => {
     const mobile = '+1987654321';
     const registerReq = testRequest({

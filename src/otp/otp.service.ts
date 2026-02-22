@@ -1,14 +1,16 @@
 import { Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
+import { EventEmitter2 } from '@nestjs/event-emitter';
+import { USER_VERIFICATION_REQUESTED_EVENT } from '../user/constants/events.constants';
+import { UserVerificationRequestedEvent } from '../user/events/user-verification-requested.event';
 import { OtpRepository } from './otp.repository';
-import { UserService } from '../user/user.service';
 import { ValidateOtpDto } from './dto/validate-otp.dto';
 
 @Injectable()
 export class OtpService {
   constructor(
     private readonly otpRepository: OtpRepository,
-    private readonly userService: UserService,
+    private readonly eventEmitter: EventEmitter2,
     private readonly configService: ConfigService,
   ) {}
 
@@ -37,11 +39,13 @@ export class OtpService {
 
     if (defaultOtp && dto.otp === defaultOtp) {
       await this.otpRepository.deleteByIdentifier(identifier);
-      const authToken =
-        await this.userService.markVerifiedAndGenerateTokenByIdentifier(
-          identifier,
-        );
-      return { authToken };
+      const event = new UserVerificationRequestedEvent();
+      event.identifier = identifier;
+      await this.eventEmitter.emitAsync(
+        USER_VERIFICATION_REQUESTED_EVENT,
+        event,
+      );
+      return { authToken: event.authToken! };
     }
 
     const otpRecord = (await this.otpRepository.findValidOtp(
@@ -49,14 +53,13 @@ export class OtpService {
       dto.otp,
     ))!;
 
-    const authToken =
-      await this.userService.markVerifiedAndGenerateTokenByIdentifier(
-        identifier,
-      );
+    const event = new UserVerificationRequestedEvent();
+    event.identifier = identifier;
+    await this.eventEmitter.emitAsync(USER_VERIFICATION_REQUESTED_EVENT, event);
 
     await this.otpRepository.deleteById(otpRecord.id);
 
-    return { authToken };
+    return { authToken: event.authToken! };
   }
 
   private generateOtp(length = 5): string {

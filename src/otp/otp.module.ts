@@ -4,10 +4,9 @@ import { OtpService } from './otp.service';
 import { UserRegisteredListener } from './listeners/user-registered.listener';
 import { OtpRepository } from './otp.repository';
 import { ValidOtpValidator } from './validators/valid-otp.validator';
-import { UserModule } from '../user/user.module';
 
 @Module({
-  imports: [UserModule],
+  imports: [],
   controllers: [OtpController],
   providers: [
     OtpService,

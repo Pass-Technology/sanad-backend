@@ -5,6 +5,7 @@ import { ConfigModule, ConfigService } from '@nestjs/config';
 import { UserController } from './user.controller';
 import { UserService } from './user.service';
 import { UserRepository } from './user.repository';
+import { UserVerificationRequestedListener } from './listeners/user-verification-requested.listener';
 import { ExistingUserValidator } from './validators/existing-user.validator';
 import { ExistingUserForAuthValidator } from './validators/existing-user-for-auth.validator';
 import { JwtAuthGuard } from './guards/jwt-auth.guard';
@@ -25,6 +26,7 @@ import { JwtAuthGuard } from './guards/jwt-auth.guard';
   providers: [
     UserService,
     UserRepository,
+    UserVerificationRequestedListener,
     ExistingUserValidator,
     ExistingUserForAuthValidator,
     JwtAuthGuard,
