@@ -11,7 +11,7 @@ describe('POST /user/register', () => {
 
   beforeEach(async () => {
     const prisma = getE2ePrisma();
-    await prisma.otpVerification.deleteMany();
+    await prisma.otp.deleteMany();
     await prisma.user.deleteMany();
   });
 

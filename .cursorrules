@@ -22,6 +22,8 @@ Each feature module lives under `src/<module>/`:
 - `dto/*.dto.ts` – DTOs with validation
 - `validators/` – custom validators when needed
 
+Ideally **each module should only have one table connected to it** in the database. If a feature needs multiple tables, consider splitting it into separate modules (e.g. user vs otp).
+
 ## DTOs & Validation
 - Use `class-validator` decorators on all DTOs
 - For “exactly one of A or B” (e.g. email XOR mobile), use `@ValidateIf((o) => !o.mobile)` and `@ValidateIf((o) => !o.email)` with `@IsNotEmpty`

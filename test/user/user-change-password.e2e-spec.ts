@@ -11,7 +11,7 @@ describe('POST /user/change-password', () => {
 
   beforeEach(async () => {
     const prisma = getE2ePrisma();
-    await prisma.otpVerification.deleteMany();
+    await prisma.otp.deleteMany();
     await prisma.user.deleteMany();
   });
 
@@ -84,7 +84,7 @@ describe('POST /user/change-password', () => {
     const otp = registerRes.body.otp;
     const validateReq = testRequest({
       method: HTTP_METHODS_ENUM.POST,
-      url: '/user/validate-otp',
+      url: '/otp/validate-otp',
       variables: { mobile, otp },
     });
     await validateReq.expect(201);
@@ -214,7 +214,7 @@ describe('POST /user/change-password', () => {
     const otp1 = registerRes1.body.otp;
     const validateReq1 = testRequest({
       method: HTTP_METHODS_ENUM.POST,
-      url: '/user/validate-otp',
+      url: '/otp/validate-otp',
       variables: { mobile: mobile1, otp: otp1 },
     });
     await validateReq1.expect(201);
@@ -238,7 +238,7 @@ describe('POST /user/change-password', () => {
     const otp2 = registerRes2.body.otp;
     const validateReq2 = testRequest({
       method: HTTP_METHODS_ENUM.POST,
-      url: '/user/validate-otp',
+      url: '/otp/validate-otp',
       variables: { mobile: mobile2, otp: otp2 },
     });
     await validateReq2.expect(201);

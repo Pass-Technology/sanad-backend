@@ -87,8 +87,11 @@ npm run start:prod
 ### User module endpoints
 
 - **POST /user/register** - Register with email or mobile and password
-- **POST /user/validate-otp** - Validate OTP and get auth token
 - **POST /user/auth** - Authenticate with email/mobile and password
+
+### OTP module endpoints
+
+- **POST /otp/validate-otp** - Validate OTP and get auth token
 
 ## Run tests
 

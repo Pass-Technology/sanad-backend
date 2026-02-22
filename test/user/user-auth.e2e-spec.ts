@@ -11,7 +11,7 @@ describe('POST /user/auth', () => {
 
   beforeEach(async () => {
     const prisma = getE2ePrisma();
-    await prisma.otpVerification.deleteMany();
+    await prisma.otp.deleteMany();
     await prisma.user.deleteMany();
   });
 
@@ -50,7 +50,7 @@ describe('POST /user/auth', () => {
     const otp = registerRes.body.otp;
     const validateReq = testRequest({
       method: HTTP_METHODS_ENUM.POST,
-      url: '/user/validate-otp',
+      url: '/otp/validate-otp',
       variables: { mobile, otp },
     });
     await validateReq.expect(201);

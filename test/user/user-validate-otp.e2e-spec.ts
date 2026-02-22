@@ -4,14 +4,14 @@ import { HTTP_METHODS_ENUM } from '../config/request.methods.enum';
 import { ApiResponse, getMessage } from '../helpers/api-response.helper';
 import { getE2ePrisma } from '../config/e2e-context';
 
-describe('POST /user/validate-otp', () => {
+describe('POST /otp/validate-otp', () => {
   beforeAll(async () => {
     await setupE2e();
   });
 
   beforeEach(async () => {
     const prisma = getE2ePrisma();
-    await prisma.otpVerification.deleteMany();
+    await prisma.otp.deleteMany();
     await prisma.user.deleteMany();
   });
 
@@ -30,7 +30,7 @@ describe('POST /user/validate-otp', () => {
 
     const authReq = testRequest({
       method: HTTP_METHODS_ENUM.POST,
-      url: '/user/validate-otp',
+      url: '/otp/validate-otp',
       variables: { email, otp },
     });
     const authRes = (await authReq.expect(201)) as unknown as ApiResponse;
@@ -54,7 +54,7 @@ describe('POST /user/validate-otp', () => {
 
     const authReq = testRequest({
       method: HTTP_METHODS_ENUM.POST,
-      url: '/user/validate-otp',
+      url: '/otp/validate-otp',
       variables: { mobile, otp },
     });
     const authRes = (await authReq.expect(201)) as unknown as ApiResponse;
@@ -65,7 +65,7 @@ describe('POST /user/validate-otp', () => {
   it('should throw validation error when neither email nor mobile provided', async () => {
     const req = testRequest({
       method: HTTP_METHODS_ENUM.POST,
-      url: '/user/validate-otp',
+      url: '/otp/validate-otp',
       variables: { otp: '12345' },
     });
     const res = (await req.expect(400)) as unknown as ApiResponse;
@@ -78,7 +78,7 @@ describe('POST /user/validate-otp', () => {
   it('should throw validation error when both email and mobile are empty', async () => {
     const req = testRequest({
       method: HTTP_METHODS_ENUM.POST,
-      url: '/user/validate-otp',
+      url: '/otp/validate-otp',
       variables: {
         email: '',
         mobile: '',
@@ -103,7 +103,7 @@ describe('POST /user/validate-otp', () => {
 
     const validateReq = testRequest({
       method: HTTP_METHODS_ENUM.POST,
-      url: '/user/validate-otp',
+      url: '/otp/validate-otp',
       variables: { email, otp: '123456' },
     });
     const res = (await validateReq.expect(400)) as unknown as ApiResponse;
@@ -122,7 +122,7 @@ describe('POST /user/validate-otp', () => {
 
     const validateReq = testRequest({
       method: HTTP_METHODS_ENUM.POST,
-      url: '/user/validate-otp',
+      url: '/otp/validate-otp',
       variables: { email, otp: '1234a' },
     });
     const res = (await validateReq.expect(400)) as unknown as ApiResponse;
@@ -141,7 +141,7 @@ describe('POST /user/validate-otp', () => {
 
     const validateReq = testRequest({
       method: HTTP_METHODS_ENUM.POST,
-      url: '/user/validate-otp',
+      url: '/otp/validate-otp',
       variables: { email, otp: '00000' },
     });
     const res = (await validateReq.expect(400)) as unknown as ApiResponse;

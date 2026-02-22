@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
-import { User, OtpVerification } from '@prisma/client';
+import { User } from '@prisma/client';
 import { BaseRepository } from '../shared/generics/repository.abstract';
 
 @Injectable()
@@ -50,39 +50,6 @@ export class UserRepository extends BaseRepository<User> {
       return this.findByEmail(identifier);
     }
     return this.findByMobile(identifier);
-  }
-
-  async createOtpVerification(data: {
-    userId: string;
-    identifier: string;
-    otp: string;
-    expiresAt: Date;
-  }): Promise<OtpVerification> {
-    return this.prisma.otpVerification.create({
-      data,
-    });
-  }
-
-  async findValidOtp(
-    identifier: string,
-    otp: string,
-  ): Promise<(OtpVerification & { user: User }) | null> {
-    const result = await this.prisma.otpVerification.findFirst({
-      where: {
-        identifier,
-        otp,
-        expiresAt: { gt: new Date() },
-      },
-      orderBy: { createdAt: 'desc' },
-      include: { user: true },
-    });
-    return result;
-  }
-
-  async deleteOtpVerification(id: string): Promise<void> {
-    await this.prisma.otpVerification.delete({
-      where: { id },
-    });
   }
 
   async markUserVerified(userId: string): Promise<User> {

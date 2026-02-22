@@ -7,7 +7,6 @@ import {
 } from '@nestjs/swagger';
 import { UserService } from './user.service';
 import { RegisterDto } from './dto/register.dto';
-import { ValidateOtpDto } from './dto/validate-otp.dto';
 import { AuthDto } from './dto/auth.dto';
 import { ChangePasswordDto } from './dto/change-password.dto';
 import { RegisterResponseDto } from './dto/register-response.dto';
@@ -39,22 +38,6 @@ export class UserController {
   })
   async register(@Body() dto: RegisterDto) {
     return this.userService.register(dto);
-  }
-
-  @Post('validate-otp')
-  @ApiOperation({ summary: 'Validate OTP and get auth token' })
-  @ApiResponse({
-    status: 201,
-    description: 'OTP validated, auth token returned',
-    type: AuthTokenResponseDto,
-  })
-  @ApiResponse({
-    status: 400,
-    description: 'Validation error (invalid or expired OTP)',
-    type: ErrorResponseDto,
-  })
-  async validateOtp(@Body() dto: ValidateOtpDto) {
-    return this.userService.validateOtp(dto);
   }
 
   @Post('auth')

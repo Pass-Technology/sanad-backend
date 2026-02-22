@@ -1,9 +1,9 @@
-import { Injectable, UnauthorizedException } from '@nestjs/common';
+import { Injectable, UnauthorizedException, Inject, forwardRef } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import * as bcrypt from 'bcrypt';
 import { UserRepository } from './user.repository';
+import { OtpService } from '../otp/otp.service';
 import { RegisterDto } from './dto/register.dto';
-import { ValidateOtpDto } from './dto/validate-otp.dto';
 import { AuthDto } from './dto/auth.dto';
 import { ChangePasswordDto } from './dto/change-password.dto';
 
@@ -12,6 +12,8 @@ export class UserService {
   constructor(
     private readonly userRepository: UserRepository,
     private readonly jwtService: JwtService,
+    @Inject(forwardRef(() => OtpService))
+    private readonly otpService: OtpService,
   ) {}
 
   async register(dto: RegisterDto) {
@@ -24,37 +26,30 @@ export class UserService {
       password: hashedPassword,
     });
 
-    // Generate and store OTP for verification (in production, send via SMS/email)
-    const otp = this.generateOtp();
-    const expiresAt = new Date(Date.now() + 10 * 60 * 1000); // 10 minutes
-    await this.userRepository.createOtpVerification({
-      userId: user.id,
+    const { otp } = await this.otpService.createOtpForUser(
+      user.id,
       identifier,
-      otp,
-      expiresAt,
-    });
+    );
 
     return {
       message: 'Registration successful. Please verify your OTP.',
       userId: user.id,
-      // In production, OTP would be sent via SMS/email - for testing we return it
       otp,
     };
   }
 
-  async validateOtp(dto: ValidateOtpDto) {
-    const identifier = dto.email ?? dto.mobile!;
+  async markVerifiedAndGenerateToken(userId: string): Promise<string> {
+    await this.userRepository.markUserVerified(userId);
+    const user = (await this.userRepository.findById(userId))!;
+    return this.generateToken(user);
+  }
 
-    const otpVerification = (await this.userRepository.findValidOtp(
-      identifier,
-      dto.otp,
-    ))!;
-
-    await this.userRepository.markUserVerified(otpVerification.userId);
-    await this.userRepository.deleteOtpVerification(otpVerification.id);
-
-    const token = this.generateToken(otpVerification.user);
-    return { authToken: token };
+  async markVerifiedAndGenerateTokenByIdentifier(
+    identifier: string,
+  ): Promise<string> {
+    const user = (await this.userRepository.findByIdentifier(identifier))!;
+    await this.userRepository.markUserVerified(user.id);
+    return this.generateToken(user);
   }
 
   async auth(dto: AuthDto) {
@@ -104,14 +99,5 @@ export class UserService {
     await this.userRepository.updatePassword(userId, hashedPassword);
 
     return { message: 'Password changed successfully' };
-  }
-
-  private generateOtp(length = 5): string {
-    const digits = '0123456789';
-    let otp = '';
-    for (let i = 0; i < length; i++) {
-      otp += digits[Math.floor(Math.random() * 10)];
-    }
-    return otp;
   }
 }
