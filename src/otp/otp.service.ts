@@ -5,6 +5,7 @@ import { USER_VERIFICATION_REQUESTED_EVENT } from '../user/constants/events.cons
 import { UserVerificationRequestedEvent } from '../user/events/user-verification-requested.event';
 import { OtpRepository } from './otp.repository';
 import { ValidateOtpDto } from './dto/validate-otp.dto';
+import { SendOtpDto } from './dto/send-otp.dto';
 
 @Injectable()
 export class OtpService {
@@ -18,10 +19,22 @@ export class OtpService {
     return this.configService.get<string>('DEFAULT_OTP');
   }
 
+  async sendOtp(dto: SendOtpDto): Promise<{ message: string }> {
+    const identifier = dto.email ?? dto.mobile!;
+    await this.otpRepository.deleteByIdentifier(identifier);
+    await this.createOtpRecord(identifier);
+    return { message: 'OTP sent successfully' };
+  }
+
   async createOtpForUser(
     _userId: string,
     identifier: string,
   ): Promise<{ otp: string }> {
+    const { otp } = await this.createOtpRecord(identifier);
+    return { otp };
+  }
+
+  private async createOtpRecord(identifier: string): Promise<{ otp: string }> {
     const defaultOtp = this.getDefaultOtp();
     const otp = defaultOtp ?? this.generateOtp();
     const expiresAt = new Date(Date.now() + 10 * 60 * 1000); // 10 minutes
