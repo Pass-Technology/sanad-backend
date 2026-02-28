@@ -1,11 +1,15 @@
 import { Injectable } from '@nestjs/common';
-import { PrismaService } from '../prisma/prisma.service';
-import { User } from '@prisma/client';
+import { InjectRepository } from '@nestjs/typeorm';
+import { Repository } from 'typeorm';
+import { User } from './entities/user.entity';
 import { BaseRepository } from '../shared/generics/repository.abstract';
 
 @Injectable()
 export class UserRepository extends BaseRepository<User> {
-  constructor(private readonly prisma: PrismaService) {
+  constructor(
+    @InjectRepository(User)
+    private readonly repository: Repository<User>,
+  ) {
     super();
   }
 
@@ -14,7 +18,7 @@ export class UserRepository extends BaseRepository<User> {
     mobile?: string;
     id?: string;
   }): Promise<boolean> {
-    const user = await this.prisma.user.findFirst({ where });
+    const user = await this.repository.findOne({ where });
     return !!user;
   }
 
@@ -23,23 +27,22 @@ export class UserRepository extends BaseRepository<User> {
     mobile?: string;
     password: string;
   }): Promise<User> {
-    return this.prisma.user.create({
-      data: {
-        email: data.email,
-        mobile: data.mobile,
-        password: data.password,
-      },
+    const user = this.repository.create({
+      email: data.email,
+      mobile: data.mobile,
+      password: data.password,
     });
+    return this.repository.save(user);
   }
 
   async findByEmail(email: string): Promise<User | null> {
-    return this.prisma.user.findUnique({
+    return this.repository.findOne({
       where: { email },
     });
   }
 
   async findByMobile(mobile: string): Promise<User | null> {
-    return this.prisma.user.findUnique({
+    return this.repository.findOne({
       where: { mobile },
     });
   }
@@ -53,22 +56,18 @@ export class UserRepository extends BaseRepository<User> {
   }
 
   async markUserVerified(userId: string): Promise<User> {
-    return this.prisma.user.update({
-      where: { id: userId },
-      data: { isVerified: true },
-    });
+    await this.repository.update(userId, { isVerified: true });
+    return (await this.findById(userId))!;
   }
 
   async findById(id: string): Promise<User | null> {
-    return this.prisma.user.findUnique({
+    return this.repository.findOne({
       where: { id },
     });
   }
 
   async updatePassword(userId: string, hashedPassword: string): Promise<User> {
-    return this.prisma.user.update({
-      where: { id: userId },
-      data: { password: hashedPassword },
-    });
+    await this.repository.update(userId, { password: hashedPassword });
+    return (await this.findById(userId))!;
   }
 }

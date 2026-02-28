@@ -13,7 +13,7 @@ export class OtpService {
     private readonly otpRepository: OtpRepository,
     private readonly eventEmitter: EventEmitter2,
     private readonly configService: ConfigService,
-  ) {}
+  ) { }
 
   private getDefaultOtp(): string | undefined {
     return this.configService.get<string>('DEFAULT_OTP');
@@ -47,10 +47,13 @@ export class OtpService {
   }
 
   async validateOtp(dto: ValidateOtpDto): Promise<{ authToken: string }> {
-    const identifier = dto.email ?? dto.mobile!;
+
+    const { email, mobile, otp } = dto;
+
+    const identifier = email ?? mobile!;
     const defaultOtp = this.getDefaultOtp();
 
-    if (defaultOtp && dto.otp === defaultOtp) {
+    if (defaultOtp && otp === defaultOtp) {
       await this.otpRepository.deleteByIdentifier(identifier);
       const event = new UserVerificationRequestedEvent();
       event.identifier = identifier;

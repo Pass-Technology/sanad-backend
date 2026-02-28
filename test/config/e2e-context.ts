@@ -1,21 +1,21 @@
 import type { INestApplication } from '@nestjs/common';
-import type { PrismaService } from '../../src/prisma/prisma.service';
+import type { DataSource } from 'typeorm';
 
 let app: INestApplication;
-let prisma: PrismaService;
+let dataSource: DataSource;
 
 export function setE2eContext(
   application: INestApplication,
-  prismaService: PrismaService,
+  dataSourceInstance: DataSource,
 ): void {
   app = application;
-  prisma = prismaService;
+  dataSource = dataSourceInstance;
 }
 
 export function getE2eApp(): INestApplication {
   return app;
 }
 
-export function getE2ePrisma(): PrismaService {
-  return prisma;
+export function getE2eDataSource(): DataSource {
+  return dataSource;
 }

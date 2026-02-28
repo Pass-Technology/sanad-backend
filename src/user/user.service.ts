@@ -15,7 +15,7 @@ export class UserService {
     private readonly userRepository: UserRepository,
     private readonly jwtService: JwtService,
     private readonly eventEmitter: EventEmitter2,
-  ) {}
+  ) { }
 
   async register(dto: RegisterDto) {
     const identifier = dto.email ?? dto.mobile!;
@@ -69,8 +69,8 @@ export class UserService {
 
   private generateToken(user: {
     id: string;
-    email: string | null;
-    mobile: string | null;
+    email?: string;
+    mobile?: string;
   }) {
     return this.jwtService.sign({
       sub: user.id,

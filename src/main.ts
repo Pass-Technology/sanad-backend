@@ -3,7 +3,7 @@ import { ValidationPipe } from '@nestjs/common';
 import { useContainer } from 'class-validator';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import { AppModule } from './app.module';
-import { PrismaExceptionFilter } from './shared/filters/prisma-exception.filter';
+
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
@@ -12,7 +12,7 @@ async function bootstrap() {
     methods: '*',
     allowedHeaders: '*',
   });
-  app.useGlobalFilters(new PrismaExceptionFilter());
+
   useContainer(app.select(AppModule), { fallbackOnErrors: true });
   app.useGlobalPipes(
     new ValidationPipe({
@@ -30,6 +30,9 @@ async function bootstrap() {
   const document = SwaggerModule.createDocument(app, config);
   SwaggerModule.setup('api', app, document);
 
-  await app.listen(process.env.PORT ?? 3000);
+  const port = process.env.PORT ?? 3001;
+  await app.listen(port);
+  console.log(`\n🚀 Application is running on: http://localhost:${port}`);
+  console.log(`📖 Swagger documentation: http://localhost:${port}/api\n`);
 }
 void bootstrap();
