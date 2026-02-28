@@ -6,6 +6,7 @@ import { UserModule } from './user/user.module';
 import { OtpModule } from './otp/otp.module';
 import { User } from './user/entities/user.entity';
 import { Otp } from './otp/entities/otp.entity';
+import { HealthController } from './health.controller';
 
 @Module({
   imports: [
@@ -27,5 +28,6 @@ import { Otp } from './otp/entities/otp.entity';
     UserModule,
     OtpModule,
   ],
+  controllers: [HealthController],
 })
 export class AppModule { }

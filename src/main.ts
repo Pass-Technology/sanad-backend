@@ -7,11 +7,7 @@ import { AppModule } from './app.module';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
-  app.enableCors({
-    origin: true,
-    methods: '*',
-    allowedHeaders: '*',
-  });
+  app.enableCors();
 
   useContainer(app.select(AppModule), { fallbackOnErrors: true });
   app.useGlobalPipes(
