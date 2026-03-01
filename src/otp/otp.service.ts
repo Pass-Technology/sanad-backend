@@ -1,5 +1,4 @@
 import { Injectable } from '@nestjs/common';
-import { ConfigService } from '@nestjs/config';
 import { EventEmitter2 } from '@nestjs/event-emitter';
 import { USER_VERIFICATION_REQUESTED_EVENT } from '../user/constants/events.constants';
 import { UserVerificationRequestedEvent } from '../user/events/user-verification-requested.event';
@@ -7,16 +6,18 @@ import { OtpRepository } from './otp.repository';
 import { ValidateOtpDto } from './dto/validate-otp.dto';
 import { SendOtpDto } from './dto/send-otp.dto';
 
+import { AppConfigService } from '../config/config.service';
+
 @Injectable()
 export class OtpService {
   constructor(
     private readonly otpRepository: OtpRepository,
     private readonly eventEmitter: EventEmitter2,
-    private readonly configService: ConfigService,
+    private readonly appConfig: AppConfigService,
   ) { }
 
   private getDefaultOtp(): string | undefined {
-    return this.configService.get<string>('DEFAULT_OTP');
+    return this.appConfig.auth.defaultOtp?.toString();
   }
 
   async sendOtp(dto: SendOtpDto): Promise<{ message: string }> {

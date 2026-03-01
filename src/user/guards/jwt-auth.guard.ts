@@ -4,15 +4,16 @@ import {
   UnauthorizedException,
 } from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
-import { ConfigService } from '@nestjs/config';
 import { JwtService } from '@nestjs/jwt';
 import { Request } from 'express';
 import { JwtPayload } from '../../shared/types/jwt-payload.type';
 
+import { AppConfigService } from '../../config/config.service';
+
 @Injectable()
 export class JwtAuthGuard extends AuthGuard('jwt') {
   constructor(
-    private readonly configService: ConfigService,
+    private readonly config: AppConfigService,
     private readonly jwtService: JwtService,
   ) {
     super();
@@ -30,8 +31,7 @@ export class JwtAuthGuard extends AuthGuard('jwt') {
 
     try {
       const payload = this.jwtService.verify<JwtPayload>(token, {
-        secret:
-          this.configService.get<string>('JWT_SECRET') || 'test-secret-key',
+        secret: this.config.auth.jwtSecret,
       });
       request.user = {
         userId: payload.sub,

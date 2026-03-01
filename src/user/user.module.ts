@@ -1,7 +1,6 @@
 import { Module } from '@nestjs/common';
 import { JwtModule } from '@nestjs/jwt';
 import { PassportModule } from '@nestjs/passport';
-import { ConfigModule, ConfigService } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { UserController } from './user.controller';
 import { UserService } from './user.service';
@@ -12,17 +11,20 @@ import { ExistingUserValidator } from './validators/existing-user.validator';
 import { ExistingUserForAuthValidator } from './validators/existing-user-for-auth.validator';
 import { JwtAuthGuard } from './guards/jwt-auth.guard';
 
+import { AppConfigModule } from '../config/config.module';
+import { AppConfigService } from '../config/config.service';
+
 @Module({
   imports: [
     PassportModule,
     TypeOrmModule.forFeature([User]),
     JwtModule.registerAsync({
-      imports: [ConfigModule],
-      useFactory: (config: ConfigService) => ({
-        secret: config.get<string>('JWT_SECRET') || 'test-secret-key',
+      imports: [AppConfigModule],
+      inject: [AppConfigService],
+      useFactory: (config: AppConfigService) => ({
+        secret: config.auth.jwtSecret,
         signOptions: { expiresIn: '7d' },
       }),
-      inject: [ConfigService],
     }),
   ],
   controllers: [UserController],

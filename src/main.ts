@@ -3,6 +3,7 @@ import { ValidationPipe } from '@nestjs/common';
 import { useContainer } from 'class-validator';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import { AppModule } from './app.module';
+import { AppConfigService } from './config/config.service';
 
 
 async function bootstrap() {
@@ -26,7 +27,8 @@ async function bootstrap() {
   const document = SwaggerModule.createDocument(app, config);
   SwaggerModule.setup('api', app, document);
 
-  const port = process.env.PORT ?? 3001;
+  const configService = app.get(AppConfigService);
+  const port = configService.app.port;
   await app.listen(port);
   console.log(`\n🚀 Application is running on: http://localhost:${port}`);
   console.log(`📖 Swagger documentation: http://localhost:${port}/api\n`);

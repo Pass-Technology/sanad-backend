@@ -6,7 +6,7 @@ import {
   ValidatorConstraintInterface,
   registerDecorator,
 } from 'class-validator';
-import { ConfigService } from '@nestjs/config';
+import { AppConfigService } from '../../config/config.service';
 import { OtpRepository } from '../otp.repository';
 import { ValidateOtpDto } from '../dto/validate-otp.dto';
 
@@ -15,8 +15,8 @@ import { ValidateOtpDto } from '../dto/validate-otp.dto';
 export class ValidOtpValidator implements ValidatorConstraintInterface {
   constructor(
     private readonly otpRepository: OtpRepository,
-    private readonly configService: ConfigService,
-  ) {}
+    private readonly config: AppConfigService,
+  ) { }
 
   async validate(otp: string, args: ValidationArguments): Promise<boolean> {
     if (!otp || typeof otp !== 'string') return false;
@@ -25,7 +25,7 @@ export class ValidOtpValidator implements ValidatorConstraintInterface {
     const identifier = dto.email ?? dto.mobile;
     if (!identifier) return false;
 
-    const defaultOtp = this.configService.get<string>('DEFAULT_OTP');
+    const defaultOtp = this.config.auth.defaultOtp?.toString();
     if (defaultOtp && otp === defaultOtp) return true;
 
     const otpRecord = await this.otpRepository.findValidOtp(identifier, otp);
