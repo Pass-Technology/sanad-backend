@@ -5,6 +5,7 @@ import {
   Post,
   UseGuards,
   Request,
+  Version,
 } from '@nestjs/common';
 import { ApiOperation, ApiTags, ApiBearerAuth } from '@nestjs/swagger';
 import { UserService } from './user.service';
@@ -18,11 +19,13 @@ import { JwtAuthGuard } from './guards/jwt-auth.guard';
 
 @ApiTags('user')
 @Controller('user')
+
 export class UserController {
-  constructor(private readonly userService: UserService) {}
+  constructor(private readonly userService: UserService) { }
 
   @Post('register')
   @ApiOperation({ summary: 'Register a new user' })
+  // @Version('2')
   async register(@Body() dto: RegisterDto): Promise<RegisterResponseDto> {
     return this.userService.register(dto);
   }
