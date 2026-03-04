@@ -12,6 +12,8 @@ import { UserService } from './user.service';
 import { RegisterDto } from './dto/register.dto';
 import { AuthDto } from './dto/auth.dto';
 import { ChangePasswordDto } from './dto/change-password.dto';
+import { ResetPasswordDto } from './dto/reset-password.dto';
+import { SendOtpDto } from '../otp/dto/send-otp.dto';
 import { RegisterResponseDto } from './dto/register-response.dto';
 import { AuthTokenResponseDto } from './dto/auth-token-response.dto';
 import { UserInfoResponseDto } from './dto/user-info-response.dto';
@@ -62,5 +64,17 @@ export class UserController {
     @Body() dto: ChangePasswordDto,
   ): Promise<{ message: string }> {
     return this.userService.changePassword(req.user.userId, dto);
+  }
+
+  @Post('forgot-password')
+  @ApiOperation({ summary: 'Request OTP for password reset' })
+  async forgotPassword(@Body() dto: SendOtpDto): Promise<{ message: string }> {
+    return this.userService.forgotPassword(dto);
+  }
+
+  @Post('reset-password')
+  @ApiOperation({ summary: 'Reset password using OTP' })
+  async resetPassword(@Body() dto: ResetPasswordDto): Promise<{ message: string }> {
+    return this.userService.resetPassword(dto);
   }
 }

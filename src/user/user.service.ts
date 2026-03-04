@@ -12,6 +12,10 @@ import { UserRegisteredEvent } from './events/user-registered.event';
 import { AppConfigService } from '../config/config.service';
 import { AuthTokenResponseDto } from './dto/auth-token-response.dto';
 import { UserIdentifierType } from './enums/user-identifier-type.enum';
+import { ResetPasswordDto } from './dto/reset-password.dto';
+import { SendOtpDto } from '../otp/dto/send-otp.dto';
+import { OtpService } from '../otp/otp.service';
+import { OtpRepository } from '../otp/otp.repository';
 
 
 @Injectable()
@@ -21,6 +25,8 @@ export class UserService {
     private readonly jwtService: JwtService,
     private readonly eventEmitter: EventEmitter2,
     private readonly config: AppConfigService,
+    private readonly otpService: OtpService,
+    private readonly otpRepository: OtpRepository,
   ) { }
 
 
@@ -170,5 +176,26 @@ export class UserService {
     await this.userRepository.updatePassword(userId, hashedPassword);
 
     return { message: 'Password changed successfully' };
+  }
+
+  async forgotPassword(dto: SendOtpDto): Promise<{ message: string }> {
+    return this.otpService.sendOtp(dto);
+  }
+
+  async resetPassword(dto: ResetPasswordDto): Promise<{ message: string }> {
+    const { identifier, password } = dto;
+
+    const user = await this.userRepository.findByIdentifier(identifier);
+    if (!user) {
+      throw new UnauthorizedException('User not found');
+    }
+
+    const hashedPassword = await bcrypt.hash(password, 10);
+    await this.userRepository.updatePassword(user.id, hashedPassword);
+
+    // Clear OTP after successful reset
+    await this.otpRepository.deleteByIdentifier(identifier);
+
+    return { message: 'Password reset successfully' };
   }
 }

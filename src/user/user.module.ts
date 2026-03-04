@@ -13,11 +13,13 @@ import { JwtAuthGuard } from './guards/jwt-auth.guard';
 
 import { AppConfigModule } from '../config/config.module';
 import { AppConfigService } from '../config/config.service';
+import { OtpModule } from '../otp/otp.module';
 
 @Module({
   imports: [
     PassportModule,
     TypeOrmModule.forFeature([User]),
+    OtpModule,
     JwtModule.registerAsync({
       imports: [AppConfigModule],
       inject: [AppConfigService],
