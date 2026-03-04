@@ -15,7 +15,9 @@ import { ChangePasswordDto } from './dto/change-password.dto';
 import { RegisterResponseDto } from './dto/register-response.dto';
 import { AuthTokenResponseDto } from './dto/auth-token-response.dto';
 import { UserInfoResponseDto } from './dto/user-info-response.dto';
+import { RefreshDto } from './dto/refresh.dto';
 import { JwtAuthGuard } from './guards/jwt-auth.guard';
+
 
 @ApiTags('user')
 @Controller('user')
@@ -35,6 +37,13 @@ export class UserController {
   async auth(@Body() dto: AuthDto): Promise<AuthTokenResponseDto> {
     return this.userService.auth(dto);
   }
+
+  @Post('refresh')
+  @ApiOperation({ summary: 'Refresh access token using refresh token' })
+  async refresh(@Body() dto: RefreshDto): Promise<AuthTokenResponseDto> {
+    return this.userService.refreshTokens(dto);
+  }
+
 
   @Get('info')
   @UseGuards(JwtAuthGuard)

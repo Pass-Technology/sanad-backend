@@ -6,8 +6,12 @@ import { UserRepository } from './user.repository';
 import { RegisterDto } from './dto/register.dto';
 import { AuthDto } from './dto/auth.dto';
 import { ChangePasswordDto } from './dto/change-password.dto';
+import { RefreshDto } from './dto/refresh.dto';
 import { USER_REGISTERED_EVENT } from './constants/events.constants';
 import { UserRegisteredEvent } from './events/user-registered.event';
+import { AppConfigService } from '../config/config.service';
+import { AuthTokenResponseDto } from './dto/auth-token-response.dto';
+
 
 @Injectable()
 export class UserService {
@@ -15,12 +19,20 @@ export class UserService {
     private readonly userRepository: UserRepository,
     private readonly jwtService: JwtService,
     private readonly eventEmitter: EventEmitter2,
+    private readonly config: AppConfigService,
   ) { }
+
 
   async register(dto: RegisterDto) {
     const identifier = dto.email ?? dto.mobile!;
+    console.log(identifier);
 
     const hashedPassword = await bcrypt.hash(dto.password, 10);
+
+    const isUserExist = await this.userRepository.findByIdentifier(identifier);
+    if (isUserExist) {
+      throw new UnauthorizedException('User already exists');
+    }
     const user = await this.userRepository.create({
       email: dto.email,
       mobile: dto.mobile,
@@ -39,21 +51,21 @@ export class UserService {
     };
   }
 
-  async markVerifiedAndGenerateToken(userId: string): Promise<string> {
+  async markVerifiedAndGenerateToken(userId: string): Promise<AuthTokenResponseDto> {
     await this.userRepository.markUserVerified(userId);
     const user = (await this.userRepository.findById(userId))!;
-    return this.generateToken(user);
+    return this.generateTokens(user);
   }
 
   async markVerifiedAndGenerateTokenByIdentifier(
     identifier: string,
-  ): Promise<string> {
+  ): Promise<AuthTokenResponseDto> {
     const user = (await this.userRepository.findByIdentifier(identifier))!;
     await this.userRepository.markUserVerified(user.id);
-    return this.generateToken(user);
+    return this.generateTokens(user);
   }
 
-  async auth(dto: AuthDto) {
+  async auth(dto: AuthDto): Promise<AuthTokenResponseDto> {
     const identifier = dto.email ?? dto.mobile!;
 
     const user = (await this.userRepository.findByIdentifier(identifier))!;
@@ -63,21 +75,79 @@ export class UserService {
       throw new UnauthorizedException('Invalid credentials');
     }
 
-    const token = this.generateToken(user);
-    return { authToken: token };
+    if (!user.isVerified) {
+      throw new UnauthorizedException('Please verify your account first');
+    }
+
+    return this.generateTokens(user);
+
   }
 
-  private generateToken(user: {
+  async refreshTokens(dto: RefreshDto): Promise<AuthTokenResponseDto> {
+    const { refreshToken } = dto;
+
+    try {
+      // Decode without verification first to get the user ID
+      const decoded = this.jwtService.decode(refreshToken) as { sub: string };
+      if (!decoded || !decoded.sub) {
+        throw new UnauthorizedException('Invalid refresh token');
+      }
+
+      const user = await this.userRepository.findById(decoded.sub);
+      if (!user || !user.refreshToken || !user.isVerified) {
+        throw new UnauthorizedException('Invalid refresh token or account not verified');
+      }
+
+
+      // Verify the refresh token with the secret
+      await this.jwtService.verifyAsync(refreshToken, {
+        secret: this.config.auth.jwtRefreshSecret,
+      });
+
+      // Compare hashed token
+      const isTokenMatch = await bcrypt.compare(refreshToken, user.refreshToken);
+      if (!isTokenMatch) {
+        throw new UnauthorizedException('Invalid refresh token');
+      }
+
+      return this.generateTokens(user);
+    } catch (e) {
+      throw new UnauthorizedException('Invalid refresh token');
+    }
+  }
+
+  private async generateTokens(user: {
     id: string;
     email?: string;
     mobile?: string;
-  }) {
-    return this.jwtService.sign({
+  }): Promise<AuthTokenResponseDto> {
+    const payload = {
       sub: user.id,
       email: user.email,
       mobile: user.mobile,
+    };
+
+    const accessToken = await this.jwtService.signAsync(payload, {
+      secret: this.config.auth.jwtSecret,
+      expiresIn: this.config.auth.accessExpiration as any,
     });
+
+    const refreshToken = await this.jwtService.signAsync(payload, {
+      secret: this.config.auth.jwtRefreshSecret,
+      expiresIn: this.config.auth.refreshExpiration as any,
+    });
+
+
+    // Hash refresh token before saving
+    const hashedRefreshToken = await bcrypt.hash(refreshToken, 10);
+    await this.userRepository.updateRefreshToken(user.id, hashedRefreshToken);
+
+    return {
+      accessToken,
+      refreshToken,
+    };
   }
+
 
   async changePassword(
     userId: string,

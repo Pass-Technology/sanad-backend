@@ -23,8 +23,10 @@ import { AppConfigService } from '../config/config.service';
       inject: [AppConfigService],
       useFactory: (config: AppConfigService) => ({
         secret: config.auth.jwtSecret,
-        signOptions: { expiresIn: '7d' },
+        signOptions: { expiresIn: config.auth.accessExpiration as any },
       }),
+
+
     }),
   ],
   controllers: [UserController],

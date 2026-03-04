@@ -1,8 +1,7 @@
-/**
- * Emitted when a user should be marked verified (e.g. after OTP validation).
- * Listener sets authToken so the emitter can return it.
- */
+import { AuthTokenResponseDto } from '../dto/auth-token-response.dto';
+
 export class UserVerificationRequestedEvent {
   identifier!: string;
-  authToken?: string;
+  tokens?: AuthTokenResponseDto;
 }
+

@@ -17,6 +17,10 @@ export class User {
     @Column({ default: false })
     isVerified: boolean;
 
+    @Column({ type: 'varchar', nullable: true })
+    refreshToken: string | null;
+
+
     @CreateDateColumn()
     createdAt: Date;
 

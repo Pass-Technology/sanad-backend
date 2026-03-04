@@ -36,8 +36,11 @@ async function bootstrap() {
 
   const configService = app.get(AppConfigService);
   const port = configService.app.port;
+
   await app.listen(port);
+
   console.log(`\n🚀 Application is running on: http://localhost:${port}/api`);
+
   console.log(`📖 Swagger documentation: http://localhost:${port}/api/docs\n`);
 }
 void bootstrap();

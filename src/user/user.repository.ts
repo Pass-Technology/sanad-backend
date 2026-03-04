@@ -70,4 +70,9 @@ export class UserRepository extends BaseRepository<User> {
     await this.repository.update(userId, { password: hashedPassword });
     return (await this.findById(userId))!;
   }
+
+  async updateRefreshToken(userId: string, refreshToken: string | null): Promise<void> {
+    await this.repository.update(userId, { refreshToken });
+  }
 }
+

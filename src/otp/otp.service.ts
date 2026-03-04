@@ -5,6 +5,8 @@ import { UserVerificationRequestedEvent } from '../user/events/user-verification
 import { OtpRepository } from './otp.repository';
 import { ValidateOtpDto } from './dto/validate-otp.dto';
 import { SendOtpDto } from './dto/send-otp.dto';
+import { AuthTokenResponseDto } from '../user/dto/auth-token-response.dto';
+
 
 import { AppConfigService } from '../config/config.service';
 
@@ -47,7 +49,7 @@ export class OtpService {
     return { otp };
   }
 
-  async validateOtp(dto: ValidateOtpDto): Promise<{ authToken: string }> {
+  async validateOtp(dto: ValidateOtpDto): Promise<AuthTokenResponseDto> {
 
     const { email, mobile, otp } = dto;
 
@@ -62,7 +64,7 @@ export class OtpService {
         USER_VERIFICATION_REQUESTED_EVENT,
         event,
       );
-      return { authToken: event.authToken! };
+      return event.tokens!;
     }
 
     const otpRecord = (await this.otpRepository.findValidOtp(
@@ -76,7 +78,7 @@ export class OtpService {
 
     await this.otpRepository.deleteById(otpRecord.id);
 
-    return { authToken: event.authToken! };
+    return event.tokens!;
   }
 
   private generateOtp(length = 5): string {

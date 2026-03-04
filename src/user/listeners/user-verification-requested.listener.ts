@@ -6,15 +6,16 @@ import { UserService } from '../user.service';
 
 @Injectable()
 export class UserVerificationRequestedListener {
-  constructor(private readonly userService: UserService) {}
+  constructor(private readonly userService: UserService) { }
 
   @OnEvent(USER_VERIFICATION_REQUESTED_EVENT)
   async handleUserVerificationRequested(
     event: UserVerificationRequestedEvent,
   ): Promise<void> {
-    event.authToken =
+    event.tokens =
       await this.userService.markVerifiedAndGenerateTokenByIdentifier(
         event.identifier,
       );
   }
+
 }
