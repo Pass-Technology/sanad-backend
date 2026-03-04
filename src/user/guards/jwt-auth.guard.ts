@@ -35,8 +35,8 @@ export class JwtAuthGuard extends AuthGuard('jwt') {
       });
       request.user = {
         userId: payload.sub,
-        email: payload.email ?? undefined,
-        mobile: payload.mobile ?? undefined,
+        identifier: payload.identifier,
+        identifierType: payload.identifierType,
       };
       return true;
     } catch {

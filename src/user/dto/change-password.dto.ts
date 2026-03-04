@@ -7,27 +7,17 @@ import {
   ValidateIf,
 } from 'class-validator';
 import { IsUserExisting } from '../validators/existing-user-for-auth.validator';
+import { IsEmailOrMobile } from '../../shared/validators/email-or-mobile.validator';
 
 export class ChangePasswordDto {
-  @ApiPropertyOptional({
-    example: 'user@example.com',
-    description: 'User email (required if mobile not provided)',
+  @ApiProperty({
+    example: 'user@example.com or +1234567890',
+    description: 'User email or mobile',
   })
-  @ValidateIf((o: ChangePasswordDto) => !o.mobile)
-  @IsNotEmpty({ message: 'Either email or mobile must be provided' })
-  @IsEmail()
-  @IsUserExisting({ field: 'email' })
-  email?: string;
-
-  @ApiPropertyOptional({
-    example: '+1234567890',
-    description: 'User mobile (required if email not provided)',
-  })
-  @ValidateIf((o: ChangePasswordDto) => !o.email)
-  @IsNotEmpty({ message: 'Either email or mobile must be provided' })
-  @IsString()
-  @IsUserExisting({ field: 'mobile' })
-  mobile?: string;
+  @IsNotEmpty({ message: 'Identifier must be provided' })
+  @IsEmailOrMobile()
+  @IsUserExisting({ field: 'identifier' })
+  identifier: string;
 
   @ApiProperty({ example: 'newpassword123', minLength: 6 })
   @IsString()

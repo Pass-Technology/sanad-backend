@@ -22,7 +22,7 @@ export class ValidOtpValidator implements ValidatorConstraintInterface {
     if (!otp || typeof otp !== 'string') return false;
 
     const dto = args.object as ValidateOtpDto;
-    const identifier = dto.email ?? dto.mobile;
+    const { identifier } = dto;
     if (!identifier) return false;
 
     const defaultOtp = this.config.auth.defaultOtp?.toString();
