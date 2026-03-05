@@ -37,16 +37,16 @@ export class Branch {
     @Column()
     city: string;
 
-    @Column({ nullable: true, default: null })
+    @Column({ type: 'varchar', nullable: true })
     branchPhone: string | null;
 
-    @Column({ nullable: true, default: null })
+    @Column({ type: 'varchar', nullable: true })
     managerPhone: string | null;
 
-    @Column({ nullable: true, default: null })
+    @Column({ type: 'varchar', nullable: true })
     googleMapsLink: string | null;
 
-    @Column({ nullable: true, default: null })
+    @Column({ type: 'varchar', nullable: true })
     socialMediaLink: string | null;
 
     @OneToMany(() => ServingArea, (area) => area.branch, {

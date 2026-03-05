@@ -26,10 +26,10 @@ export class ServingArea {
     @Column({ type: 'decimal' })
     radiusKm: number;
 
-    @Column({ nullable: true })
+    @Column({ type: 'varchar', nullable: true })
     phone: string | null;
 
-    @Column({ nullable: true })
+    @Column({ type: 'varchar', nullable: true })
     mapLink: string | null;
 
     @Column({ type: 'decimal', nullable: true })

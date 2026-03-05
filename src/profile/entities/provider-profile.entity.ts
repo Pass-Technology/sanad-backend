@@ -22,31 +22,31 @@ export class ProviderProfile {
     @Column({ type: 'uuid' })
     userId: string;
 
-    @Column({ type: 'enum', enum: ProviderType, nullable: true, default: null })
+    @Column({ type: 'enum', enum: ProviderType, nullable: true })
     providerType: ProviderType;
 
-    @Column({ type: 'enum', enum: CompanyType, nullable: true, default: null })
+    @Column({ type: 'enum', enum: CompanyType, nullable: true })
     companyType: CompanyType | null;
 
-    @Column({ nullable: true, default: null })
+    @Column({ type: 'varchar', nullable: true })
     tradeName: string;
 
-    @Column({ nullable: true, default: null })
+    @Column({ type: 'varchar', nullable: true })
     companyRepresentativeName: string | null;
 
-    @Column({ type: 'text', nullable: true, default: null })
+    @Column({ type: 'text', nullable: true })
     companyDescription: string | null;
 
-    @Column({ nullable: true, default: null })
+    @Column({ type: 'varchar', nullable: true })
     socialMediaLink: string | null;
 
-    @Column({ nullable: true, default: null })
+    @Column({ type: 'varchar', nullable: true })
     websiteLink: string | null;
 
-    @Column('simple-array', { nullable: true, default: null })
+    @Column('simple-array', { nullable: true })
     languagesSpoken: string[] | null;
 
-    @Column('simple-array', { nullable: true, default: null })
+    @Column('simple-array', { nullable: true })
     selectedServiceIds: string[];
 
     @Column({

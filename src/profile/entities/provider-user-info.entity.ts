@@ -8,7 +8,7 @@ import {
     JoinColumn,
 } from 'typeorm';
 import { ProviderProfile } from './provider-profile.entity';
-import { Numeric } from 'zod/v4/core/util.cjs';
+
 
 @Entity('provider_user_info')
 export class ProviderUserInfo {
@@ -30,13 +30,13 @@ export class ProviderUserInfo {
     @Column()
     email: string;
 
-    @Column({ nullable: true })
+    @Column({ type: 'varchar', nullable: true })
     mobileNumber: string | null;
 
     @Column()
     nationalId: string;
 
-    @Column({ nullable: true })
+    @Column({ type: 'varchar', nullable: true })
     dateOfBirth: string | null;
 
     @CreateDateColumn()
