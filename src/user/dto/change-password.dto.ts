@@ -12,15 +12,20 @@ import { IsEmailOrMobile } from '../../shared/validators/email-or-mobile.validat
 export class ChangePasswordDto {
   @ApiProperty({
     example: 'user@example.com or +1234567890',
-    description: 'User email or mobile',
+    description: 'User identifier (email or mobile)',
   })
   @IsNotEmpty({ message: 'Identifier must be provided' })
   @IsEmailOrMobile()
   @IsUserExisting({ field: 'identifier' })
   identifier: string;
 
-  @ApiProperty({ example: 'newpassword123', minLength: 6 })
+  @ApiProperty({ example: 'currentpassword123', description: 'Current password' })
   @IsString()
-  @MinLength(6, { message: 'Password must be at least 6 characters' })
+  @IsNotEmpty({ message: 'Current password is required' })
+  oldPassword: string;
+
+  @ApiProperty({ example: 'newpassword123', minLength: 6, description: 'New password' })
+  @IsString()
+  @MinLength(6, { message: 'New password must be at least 6 characters' })
   password: string;
 }

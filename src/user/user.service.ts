@@ -172,6 +172,14 @@ export class UserService {
       );
     }
 
+    const isOldPasswordValid = await bcrypt.compare(
+      dto.oldPassword,
+      authenticatedUser.password,
+    );
+    if (!isOldPasswordValid) {
+      throw new UnauthorizedException('Invalid current password');
+    }
+
     const hashedPassword = await bcrypt.hash(dto.password, 10);
     await this.userRepository.updatePassword(userId, hashedPassword);
 
