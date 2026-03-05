@@ -38,6 +38,6 @@ import { AppConfigService } from '../config/config.service';
     ExistingUserForAuthValidator,
     JwtAuthGuard,
   ],
-  exports: [UserService, UserRepository],
+  exports: [UserService, UserRepository, JwtAuthGuard, JwtModule],
 })
 export class UserModule { }

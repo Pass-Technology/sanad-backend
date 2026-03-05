@@ -7,6 +7,7 @@ import { HealthController } from './health.controller';
 
 import { AppConfigModule } from './config/config.module';
 import { AppConfigService } from './config/config.service';
+import { ProfileModule } from './profile/profile.module';
 
 @Module({
   imports: [
@@ -15,6 +16,7 @@ import { AppConfigService } from './config/config.service';
     DatabaseModule,
     UserModule,
     OtpModule,
+    ProfileModule,
   ],
   controllers: [HealthController],
 })
