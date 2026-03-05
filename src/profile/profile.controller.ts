@@ -45,7 +45,7 @@ export class ProfileController {
     }
 
     @Post('setup/step-1')
-    @ApiOperation({ summary: 'Step 1 – Submit company information' })
+    @ApiOperation({ summary: 'Step 1 - Submit company information' })
     async step1(
         @Request() req: { user: UserInfoResponseDto },
         @Body() dto: CreateCompanyInfoDto,
@@ -54,7 +54,7 @@ export class ProfileController {
     }
 
     @Post('setup/step-2')
-    @ApiOperation({ summary: 'Step 2 – Submit user personal information' })
+    @ApiOperation({ summary: 'Step 2 - Submit user personal information' })
     async step2(
         @Request() req: { user: UserInfoResponseDto },
         @Body() dto: CreateUserInfoDto,
@@ -63,7 +63,7 @@ export class ProfileController {
     }
 
     @Post('setup/step-3')
-    @ApiOperation({ summary: 'Step 3 – Submit branches and serving areas' })
+    @ApiOperation({ summary: 'Step 3 - Submit branches and serving areas' })
     async step3(
         @Request() req: { user: UserInfoResponseDto },
         @Body() dto: CreateBranchesDto,
@@ -72,7 +72,7 @@ export class ProfileController {
     }
 
     @Post('setup/step-4')
-    @ApiOperation({ summary: 'Step 4 – Submit selected services' })
+    @ApiOperation({ summary: 'Step 4 - Submit selected services' })
     async step4(
         @Request() req: { user: UserInfoResponseDto },
         @Body() dto: CreateServicesDto,
@@ -81,7 +81,7 @@ export class ProfileController {
     }
 
     @Post('setup/step-5')
-    @ApiOperation({ summary: 'Step 5 – Submit compliance documents' })
+    @ApiOperation({ summary: 'Step 5 - Submit compliance documents' })
     async step5(
         @Request() req: { user: UserInfoResponseDto },
         @Body() dto: CreateComplianceDto,
@@ -90,7 +90,7 @@ export class ProfileController {
     }
 
     @Post('setup/step-6')
-    @ApiOperation({ summary: 'Step 6 – Submit bank & payment details' })
+    @ApiOperation({ summary: 'Step 6 - Submit bank & payment details' })
     async step6(
         @Request() req: { user: UserInfoResponseDto },
         @Body() dto: CreatePaymentDto,
@@ -99,7 +99,7 @@ export class ProfileController {
     }
 
     @Post('setup/step-7')
-    @ApiOperation({ summary: 'Step 7 – Submit subscription & finalize profile' })
+    @ApiOperation({ summary: 'Step 7 - Submit subscription & finalize profile' })
     async step7(
         @Request() req: { user: UserInfoResponseDto },
         @Body() dto: CreateSubscriptionDto,

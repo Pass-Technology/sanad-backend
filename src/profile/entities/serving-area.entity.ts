@@ -27,16 +27,16 @@ export class ServingArea {
     radiusKm: number;
 
     @Column({ nullable: true })
-    phone: string;
+    phone: string | null;
 
     @Column({ nullable: true })
-    mapLink: string;
+    mapLink: string | null;
 
     @Column({ type: 'decimal', nullable: true })
-    lat: number;
+    lat: number | null;
 
     @Column({ type: 'decimal', nullable: true })
-    lng: number;
+    lng: number | null;
 
     @CreateDateColumn()
     createdAt: Date;

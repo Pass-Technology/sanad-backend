@@ -38,16 +38,16 @@ export class Branch {
     city: string;
 
     @Column({ nullable: true, default: null })
-    branchPhone: string;
+    branchPhone: string | null;
 
     @Column({ nullable: true, default: null })
-    managerPhone: string;
+    managerPhone: string | null;
 
     @Column({ nullable: true, default: null })
-    googleMapsLink: string;
+    googleMapsLink: string | null;
 
     @Column({ nullable: true, default: null })
-    socialMediaLink: string;
+    socialMediaLink: string | null;
 
     @OneToMany(() => ServingArea, (area) => area.branch, {
         cascade: true,

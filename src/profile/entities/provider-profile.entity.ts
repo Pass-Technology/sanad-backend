@@ -26,25 +26,25 @@ export class ProviderProfile {
     providerType: ProviderType;
 
     @Column({ type: 'enum', enum: CompanyType, nullable: true, default: null })
-    companyType: CompanyType;
+    companyType: CompanyType | null;
 
     @Column({ nullable: true, default: null })
     tradeName: string;
 
     @Column({ nullable: true, default: null })
-    companyRepresentativeName: string;
+    companyRepresentativeName: string | null;
 
     @Column({ type: 'text', nullable: true, default: null })
-    companyDescription: string;
+    companyDescription: string | null;
 
     @Column({ nullable: true, default: null })
-    socialMediaLink: string;
+    socialMediaLink: string | null;
 
     @Column({ nullable: true, default: null })
-    websiteLink: string;
+    websiteLink: string | null;
 
     @Column('simple-array', { nullable: true, default: null })
-    languagesSpoken: string[];
+    languagesSpoken: string[] | null;
 
     @Column('simple-array', { nullable: true, default: null })
     selectedServiceIds: string[];

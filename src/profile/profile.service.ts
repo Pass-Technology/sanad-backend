@@ -2,6 +2,7 @@ import {
     Injectable,
     NotFoundException,
     ForbiddenException,
+    BadRequestException,
 } from '@nestjs/common';
 import { DataSource } from 'typeorm';
 import { ProfileRepository } from './profile.repository';
@@ -28,26 +29,35 @@ import { StepResponseDto, ProgressResponseDto } from './dto/profile-response.dto
 @Injectable()
 export class ProfileService {
     constructor(
-        private readonly profileRepository: ProfileRepository,
+        private readonly profileRepo: ProfileRepository,
         private readonly dataSource: DataSource,
     ) { }
 
 
 
     /**
-     * Get an existing profile or create a new draft for this user.
+     * 
+     * @param userId 
+     * @returns get the profile or create a new one if it doesn't exist
      */
     private async getOrCreateProfile(userId: string): Promise<ProviderProfile> {
-        const existing = await this.profileRepository.findProfileByUserId(userId);
+        const existing = await this.profileRepo.findProfileByUserId(userId);
         if (existing) return existing;
 
-        return this.profileRepository.createProfile({
+        return this.profileRepo.createProfile({
             userId,
             status: ProfileStatus.DRAFT,
             currentStep: 1,
         });
     }
 
+    /**
+     * 
+     * @param stepLabel 
+     * @param profile 
+     * @param data 
+     * @returns a message response of the step
+     */
     private buildStepResponse(
         stepLabel: string,
         profile: ProviderProfile,
@@ -62,7 +72,11 @@ export class ProfileService {
     }
 
     /**
-     * Advance currentStep only if the user hasn't already passed this step.
+     * 
+     * @param profileId 
+     * @param completedStep 
+     * @param currentStep 
+     * @returns Advance currentStep only if the user hasn't already passed this step.
      */
     private async advanceStep(
         profileId: string,
@@ -71,11 +85,11 @@ export class ProfileService {
     ): Promise<ProviderProfile> {
         const nextStep = completedStep + 1;
         if (currentStep <= completedStep) {
-            return this.profileRepository.updateProfile(profileId, {
+            return await this.profileRepo.updateProfile(profileId, {
                 currentStep: Math.min(nextStep, 8),
             });
         }
-        return this.profileRepository.updateProfile(profileId, {});
+        return await this.profileRepo.updateProfile(profileId, {});
     }
 
 
@@ -84,16 +98,17 @@ export class ProfileService {
         dto: CreateCompanyInfoDto,
     ): Promise<StepResponseDto> {
         const profile = await this.getOrCreateProfile(userId);
+        if (!profile) throw new BadRequestException();
 
-        await this.profileRepository.updateProfile(profile.id, {
+        await this.profileRepo.updateProfile(profile.id, {
             providerType: dto.providerType,
-            // companyType: dto.companyType ?? null,
-            // tradeName: dto.tradeName,
-            // companyRepresentativeName: dto.companyRepresentativeName ?? null,
-            // companyDescription: dto.companyDescription ?? null,
-            // socialMediaLink: dto.socialMediaLink ?? null,
-            // websiteLink: dto.websiteLink ?? null,
-            // languagesSpoken: dto.languagesSpoken ?? null,
+            companyType: dto.companyType ?? null,
+            tradeName: dto.tradeName,
+            companyRepresentativeName: dto.companyRepresentativeName ?? null,
+            companyDescription: dto.companyDescription ?? null,
+            socialMediaLink: dto.socialMediaLink ?? null,
+            websiteLink: dto.websiteLink ?? null,
+            languagesSpoken: dto.languagesSpoken ?? null,
         });
 
         const updated = await this.advanceStep(profile.id, 1, profile.currentStep);
@@ -107,13 +122,13 @@ export class ProfileService {
     ): Promise<StepResponseDto> {
         const profile = await this.getOrCreateProfile(userId);
 
-        await this.profileRepository.saveUserInfo({
+        await this.profileRepo.saveUserInfo({
             providerProfileId: profile.id,
             fullName: dto.fullName,
             email: dto.email,
-            // mobileNumber: dto.mobileNumber ?? null,
+            mobileNumber: dto.mobileNumber ?? null,
             nationalId: dto.nationalId,
-            // dateOfBirth: dto.dateOfBirth ?? null,
+            dateOfBirth: dto.dateOfBirth ?? null,
         });
 
         const updated = await this.advanceStep(profile.id, 2, profile.currentStep);
@@ -128,37 +143,37 @@ export class ProfileService {
         const profile = await this.getOrCreateProfile(userId);
 
         // Clear existing branches and re-create
-        await this.profileRepository.deleteBranchesByProfileId(profile.id);
+        await this.profileRepo.deleteBranchesByProfileId(profile.id);
 
         for (const branchDto of dto.branches) {
-            const branch = await this.profileRepository.saveBranch({
+            const branch = await this.profileRepo.saveBranch({
                 providerProfileId: profile.id,
                 branchName: branchDto.branchName,
                 branchManagerName: branchDto.branchManagerName,
                 branchAddress: branchDto.branchAddress,
                 city: branchDto.city,
-                // branchPhone: branchDto.branchPhone ?? null,
-                // managerPhone: branchDto.managerPhone ?? null,
-                // googleMapsLink: branchDto.googleMapsLink ?? null,
-                // socialMediaLink: branchDto.socialMediaLink ?? null,
+                branchPhone: branchDto.branchPhone ?? null,
+                managerPhone: branchDto.managerPhone ?? null,
+                googleMapsLink: branchDto.googleMapsLink ?? null,
+                socialMediaLink: branchDto.socialMediaLink ?? null,
             });
 
             if (branchDto.servingAreas?.length) {
-                await this.profileRepository.saveServingAreas(
+                await this.profileRepo.saveServingAreas(
                     branchDto.servingAreas.map((area) => ({
                         branchId: branch.id,
                         radiusKm: area.radiusKm,
-                        // phone: area.phone ?? null,
-                        // mapLink: area.mapLink ?? null,
-                        // lat: area.lat ?? null,
-                        // lng: area.lng ?? null,
+                        phone: area.phone ?? null,
+                        mapLink: area.mapLink ?? null,
+                        lat: area.lat ?? null,
+                        lng: area.lng ?? null,
                     })),
                 );
             }
         }
 
         const updated = await this.advanceStep(profile.id, 3, profile.currentStep);
-        const branches = await this.profileRepository.findBranchesByProfileId(profile.id);
+        const branches = await this.profileRepo.findBranchesByProfileId(profile.id);
         return this.buildStepResponse('Step 3 (Branches)', updated, branches);
     }
 
@@ -169,7 +184,7 @@ export class ProfileService {
     ): Promise<StepResponseDto> {
         const profile = await this.getOrCreateProfile(userId);
 
-        await this.profileRepository.updateProfile(profile.id, {
+        await this.profileRepo.updateProfile(profile.id, {
             selectedServiceIds: dto.selectedServiceIds,
         });
 
@@ -184,7 +199,7 @@ export class ProfileService {
     ): Promise<StepResponseDto> {
         const profile = await this.getOrCreateProfile(userId);
 
-        const compliance = await this.profileRepository.saveCompliance({
+        const compliance = await this.profileRepo.saveCompliance({
             providerProfileId: profile.id,
             ownerIdFile: dto.ownerIdFile,
             ownerIdExpiryDate: dto.ownerIdExpiryDate,
@@ -203,7 +218,7 @@ export class ProfileService {
     ): Promise<StepResponseDto> {
         const profile = await this.getOrCreateProfile(userId);
 
-        const payment = await this.profileRepository.savePayment({
+        const payment = await this.profileRepo.savePayment({
             providerProfileId: profile.id,
             bankName: dto.bankName,
             accountHolderName: dto.accountHolderName,
@@ -223,7 +238,7 @@ export class ProfileService {
     ): Promise<StepResponseDto> {
         const profile = await this.getOrCreateProfile(userId);
 
-        const subscription = await this.profileRepository.saveSubscription({
+        const subscription = await this.profileRepo.saveSubscription({
             providerProfileId: profile.id,
             selectedPlanId: dto.selectedPlanId,
             billingCycle: dto.billingCycle,
@@ -231,7 +246,7 @@ export class ProfileService {
         });
 
 
-        const updated = await this.profileRepository.updateProfile(profile.id, {
+        const updated = await this.profileRepo.updateProfile(profile.id, {
             currentStep: 8,
             status: ProfileStatus.PENDING_REVIEW,
         });
@@ -260,13 +275,13 @@ export class ProfileService {
 
             // Step 1 — Company Info
             profile.providerType = dto.companyInfo.providerType;
-            // profile.companyType = dto.companyInfo.companyType ?? null;
-            // profile.tradeName = dto.companyInfo.tradeName;
-            // profile.companyRepresentativeName = dto.companyInfo.companyRepresentativeName ?? null;
-            // profile.companyDescription = dto.companyInfo.companyDescription ?? null;
-            // profile.socialMediaLink = dto.companyInfo.socialMediaLink ?? null;
-            // profile.websiteLink = dto.companyInfo.websiteLink ?? null;
-            // profile.languagesSpoken = dto.companyInfo.languagesSpoken ?? null;
+            profile.companyType = dto.companyInfo.companyType ?? null;
+            profile.tradeName = dto.companyInfo.tradeName;
+            profile.companyRepresentativeName = dto.companyInfo.companyRepresentativeName ?? null;
+            profile.companyDescription = dto.companyInfo.companyDescription ?? null;
+            profile.socialMediaLink = dto.companyInfo.socialMediaLink ?? null;
+            profile.websiteLink = dto.companyInfo.websiteLink ?? null;
+            profile.languagesSpoken = dto.companyInfo.languagesSpoken ?? null;
 
             // Step 4 — Services
             profile.selectedServiceIds = dto.services.selectedServiceIds;
@@ -283,12 +298,12 @@ export class ProfileService {
                 userInfo.dateOfBirth = dto.userInfo.dateOfBirth!;
             } else {
                 userInfo = manager.create(ProviderUserInfo, {
-                    // providerProfileId: profile.id,
-                    // fullName: dto.userInfo.fullName,
-                    // email: dto.userInfo.email,
-                    // mobileNumber: dto.userInfo.mobileNumber ?? null,
-                    // nationalId: dto.userInfo.nationalId,
-                    // dateOfBirth: dto.userInfo.dateOfBirth ?? null,
+                    providerProfileId: profile.id,
+                    fullName: dto.userInfo.fullName,
+                    email: dto.userInfo.email,
+                    mobileNumber: dto.userInfo.mobileNumber ?? null,
+                    nationalId: dto.userInfo.nationalId,
+                    dateOfBirth: dto.userInfo.dateOfBirth ?? null,
                 });
             }
             await manager.save(ProviderUserInfo, userInfo);
@@ -304,27 +319,27 @@ export class ProfileService {
 
             for (const branchDto of dto.branches.branches) {
                 const branch = manager.create(Branch, {
-                    // providerProfileId: profile.id,
-                    // branchName: branchDto.branchName,
-                    // branchManagerName: branchDto.branchManagerName,
-                    // branchAddress: branchDto.branchAddress,
-                    // city: branchDto.city,
-                    // branchPhone: branchDto.branchPhone ?? null,
-                    // managerPhone: branchDto.managerPhone ?? null,
-                    // googleMapsLink: branchDto.googleMapsLink ?? null,
-                    // socialMediaLink: branchDto.socialMediaLink ?? null,
+                    providerProfileId: profile.id,
+                    branchName: branchDto.branchName,
+                    branchManagerName: branchDto.branchManagerName,
+                    branchAddress: branchDto.branchAddress,
+                    city: branchDto.city,
+                    branchPhone: branchDto.branchPhone ?? null,
+                    managerPhone: branchDto.managerPhone ?? null,
+                    googleMapsLink: branchDto.googleMapsLink ?? null,
+                    socialMediaLink: branchDto.socialMediaLink ?? null,
                 });
                 const savedBranch = await manager.save(Branch, branch);
 
                 if (branchDto.servingAreas?.length) {
                     const areas = branchDto.servingAreas.map((area) =>
                         manager.create(ServingArea, {
-                            // branchId: savedBranch.id,
-                            // radiusKm: area.radiusKm,
-                            // phone: area.phone ?? null,
-                            // mapLink: area.mapLink ?? null,
-                            // lat: area.lat ?? null,
-                            // lng: area.lng ?? null,
+                            branchId: savedBranch.id,
+                            radiusKm: area.radiusKm,
+                            phone: area.phone ?? null,
+                            mapLink: area.mapLink ?? null,
+                            lat: area.lat ?? null,
+                            lng: area.lng ?? null,
                         }),
                     );
                     await manager.save(ServingArea, areas);
@@ -403,7 +418,7 @@ export class ProfileService {
 
 
     async getProgress(userId: string): Promise<ProgressResponseDto> {
-        const profile = await this.profileRepository.findProfileByUserId(userId);
+        const profile = await this.profileRepo.findProfileByUserId(userId);
 
         if (!profile) {
             return {
@@ -423,7 +438,7 @@ export class ProfileService {
 
 
     async getMyProfile(userId: string): Promise<ProviderProfile> {
-        const profile = await this.profileRepository.findProfileByUserId(userId);
+        const profile = await this.profileRepo.findProfileByUserId(userId);
         if (!profile) {
             throw new NotFoundException('Profile not found. Please start the setup process.');
         }
@@ -438,40 +453,40 @@ export class ProfileService {
         dto: CreateBranchDto,
     ): Promise<StepResponseDto> {
         const profile = await this.getOrCreateProfile(userId);
-        const branch = await this.profileRepository.findBranchById(branchId);
+        const branch = await this.profileRepo.findBranchById(branchId);
 
         if (!branch || branch.providerProfileId !== profile.id) {
             throw new NotFoundException('Branch not found');
         }
 
         // Update branch fields
-        await this.profileRepository.updateBranch(branchId, {
+        await this.profileRepo.updateBranch(branchId, {
             branchName: dto.branchName,
             branchManagerName: dto.branchManagerName,
             branchAddress: dto.branchAddress,
             city: dto.city,
-            // branchPhone: dto.branchPhone ?? null,
-            // managerPhone: dto.managerPhone ?? null,
-            // googleMapsLink: dto.googleMapsLink ?? null,
-            // socialMediaLink: dto.socialMediaLink ?? null,
+            branchPhone: dto.branchPhone ?? null,
+            managerPhone: dto.managerPhone ?? null,
+            googleMapsLink: dto.googleMapsLink ?? null,
+            socialMediaLink: dto.socialMediaLink ?? null,
         });
 
         // Replace serving areas
-        await this.profileRepository.deleteServingAreasByBranchId(branchId);
+        await this.profileRepo.deleteServingAreasByBranchId(branchId);
         if (dto.servingAreas?.length) {
-            // await this.profileRepository.saveServingAreas(
-            //     // dto.servingAreas.map((area) => ({
-            //         // branchId,
-            //         // radiusKm: area.radiusKm,
-            //         // phone: area.phone ?? null,
-            //         // mapLink: area.mapLink ?? null,
-            //         // lat: area.lat ?? null,
-            //         // lng: area.lng ?? null,
-            //     })),
-            // );
+            await this.profileRepo.saveServingAreas(
+                dto.servingAreas.map((area) => ({
+                    branchId,
+                    radiusKm: area.radiusKm,
+                    phone: area.phone ?? null,
+                    mapLink: area.mapLink ?? null,
+                    lat: area.lat ?? null,
+                    lng: area.lng ?? null,
+                })),
+            );
         }
 
-        const updatedBranch = await this.profileRepository.findBranchById(branchId);
+        const updatedBranch = await this.profileRepo.findBranchById(branchId);
         return this.buildStepResponse('Branch updated', profile, updatedBranch);
     }
 
@@ -480,14 +495,14 @@ export class ProfileService {
         branchId: string,
     ): Promise<{ message: string }> {
         const profile = await this.getOrCreateProfile(userId);
-        const branch = await this.profileRepository.findBranchById(branchId);
+        const branch = await this.profileRepo.findBranchById(branchId);
 
         if (!branch || branch.providerProfileId !== profile.id) {
             throw new NotFoundException('Branch not found');
         }
 
-        await this.profileRepository.deleteServingAreasByBranchId(branchId);
-        await this.profileRepository.deleteBranch(branchId);
+        await this.profileRepo.deleteServingAreasByBranchId(branchId);
+        await this.profileRepo.deleteBranch(branchId);
 
         return { message: 'Branch deleted successfully' };
     }
