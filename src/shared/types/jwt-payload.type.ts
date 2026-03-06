@@ -1,5 +1,7 @@
+import { UserIdentifierType } from '../../user/enums/user-identifier-type.enum';
+
 export type JwtPayload = {
   sub: string;
-  email?: string | null;
-  mobile?: string | null;
+  identifier: string;
+  identifierType: UserIdentifierType;
 };

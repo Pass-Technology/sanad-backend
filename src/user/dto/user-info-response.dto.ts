@@ -1,4 +1,5 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
+import { UserIdentifierType } from '../enums/user-identifier-type.enum';
 
 export class UserInfoResponseDto {
   @ApiProperty({
@@ -7,15 +8,15 @@ export class UserInfoResponseDto {
   })
   userId: string;
 
-  @ApiPropertyOptional({
+  @ApiProperty({
     example: 'user@example.com',
-    description: 'User email (if registered with email)',
+    description: 'User identifier (email or mobile)',
   })
-  email?: string;
+  identifier: string;
 
-  @ApiPropertyOptional({
-    example: '+201234567890',
-    description: 'User mobile (if registered with mobile)',
+  @ApiProperty({
+    enum: UserIdentifierType,
+    description: 'Type of identifier',
   })
-  mobile?: string;
+  identifierType: UserIdentifierType;
 }

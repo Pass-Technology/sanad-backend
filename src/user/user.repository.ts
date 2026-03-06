@@ -3,6 +3,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { User } from './entities/user.entity';
 import { BaseRepository } from '../shared/generics/repository.abstract';
+import { UserIdentifierType } from './enums/user-identifier-type.enum';
 
 @Injectable()
 export class UserRepository extends BaseRepository<User> {
@@ -14,8 +15,8 @@ export class UserRepository extends BaseRepository<User> {
   }
 
   async exists(where: {
-    email?: string;
-    mobile?: string;
+    identifier?: string;
+    identifierType?: UserIdentifierType;
     id?: string;
   }): Promise<boolean> {
     const user = await this.repository.findOne({ where });
@@ -23,13 +24,13 @@ export class UserRepository extends BaseRepository<User> {
   }
 
   async create(data: {
-    email?: string;
-    mobile?: string;
+    identifier: string;
+    identifierType: UserIdentifierType;
     password: string;
   }): Promise<User> {
     const user = this.repository.create({
-      email: data.email,
-      mobile: data.mobile,
+      identifier: data.identifier,
+      identifierType: data.identifierType,
       password: data.password,
     });
     return this.repository.save(user);
@@ -37,22 +38,20 @@ export class UserRepository extends BaseRepository<User> {
 
   async findByEmail(email: string): Promise<User | null> {
     return this.repository.findOne({
-      where: { email },
+      where: { identifier: email, identifierType: UserIdentifierType.EMAIL },
     });
   }
 
   async findByMobile(mobile: string): Promise<User | null> {
     return this.repository.findOne({
-      where: { mobile },
+      where: { identifier: mobile, identifierType: UserIdentifierType.MOBILE },
     });
   }
 
   async findByIdentifier(identifier: string): Promise<User | null> {
-    const isEmail = identifier.includes('@');
-    if (isEmail) {
-      return this.findByEmail(identifier);
-    }
-    return this.findByMobile(identifier);
+    return this.repository.findOne({
+      where: { identifier },
+    });
   }
 
   async markUserVerified(userId: string): Promise<User> {

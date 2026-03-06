@@ -7,30 +7,25 @@ import {
   ValidateIf,
 } from 'class-validator';
 import { IsUserExisting } from '../validators/existing-user-for-auth.validator';
+import { IsEmailOrMobile } from '../../shared/validators/email-or-mobile.validator';
 
 export class ChangePasswordDto {
-  @ApiPropertyOptional({
-    example: 'user@example.com',
-    description: 'User email (required if mobile not provided)',
+  @ApiProperty({
+    example: 'user@example.com or +1234567890',
+    description: 'User identifier (email or mobile)',
   })
-  @ValidateIf((o: ChangePasswordDto) => !o.mobile)
-  @IsNotEmpty({ message: 'Either email or mobile must be provided' })
-  @IsEmail()
-  @IsUserExisting({ field: 'email' })
-  email?: string;
+  @IsNotEmpty({ message: 'Identifier must be provided' })
+  @IsEmailOrMobile()
+  @IsUserExisting({ field: 'identifier' })
+  identifier: string;
 
-  @ApiPropertyOptional({
-    example: '+1234567890',
-    description: 'User mobile (required if email not provided)',
-  })
-  @ValidateIf((o: ChangePasswordDto) => !o.email)
-  @IsNotEmpty({ message: 'Either email or mobile must be provided' })
+  @ApiProperty({ example: 'currentpassword123', description: 'Current password' })
   @IsString()
-  @IsUserExisting({ field: 'mobile' })
-  mobile?: string;
+  @IsNotEmpty({ message: 'Current password is required' })
+  oldPassword: string;
 
-  @ApiProperty({ example: 'newpassword123', minLength: 6 })
+  @ApiProperty({ example: 'newpassword123', minLength: 6, description: 'New password' })
   @IsString()
-  @MinLength(6, { message: 'Password must be at least 6 characters' })
+  @MinLength(6, { message: 'New password must be at least 6 characters' })
   password: string;
 }

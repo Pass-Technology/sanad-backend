@@ -1,15 +1,19 @@
 import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn, UpdateDateColumn } from 'typeorm';
+import { UserIdentifierType } from '../enums/user-identifier-type.enum';
 
 @Entity('users')
 export class User {
     @PrimaryGeneratedColumn('uuid')
     id: string;
 
-    @Column({ unique: true, nullable: true })
-    email?: string;
+    @Column({ unique: true })
+    identifier: string;
 
-    @Column({ unique: true, nullable: true })
-    mobile?: string;
+    @Column({
+        type: 'enum',
+        enum: UserIdentifierType,
+    })
+    identifierType: UserIdentifierType;
 
     @Column()
     password: string;

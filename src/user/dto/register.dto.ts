@@ -7,21 +7,24 @@ import {
   ValidateIf,
 } from 'class-validator';
 import { IsUserNotExisting } from '../validators/existing-user.validator';
+import { IsEmailOrMobile } from '../../shared/validators/email-or-mobile.validator';
+import { UserIdentifierType } from '../enums/user-identifier-type.enum';
 
 export class RegisterDto {
-  @ApiPropertyOptional({ example: 'user@example.com', description: 'User email (required if mobile not provided)' })
-  @ValidateIf((o: RegisterDto) => !o.mobile)
-  @IsNotEmpty({ message: 'Either email or mobile must be provided' })
-  @IsEmail()
-  @IsUserNotExisting({ field: 'email' })
-  email?: string;
+  @ApiProperty({
+    example: 'user@example.com or +1234567890',
+    description: 'User email or mobile',
+  })
+  @IsNotEmpty({ message: 'Identifier must be provided' })
+  @IsEmailOrMobile()
+  @IsUserNotExisting({ field: 'identifier' })
+  identifier: string;
 
-  @ApiPropertyOptional({ example: '+1234567890', description: 'User mobile (required if email not provided)' })
-  @ValidateIf((o: RegisterDto) => !o.email)
-  @IsNotEmpty({ message: 'Either email or mobile must be provided' })
-  @IsString()
-  @IsUserNotExisting({ field: 'mobile' })
-  mobile?: string;
+  get identifierType(): UserIdentifierType {
+    return this.identifier.includes('@')
+      ? UserIdentifierType.EMAIL
+      : UserIdentifierType.MOBILE;
+  }
 
   @ApiProperty({ example: 'password123', minLength: 6 })
   @IsString()

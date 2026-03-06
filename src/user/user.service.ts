@@ -11,6 +11,11 @@ import { USER_REGISTERED_EVENT } from './constants/events.constants';
 import { UserRegisteredEvent } from './events/user-registered.event';
 import { AppConfigService } from '../config/config.service';
 import { AuthTokenResponseDto } from './dto/auth-token-response.dto';
+import { UserIdentifierType } from './enums/user-identifier-type.enum';
+import { ResetPasswordDto } from './dto/reset-password.dto';
+import { SendOtpDto } from '../otp/dto/send-otp.dto';
+import { OtpService } from '../otp/otp.service';
+import { OtpRepository } from '../otp/otp.repository';
 
 
 @Injectable()
@@ -20,22 +25,24 @@ export class UserService {
     private readonly jwtService: JwtService,
     private readonly eventEmitter: EventEmitter2,
     private readonly config: AppConfigService,
+    private readonly otpService: OtpService,
+    private readonly otpRepository: OtpRepository,
   ) { }
 
 
   async register(dto: RegisterDto) {
-    const identifier = dto.email ?? dto.mobile!;
+    const { identifier, password, identifierType } = dto;
     console.log(identifier);
 
-    const hashedPassword = await bcrypt.hash(dto.password, 10);
+    const hashedPassword = await bcrypt.hash(password, 10);
 
     const isUserExist = await this.userRepository.findByIdentifier(identifier);
     if (isUserExist) {
       throw new UnauthorizedException('User already exists');
     }
     const user = await this.userRepository.create({
-      email: dto.email,
-      mobile: dto.mobile,
+      identifier,
+      identifierType,
       password: hashedPassword,
     });
 
@@ -66,7 +73,7 @@ export class UserService {
   }
 
   async auth(dto: AuthDto): Promise<AuthTokenResponseDto> {
-    const identifier = dto.email ?? dto.mobile!;
+    const { identifier } = dto;
 
     const user = (await this.userRepository.findByIdentifier(identifier))!;
 
@@ -118,13 +125,13 @@ export class UserService {
 
   private async generateTokens(user: {
     id: string;
-    email?: string;
-    mobile?: string;
+    identifier: string;
+    identifierType: UserIdentifierType;
   }): Promise<AuthTokenResponseDto> {
     const payload = {
       sub: user.id,
-      email: user.email,
-      mobile: user.mobile,
+      identifier: user.identifier,
+      identifierType: user.identifierType,
     };
 
     const accessToken = await this.jwtService.signAsync(payload, {
@@ -156,19 +163,47 @@ export class UserService {
     // JWT guard already validates user exists, so this is safe
     const authenticatedUser = (await this.userRepository.findById(userId))!;
 
-    // Check if the provided email/mobile matches the authenticated user
-    const matchesEmail = dto.email && authenticatedUser.email === dto.email;
-    const matchesMobile = dto.mobile && authenticatedUser.mobile === dto.mobile;
+    // Check if the provided identifier matches the authenticated user
+    const matches = authenticatedUser.identifier === dto.identifier;
 
-    if (!matchesEmail && !matchesMobile) {
+    if (!matches) {
       throw new UnauthorizedException(
-        'Email or mobile does not match authenticated user',
+        'Identifier does not match authenticated user',
       );
+    }
+
+    const isOldPasswordValid = await bcrypt.compare(
+      dto.oldPassword,
+      authenticatedUser.password,
+    );
+    if (!isOldPasswordValid) {
+      throw new UnauthorizedException('Invalid current password');
     }
 
     const hashedPassword = await bcrypt.hash(dto.password, 10);
     await this.userRepository.updatePassword(userId, hashedPassword);
 
     return { message: 'Password changed successfully' };
+  }
+
+  async forgotPassword(dto: SendOtpDto): Promise<{ message: string }> {
+    return this.otpService.sendOtp(dto);
+  }
+
+  async resetPassword(dto: ResetPasswordDto): Promise<{ message: string }> {
+    const { identifier, password } = dto;
+
+    const user = await this.userRepository.findByIdentifier(identifier);
+    if (!user) {
+      throw new UnauthorizedException('User not found');
+    }
+
+    const hashedPassword = await bcrypt.hash(password, 10);
+    await this.userRepository.updatePassword(user.id, hashedPassword);
+
+    // Clear OTP after successful reset
+    await this.otpRepository.deleteByIdentifier(identifier);
+
+    return { message: 'Password reset successfully' };
   }
 }

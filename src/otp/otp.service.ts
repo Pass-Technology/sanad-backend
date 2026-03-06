@@ -23,7 +23,7 @@ export class OtpService {
   }
 
   async sendOtp(dto: SendOtpDto): Promise<{ message: string }> {
-    const identifier = dto.email ?? dto.mobile!;
+    const { identifier } = dto;
     await this.otpRepository.deleteByIdentifier(identifier);
     await this.createOtpRecord(identifier);
     return { message: 'OTP sent successfully' };
@@ -51,9 +51,7 @@ export class OtpService {
 
   async validateOtp(dto: ValidateOtpDto): Promise<AuthTokenResponseDto> {
 
-    const { email, mobile, otp } = dto;
-
-    const identifier = email ?? mobile!;
+    const { identifier, otp } = dto;
     const defaultOtp = this.getDefaultOtp();
 
     if (defaultOtp && otp === defaultOtp) {
