@@ -13,13 +13,13 @@ import { AppConfigService } from '../config/config.service';
                 url: config.database.url,
                 autoLoadEntities: true,
                 synchronize: false,
-                ssl: true,
+                ssl: false,
                 extra: {
                     max: 1,
                     connectionTimeoutMillis: 5000,
-                    ssl: {
-                        rejectUnauthorized: false,
-                    },
+                    // ssl: {
+                    //     rejectUnauthorized: false,
+                    // },
                 },
                 migrations: [__dirname + '/migrations/*{.ts,.js}'],
                 migrationsRun: false,

@@ -123,7 +123,7 @@ export class ProfileRepository {
     }
 
     async deleteBranch(id: string): Promise<void> {
-        await this.branchRepo.delete(id);
+        await this.branchRepo.softDelete(id);
     }
 
     async deleteServingAreasByBranchId(branchId: string): Promise<void> {
