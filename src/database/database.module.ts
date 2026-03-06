@@ -11,6 +11,11 @@ import { AppConfigService } from '../config/config.service';
             useFactory: (config: AppConfigService) => ({
                 type: 'postgres',
                 url: config.database.url,
+                host: config.database.host,
+                port: config.database.port,
+                username: config.database.username,
+                password: config.database.password,
+                database: config.database.database,
                 autoLoadEntities: true,
                 synchronize: false,
                 ssl: false,

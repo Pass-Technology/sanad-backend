@@ -31,19 +31,19 @@ export class UserController {
   @ApiOperation({ summary: 'Register a new user' })
   // @Version('2')
   async register(@Body() dto: RegisterDto): Promise<RegisterResponseDto> {
-    return this.userService.register(dto);
+    return await this.userService.register(dto);
   }
 
   @Post('auth')
   @ApiOperation({ summary: 'Authenticate with email/mobile and password' })
   async auth(@Body() dto: AuthDto): Promise<AuthTokenResponseDto> {
-    return this.userService.auth(dto);
+    return await this.userService.auth(dto);
   }
 
   @Post('refresh')
   @ApiOperation({ summary: 'Refresh access token using refresh token' })
   async refresh(@Body() dto: RefreshDto): Promise<AuthTokenResponseDto> {
-    return this.userService.refreshTokens(dto);
+    return await this.userService.refreshTokens(dto);
   }
 
 
@@ -63,18 +63,18 @@ export class UserController {
     @Request() req: { user: UserInfoResponseDto },
     @Body() dto: ChangePasswordDto,
   ): Promise<{ message: string }> {
-    return this.userService.changePassword(req.user.userId, dto);
+    return await this.userService.changePassword(req.user.userId, dto);
   }
 
   @Post('forgot-password')
   @ApiOperation({ summary: 'Request OTP for password reset' })
   async forgotPassword(@Body() dto: SendOtpDto): Promise<{ message: string }> {
-    return this.userService.forgotPassword(dto);
+    return await this.userService.forgotPassword(dto);
   }
 
   @Post('reset-password')
   @ApiOperation({ summary: 'Reset password using OTP' })
   async resetPassword(@Body() dto: ResetPasswordDto): Promise<{ message: string }> {
-    return this.userService.resetPassword(dto);
+    return await this.userService.resetPassword(dto);
   }
 }
