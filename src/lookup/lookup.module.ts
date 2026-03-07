@@ -8,6 +8,7 @@ import { LookUpService } from "./lookup.service";
 import { LookUpController } from "./lookup.controller";
 import { LookupCacheService } from "./lookup-cache.service";
 import { CacheModule } from "@nestjs/cache-manager";
+import { UserModule } from "src/user/user.module";
 
 
 @Module({
@@ -17,7 +18,7 @@ import { CacheModule } from "@nestjs/cache-manager";
         [LookUpBillingCycle,
             LookUpCompanyType,
             LookUpProfileStatus,
-            LookUpProviderType]),],
+            LookUpProviderType]), UserModule],
     exports: [LookUpService]
 })
 export class LookUpModule { }
