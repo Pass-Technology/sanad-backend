@@ -12,9 +12,9 @@ export const providerTypeSeed = [
 ];
 
 export const companyTypeSeed = [
-    { id: 'private', lable: 'Private' },
-    { id: 'government', lable: 'Government' },
-    { id: 'semi-government', lable: 'Semi-Government' },
+    { id: 'private', label: 'Private' },
+    { id: 'government', label: 'Government' },
+    { id: 'semi-government', label: 'Semi-Government' },
 ];
 
 export const billingCycleSeed = [
