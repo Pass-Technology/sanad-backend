@@ -1,9 +1,6 @@
 import {
     Entity,
-    PrimaryGeneratedColumn,
     Column,
-    CreateDateColumn,
-    UpdateDateColumn,
     OneToOne,
     OneToMany,
     ManyToOne,
@@ -17,20 +14,13 @@ import { ProviderSubscription } from './provider-subscription.entity';
 import { LookUpProfileStatus } from '../../lookup/entities/lookup-profile-status.entity';
 import { LookUpProviderType } from '../../lookup/entities/lookup-provider-type.entity';
 import { LookUpCompanyType } from '../../lookup/entities/lookup-company-type.entity';
+import { BaseEntity } from '../../shared/base-entity';
 
 @Entity('provider_profiles')
-export class ProviderProfile {
-    @PrimaryGeneratedColumn('uuid')
-    id: string;
-
+export class ProviderProfile extends BaseEntity {
     @Column({ type: 'uuid' })
     userId: string;
 
-    // @Column({ type: 'enum', enum: ProviderType, nullable: true })
-    // providerType: ProviderType;
-
-    // @Column({ type: 'enum', enum: CompanyType, nullable: true })
-    // companyType: CompanyType | null;
     @Column({ type: 'varchar', default: 'draft' })
     statusId: string;
 
@@ -38,12 +28,12 @@ export class ProviderProfile {
     @JoinColumn({ name: 'statusId' })
     status: LookUpProfileStatus;
 
-    @Column({ type: 'varchar' })
-    providerTypeId: string;
+    @Column({ type: 'varchar', nullable: true })
+    providerTypeId: string | null;
 
     @ManyToOne(() => LookUpProviderType)
     @JoinColumn({ name: 'providerTypeId' })
-    providerType: LookUpProviderType;
+    providerType: LookUpProviderType | null;
 
     @Column({ type: 'varchar', nullable: true })
     companyTypeId: string | null;
@@ -73,12 +63,6 @@ export class ProviderProfile {
     @Column('simple-array', { nullable: true })
     selectedServiceIds: string[];
 
-    // @Column({
-    //     type: 'enum',
-    //     enum: ProfileStatus,
-    //     default: ProfileStatus.DRAFT,
-    // })
-    // status: ProfileStatus;
 
     @Column({ type: 'int', default: 1 })
     currentStep: number;
@@ -113,9 +97,4 @@ export class ProviderProfile {
     })
     subscription: ProviderSubscription;
 
-    @CreateDateColumn()
-    createdAt: Date;
-
-    @UpdateDateColumn()
-    updatedAt: Date;
 }

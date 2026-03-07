@@ -1,20 +1,16 @@
 import {
     Entity,
-    PrimaryGeneratedColumn,
     Column,
-    CreateDateColumn,
-    UpdateDateColumn,
     OneToOne,
     JoinColumn,
     ManyToOne,
 } from 'typeorm';
 import { ProviderProfile } from './provider-profile.entity';
 import { LookUpBillingCycle } from '../../lookup/entities/lookup-biling-cycle.entity';
+import { BaseEntity } from '../../shared/base-entity';
 
 @Entity('provider_subscriptions')
-export class ProviderSubscription {
-    @PrimaryGeneratedColumn('uuid')
-    id: string;
+export class ProviderSubscription extends BaseEntity {
 
     @Column({ type: 'uuid' })
     providerProfileId: string;
@@ -39,10 +35,4 @@ export class ProviderSubscription {
 
     @Column({ type: 'timestamp', nullable: true })
     startDate: Date;
-
-    @CreateDateColumn()
-    createdAt: Date;
-
-    @UpdateDateColumn()
-    updatedAt: Date;
 }

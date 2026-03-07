@@ -1,18 +1,14 @@
 import {
     Entity,
-    PrimaryGeneratedColumn,
     Column,
-    CreateDateColumn,
-    UpdateDateColumn,
     OneToOne,
     JoinColumn,
 } from 'typeorm';
 import { ProviderProfile } from './provider-profile.entity';
+import { BaseEntity } from '../../shared/base-entity';
 
 @Entity('provider_payments')
-export class ProviderPayment {
-    @PrimaryGeneratedColumn('uuid')
-    id: string;
+export class ProviderPayment extends BaseEntity {
 
     @Column({ type: 'uuid' })
     providerProfileId: string;
@@ -38,9 +34,5 @@ export class ProviderPayment {
     @Column('simple-array')
     paymentMethodIds: string[];
 
-    @CreateDateColumn()
-    createdAt: Date;
 
-    @UpdateDateColumn()
-    updatedAt: Date;
 }

@@ -1,10 +1,10 @@
-import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn, UpdateDateColumn } from 'typeorm';
+import { Entity, Column } from 'typeorm';
 import { UserIdentifierType } from '../enums/user-identifier-type.enum';
+import { BaseEntity } from '../../shared/base-entity';
+
 
 @Entity('users')
-export class User {
-    @PrimaryGeneratedColumn('uuid')
-    id: string;
+export class User extends BaseEntity {
 
     @Column({ unique: true })
     identifier: string;
@@ -24,10 +24,4 @@ export class User {
     @Column({ type: 'varchar', nullable: true })
     refreshToken: string | null;
 
-
-    @CreateDateColumn()
-    createdAt: Date;
-
-    @UpdateDateColumn()
-    updatedAt: Date;
 }
