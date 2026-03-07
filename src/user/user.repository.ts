@@ -49,7 +49,7 @@ export class UserRepository extends BaseRepository<User> {
   }
 
   async findByIdentifier(identifier: string): Promise<User | null> {
-    return this.repository.findOne({
+    return await this.repository.findOne({
       where: { identifier },
     });
   }

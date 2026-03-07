@@ -12,23 +12,19 @@ import { ProviderType, CompanyType } from '../enums/profile-status.enum';
 
 export class CreateCompanyInfoDto {
     @ApiProperty({
-        enum: ProviderType,
-        example: ProviderType.INDIVIDUAL,
+        example: "INDIVIDUAL",
         description: 'Provider type: individual or company',
     })
-    @IsEnum(ProviderType)
     @IsNotEmpty()
-    providerType: ProviderType;
+    providerTypeId: string;
 
     @ApiPropertyOptional({
-        enum: CompanyType,
-        example: CompanyType.PRIVATE,
+        example: "PRIVATE",
         description: 'Required when providerType is company',
     })
-    @ValidateIf((o: CreateCompanyInfoDto) => o.providerType === ProviderType.COMPANY)
-    @IsEnum(CompanyType, { message: 'companyType must be private, government, or semi-government' })
+    @ValidateIf((o: CreateCompanyInfoDto) => o.providerTypeId === "COMPANY")
     @IsNotEmpty({ message: 'companyType is required when providerType is company' })
-    companyType?: CompanyType;
+    companyTypeId?: string;
 
     @ApiProperty({ example: 'Sanad Services LLC' })
     @IsString()
@@ -39,7 +35,7 @@ export class CreateCompanyInfoDto {
         example: 'Ahmed Ahmed',
         description: 'Required when providerType is company',
     })
-    @ValidateIf((o: CreateCompanyInfoDto) => o.providerType === ProviderType.COMPANY)
+    @ValidateIf((o: CreateCompanyInfoDto) => o.providerTypeId === ProviderType.COMPANY)
     @IsString()
     @IsNotEmpty({ message: 'companyRepresentativeName is required when providerType is company' })
     companyRepresentativeName?: string;

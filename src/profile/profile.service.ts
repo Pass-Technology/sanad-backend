@@ -25,12 +25,15 @@ import { ProviderCompliance } from './entities/provider-compliance.entity';
 import { ProviderPayment } from './entities/provider-payment.entity';
 import { ProviderSubscription } from './entities/provider-subscription.entity';
 import { StepResponseDto, ProgressResponseDto } from './dto/profile-response.dto';
+import { LookUpProfileStatus } from '../lookup/entities/lookup-profile-status.entity';
+import { LookUpService } from '../lookup/lookup.service';
 
 @Injectable()
 export class ProfileService {
     constructor(
         private readonly profileRepo: ProfileRepository,
         private readonly dataSource: DataSource,
+        private readonly lookupService: LookUpService,
     ) { }
 
 
@@ -46,7 +49,7 @@ export class ProfileService {
 
         return this.profileRepo.createProfile({
             userId,
-            status: ProfileStatus.DRAFT,
+            // statusId: 'Draft',
             currentStep: 1,
         });
     }
@@ -66,7 +69,7 @@ export class ProfileService {
         return {
             message: `${stepLabel} saved successfully`,
             currentStep: profile.currentStep,
-            status: profile.status,
+            statusId: profile.statusId,
             data,
         };
     }
@@ -97,12 +100,20 @@ export class ProfileService {
         userId: string,
         dto: CreateCompanyInfoDto,
     ): Promise<StepResponseDto> {
+        const isValidProvider = await this.lookupService.validateProviderTypeId(dto.providerTypeId);
+        if (!isValidProvider) throw new BadRequestException('Invalid provider type id');
+
+        if (dto.companyTypeId) {
+            const isValidCompany = await this.lookupService.validateCompanyTypeId(dto.companyTypeId);
+            if (!isValidCompany) throw new BadRequestException('Invalid company type id');
+        }
+
         const profile = await this.getOrCreateProfile(userId);
         if (!profile) throw new BadRequestException();
 
         await this.profileRepo.updateProfile(profile.id, {
-            providerType: dto.providerType,
-            companyType: dto.companyType ?? null,
+            providerTypeId: dto.providerTypeId,
+            companyTypeId: dto.companyTypeId ?? null,
             tradeName: dto.tradeName,
             companyRepresentativeName: dto.companyRepresentativeName ?? null,
             companyDescription: dto.companyDescription ?? null,
@@ -112,7 +123,8 @@ export class ProfileService {
         });
 
         const updated = await this.advanceStep(profile.id, 1, profile.currentStep);
-        return this.buildStepResponse('Step 1 (Company Info)', updated, dto);
+        const completeProfile = await this.profileRepo.findProfileByUserId(updated.id);
+        return this.buildStepResponse('Step 1 (Company Info)', completeProfile!, completeProfile!);
     }
 
 
@@ -241,14 +253,14 @@ export class ProfileService {
         const subscription = await this.profileRepo.saveSubscription({
             providerProfileId: profile.id,
             selectedPlanId: dto.selectedPlanId,
-            billingCycle: dto.billingCycle,
+            billingCycleId: dto.billingCycle,
             startDate: new Date(),
         });
 
 
         const updated = await this.profileRepo.updateProfile(profile.id, {
             currentStep: 8,
-            status: ProfileStatus.PENDING_REVIEW,
+            statusId: ProfileStatus.PENDING_REVIEW,
         });
 
         // TODO: Trigger admin notification event here
@@ -261,21 +273,29 @@ export class ProfileService {
         userId: string,
         dto: CreateFullProfileDto,
     ): Promise<StepResponseDto> {
+        const isValidProvider = await this.lookupService.validateProviderTypeId(dto.companyInfo.providerTypeId);
+        if (!isValidProvider) throw new BadRequestException('Invalid provider type id');
+
+        if (dto.companyInfo.companyTypeId) {
+            const isValidCompany = await this.lookupService.validateCompanyTypeId(dto.companyInfo.companyTypeId);
+            if (!isValidCompany) throw new BadRequestException('Invalid company type id');
+        }
+
         return this.dataSource.transaction(async (manager) => {
             // Get or create profile
             let profile = await manager.findOne(ProviderProfile, { where: { userId } });
             if (!profile) {
                 profile = manager.create(ProviderProfile, {
                     userId,
-                    status: ProfileStatus.DRAFT,
+                    statusId: ProfileStatus.DRAFT,
                     currentStep: 1,
                 });
                 profile = await manager.save(ProviderProfile, profile);
             }
 
             // Step 1 — Company Info
-            profile.providerType = dto.companyInfo.providerType;
-            profile.companyType = dto.companyInfo.companyType ?? null;
+            profile.providerTypeId = dto.companyInfo.providerTypeId;
+            profile.companyTypeId = dto.companyInfo.companyTypeId ?? null;
             profile.tradeName = dto.companyInfo.tradeName;
             profile.companyRepresentativeName = dto.companyInfo.companyRepresentativeName ?? null;
             profile.companyDescription = dto.companyInfo.companyDescription ?? null;
@@ -394,13 +414,13 @@ export class ProfileService {
             });
             if (subscription) {
                 subscription.selectedPlanId = dto.subscription.selectedPlanId;
-                subscription.billingCycle = dto.subscription.billingCycle;
+                subscription.billingCycleId = dto.subscription.billingCycle;
                 subscription.startDate = new Date();
             } else {
                 subscription = manager.create(ProviderSubscription, {
                     providerProfileId: profile.id,
                     selectedPlanId: dto.subscription.selectedPlanId,
-                    billingCycle: dto.subscription.billingCycle,
+                    billingCycleId: dto.subscription.billingCycle,
                     startDate: new Date(),
                 });
             }
@@ -408,10 +428,22 @@ export class ProfileService {
 
             // Finalize profile
             profile.currentStep = 8;
-            profile.status = ProfileStatus.PENDING_REVIEW;
+            profile.statusId = ProfileStatus.PENDING_REVIEW;
             const updated = await manager.save(ProviderProfile, profile);
 
-            return this.buildStepResponse('Profile submitted for review', updated, updated);
+            const completeProfile = await manager.findOne(ProviderProfile, {
+                where: { id: updated.id },
+                relations: [
+                    'userInfo',
+                    'branches',
+                    'branches.servingAreas',
+                    'compliance',
+                    'payment',
+                    'subscription',
+                ],
+            });
+
+            return this.buildStepResponse('Profile submitted for review', completeProfile!, completeProfile!);
         });
     }
 
@@ -423,14 +455,14 @@ export class ProfileService {
         if (!profile) {
             return {
                 currentStep: 1,
-                status: ProfileStatus.DRAFT,
+                statusId: ProfileStatus.DRAFT,
                 data: null,
             };
         }
 
         return {
             currentStep: profile.currentStep,
-            status: profile.status,
+            statusId: profile.statusId,
             data: profile,
         };
     }

@@ -1,0 +1,7 @@
+test/otp/otp-default.e2e-spec.ts(5,10): error TS2305: Module '"../config/e2e-context"' has no exported member 'getE2ePrisma'.
+test/otp/otp-send.e2e-spec.ts(5,10): error TS2305: Module '"../config/e2e-context"' has no exported member 'getE2ePrisma'.
+test/user/user-auth.e2e-spec.ts(5,10): error TS2305: Module '"../config/e2e-context"' has no exported member 'getE2ePrisma'.
+test/user/user-change-password.e2e-spec.ts(5,10): error TS2305: Module '"../config/e2e-context"' has no exported member 'getE2ePrisma'.
+test/user/user-info.e2e-spec.ts(5,10): error TS2305: Module '"../config/e2e-context"' has no exported member 'getE2ePrisma'.
+test/user/user-register.e2e-spec.ts(5,10): error TS2305: Module '"../config/e2e-context"' has no exported member 'getE2ePrisma'.
+test/user/user-validate-otp.e2e-spec.ts(5,10): error TS2305: Module '"../config/e2e-context"' has no exported member 'getE2ePrisma'.

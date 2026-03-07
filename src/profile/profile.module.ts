@@ -15,6 +15,7 @@ import { ProviderSubscription } from './entities/provider-subscription.entity';
 
 
 import { UserModule } from '../user/user.module';
+import { LookUpModule } from '../lookup/lookup.module';
 
 @Module({
     imports: [
@@ -28,6 +29,7 @@ import { UserModule } from '../user/user.module';
             ProviderSubscription,
         ]),
         UserModule,
+        LookUpModule,
     ],
     controllers: [ProfileController],
     providers: [ProfileService, ProfileRepository],

@@ -8,8 +8,8 @@ export class StepResponseDto {
     @ApiProperty({ example: 2 })
     currentStep: number;
 
-    @ApiProperty({ example: ProfileStatus.DRAFT })
-    status: ProfileStatus;
+    @ApiProperty({ example: "Draft" })
+    statusId: string;
 
     @ApiPropertyOptional({ description: 'Saved data for this step' })
     data?: unknown;
@@ -19,8 +19,8 @@ export class ProgressResponseDto {
     @ApiProperty({ example: 3 })
     currentStep: number;
 
-    @ApiProperty({ example: ProfileStatus.DRAFT })
-    status: ProfileStatus;
+    @ApiProperty({ example: "Draft" })
+    statusId: string;
 
     @ApiPropertyOptional({ description: 'All saved data so far' })
     data?: unknown;

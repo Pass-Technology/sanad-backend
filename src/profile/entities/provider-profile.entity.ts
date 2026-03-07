@@ -6,13 +6,17 @@ import {
     UpdateDateColumn,
     OneToOne,
     OneToMany,
+    ManyToOne,
+    JoinColumn,
 } from 'typeorm';
-import { ProviderType, CompanyType, ProfileStatus } from '../enums/profile-status.enum';
 import { ProviderUserInfo } from './provider-user-info.entity';
 import { Branch } from './branch.entity';
 import { ProviderCompliance } from './provider-compliance.entity';
 import { ProviderPayment } from './provider-payment.entity';
 import { ProviderSubscription } from './provider-subscription.entity';
+import { LookUpProfileStatus } from '../../lookup/entities/lookup-profile-status.entity';
+import { LookUpProviderType } from '../../lookup/entities/lookup-provider-type.entity';
+import { LookUpCompanyType } from '../../lookup/entities/lookup-company-type.entity';
 
 @Entity('provider_profiles')
 export class ProviderProfile {
@@ -22,11 +26,31 @@ export class ProviderProfile {
     @Column({ type: 'uuid' })
     userId: string;
 
-    @Column({ type: 'enum', enum: ProviderType, nullable: true })
-    providerType: ProviderType;
+    // @Column({ type: 'enum', enum: ProviderType, nullable: true })
+    // providerType: ProviderType;
 
-    @Column({ type: 'enum', enum: CompanyType, nullable: true })
-    companyType: CompanyType | null;
+    // @Column({ type: 'enum', enum: CompanyType, nullable: true })
+    // companyType: CompanyType | null;
+    @Column({ type: 'varchar', default: 'draft' })
+    statusId: string;
+
+    @ManyToOne(() => LookUpProfileStatus)
+    @JoinColumn({ name: 'statusId' })
+    status: LookUpProfileStatus;
+
+    @Column({ type: 'varchar' })
+    providerTypeId: string;
+
+    @ManyToOne(() => LookUpProviderType)
+    @JoinColumn({ name: 'providerTypeId' })
+    providerType: LookUpProviderType;
+
+    @Column({ type: 'varchar', nullable: true })
+    companyTypeId: string | null;
+
+    @ManyToOne(() => LookUpCompanyType)
+    @JoinColumn({ name: 'companyTypeId' })
+    companyType: LookUpCompanyType | null;
 
     @Column({ type: 'varchar', nullable: true })
     tradeName: string;
@@ -49,12 +73,12 @@ export class ProviderProfile {
     @Column('simple-array', { nullable: true })
     selectedServiceIds: string[];
 
-    @Column({
-        type: 'enum',
-        enum: ProfileStatus,
-        default: ProfileStatus.DRAFT,
-    })
-    status: ProfileStatus;
+    // @Column({
+    //     type: 'enum',
+    //     enum: ProfileStatus,
+    //     default: ProfileStatus.DRAFT,
+    // })
+    // status: ProfileStatus;
 
     @Column({ type: 'int', default: 1 })
     currentStep: number;

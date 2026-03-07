@@ -6,9 +6,10 @@ import {
     UpdateDateColumn,
     OneToOne,
     JoinColumn,
+    ManyToOne,
 } from 'typeorm';
 import { ProviderProfile } from './provider-profile.entity';
-import { BillingCycle } from '../enums/profile-status.enum';
+import { LookUpBillingCycle } from '../../lookup/entities/lookup-biling-cycle.entity';
 
 @Entity('provider_subscriptions')
 export class ProviderSubscription {
@@ -27,8 +28,14 @@ export class ProviderSubscription {
     @Column()
     selectedPlanId: string;
 
-    @Column({ type: 'enum', enum: BillingCycle })
-    billingCycle: BillingCycle;
+    // @Column({ type: 'enum', enum: BillingCycle })
+    // billingCycle: BillingCycle;
+    @Column({ type: 'varchar', default: 'monthly' })
+    billingCycleId: string;
+
+    @ManyToOne(() => LookUpBillingCycle)
+    @JoinColumn({ name: 'billingCycleId' })
+    billingCycle: LookUpBillingCycle;
 
     @Column({ type: 'timestamp', nullable: true })
     startDate: Date;
