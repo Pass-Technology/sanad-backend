@@ -69,7 +69,7 @@ export class UserService {
   ): Promise<AuthTokenResponseDto> {
     const user = (await this.userRepository.findByIdentifier(identifier))!;
     await this.userRepository.markUserVerified(user.id);
-    return this.generateTokens(user);
+    return this.generateTokens({ ...user, isVerified: true });
   }
 
   async auth(dto: AuthDto): Promise<AuthTokenResponseDto> {
@@ -129,11 +129,15 @@ export class UserService {
     id: string;
     identifier: string;
     identifierType: UserIdentifierType;
+    isVerified: boolean;
+    isProfileCompleted: boolean;
   }): Promise<AuthTokenResponseDto> {
     const payload = {
       sub: user.id,
       identifier: user.identifier,
       identifierType: user.identifierType,
+      isVerified: user.isVerified,
+      isProfileCompleted: user.isProfileCompleted,
     };
 
     const accessToken = await this.jwtService.signAsync(payload, {
