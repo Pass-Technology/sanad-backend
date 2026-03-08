@@ -31,4 +31,7 @@ export class User extends BaseEntity {
     })
     profile: ProviderProfile;
 
+    @Column({ default: false })
+    isProfileCompleted: boolean;
+
 }

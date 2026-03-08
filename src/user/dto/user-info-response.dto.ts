@@ -19,4 +19,10 @@ export class UserInfoResponseDto {
     description: 'Type of identifier',
   })
   identifierType: UserIdentifierType;
+
+  @ApiProperty({ example: false, description: 'Whether the user is verified' })
+  isVerified: boolean;
+
+  @ApiProperty({ example: false, description: 'Whether the profile is completed' })
+  isProfileCompleted: boolean;
 }

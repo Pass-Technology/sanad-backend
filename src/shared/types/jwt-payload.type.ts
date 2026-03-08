@@ -4,4 +4,6 @@ export type JwtPayload = {
   sub: string;
   identifier: string;
   identifierType: UserIdentifierType;
+  isVerified: boolean;
+  isProfileCompleted: boolean;
 };

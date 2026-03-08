@@ -48,12 +48,17 @@ export class UserController {
   }
 
 
-  @Get('info')
+  @Get('me')
   @UseGuards(JwtAuthGuard)
   @ApiBearerAuth()
   @ApiOperation({ summary: 'Get current user info from token' })
-  getInfo(@Request() req: { user: UserInfoResponseDto }): UserInfoResponseDto {
-    return req.user;
+  getInfo(@Request() req: { user: UserInfoResponseDto }) {
+    const user = req.user
+    if (user.isVerified && user.isProfileCompleted) {
+      'user is verified and profile is completed and under review'
+    }
+    console.log(user);
+    return user;
   }
 
   @Post('change-password')

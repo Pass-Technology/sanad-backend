@@ -37,6 +37,8 @@ export class JwtAuthGuard extends AuthGuard('jwt') {
         userId: payload.sub,
         identifier: payload.identifier,
         identifierType: payload.identifierType,
+        isVerified: payload.isVerified,
+        isProfileCompleted: payload.isProfileCompleted,
       };
       return true;
     } catch {

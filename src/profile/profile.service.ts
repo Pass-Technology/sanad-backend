@@ -18,6 +18,7 @@ import { ProviderPayment } from './entities/provider-payment.entity';
 import { ProviderSubscription } from './entities/provider-subscription.entity';
 import { StepResponseDto, ProgressResponseDto } from './dto/profile-response.dto';
 import { LookUpService } from '../lookup/lookup.service';
+import { User } from 'src/user/entities/user.entity';
 
 
 @Injectable()
@@ -266,6 +267,10 @@ export class ProfileService {
                     'payment',
                     'subscription',
                 ],
+            });
+
+            await manager.update(User, profile.userId, {
+                isProfileCompleted: true,
             });
 
             return this.buildStepResponse('Profile submitted for review', completeProfile!, completeProfile!);
