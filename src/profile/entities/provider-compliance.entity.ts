@@ -1,18 +1,14 @@
 import {
     Entity,
-    PrimaryGeneratedColumn,
     Column,
-    CreateDateColumn,
-    UpdateDateColumn,
     OneToOne,
     JoinColumn,
 } from 'typeorm';
 import { ProviderProfile } from './provider-profile.entity';
+import { BaseEntity } from '../../shared/base-entity';
 
 @Entity('provider_compliance')
-export class ProviderCompliance {
-    @PrimaryGeneratedColumn('uuid')
-    id: string;
+export class ProviderCompliance extends BaseEntity {
 
     @Column({ type: 'uuid' })
     providerProfileId: string;
@@ -35,9 +31,5 @@ export class ProviderCompliance {
     @Column()
     tradeLicenseExpiryDate: string;
 
-    @CreateDateColumn()
-    createdAt: Date;
 
-    @UpdateDateColumn()
-    updatedAt: Date;
 }

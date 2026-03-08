@@ -1,20 +1,16 @@
 import {
     Entity,
-    PrimaryGeneratedColumn,
     Column,
-    CreateDateColumn,
-    UpdateDateColumn,
     ManyToOne,
     OneToMany,
     JoinColumn,
 } from 'typeorm';
 import { ProviderProfile } from './provider-profile.entity';
 import { ServingArea } from './serving-area.entity';
+import { BaseEntity } from '../../shared/base-entity';
 
 @Entity('branches')
-export class Branch {
-    @PrimaryGeneratedColumn('uuid')
-    id: string;
+export class Branch extends BaseEntity {
 
     @Column({ type: 'uuid' })
     providerProfileId: string;
@@ -55,9 +51,4 @@ export class Branch {
     })
     servingAreas: ServingArea[];
 
-    @CreateDateColumn()
-    createdAt: Date;
-
-    @UpdateDateColumn()
-    updatedAt: Date;
 }

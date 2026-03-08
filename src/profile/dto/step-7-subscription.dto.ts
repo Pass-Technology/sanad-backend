@@ -1,6 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsEnum, IsNotEmpty, IsString } from 'class-validator';
-import { BillingCycle } from '../enums/profile-status.enum';
+import { IsNotEmpty, IsString } from 'class-validator';
 
 export class CreateSubscriptionDto {
     @ApiProperty({ example: 'plan-uuid-1' })
@@ -9,11 +8,10 @@ export class CreateSubscriptionDto {
     selectedPlanId: string;
 
     @ApiProperty({
-        enum: BillingCycle,
-        example: BillingCycle.MONTHLY,
-        description: 'Billing cycle: monthly, 3months, 6months, yearly',
+        example: 'monthly',
+        description: 'Billing cycle lookup id: monthly, 3months, 6months, yearly',
     })
-    @IsEnum(BillingCycle)
+    @IsString()
     @IsNotEmpty()
-    billingCycle: BillingCycle;
+    billingCycleId: string;
 }

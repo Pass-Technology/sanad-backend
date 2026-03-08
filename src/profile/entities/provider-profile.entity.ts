@@ -1,9 +1,6 @@
 import {
     Entity,
-    PrimaryGeneratedColumn,
     Column,
-    CreateDateColumn,
-    UpdateDateColumn,
     OneToOne,
     OneToMany,
     ManyToOne,
@@ -17,38 +14,32 @@ import { ProviderSubscription } from './provider-subscription.entity';
 import { LookUpProfileStatus } from '../../lookup/entities/lookup-profile-status.entity';
 import { LookUpProviderType } from '../../lookup/entities/lookup-provider-type.entity';
 import { LookUpCompanyType } from '../../lookup/entities/lookup-company-type.entity';
+import { BaseEntity } from '../../shared/base-entity';
+import { User } from '../../user/entities/user.entity';
 
 @Entity('provider_profiles')
-export class ProviderProfile {
-    @PrimaryGeneratedColumn('uuid')
-    id: string;
-
+export class ProviderProfile extends BaseEntity {
     @Column({ type: 'uuid' })
     userId: string;
 
-    // @Column({ type: 'enum', enum: ProviderType, nullable: true })
-    // providerType: ProviderType;
-
-    // @Column({ type: 'enum', enum: CompanyType, nullable: true })
-    // companyType: CompanyType | null;
     @Column({ type: 'varchar', default: 'draft' })
     statusId: string;
 
-    @ManyToOne(() => LookUpProfileStatus)
+    @ManyToOne(() => LookUpProfileStatus, { onDelete: 'CASCADE' })
     @JoinColumn({ name: 'statusId' })
     status: LookUpProfileStatus;
 
-    @Column({ type: 'varchar' })
-    providerTypeId: string;
+    @Column({ type: 'varchar', nullable: true })
+    providerTypeId: string | null;
 
-    @ManyToOne(() => LookUpProviderType)
+    @ManyToOne(() => LookUpProviderType, { onDelete: 'CASCADE' })
     @JoinColumn({ name: 'providerTypeId' })
-    providerType: LookUpProviderType;
+    providerType: LookUpProviderType | null;
 
     @Column({ type: 'varchar', nullable: true })
     companyTypeId: string | null;
 
-    @ManyToOne(() => LookUpCompanyType)
+    @ManyToOne(() => LookUpCompanyType, { onDelete: 'CASCADE' })
     @JoinColumn({ name: 'companyTypeId' })
     companyType: LookUpCompanyType | null;
 
@@ -73,49 +64,41 @@ export class ProviderProfile {
     @Column('simple-array', { nullable: true })
     selectedServiceIds: string[];
 
-    // @Column({
-    //     type: 'enum',
-    //     enum: ProfileStatus,
-    //     default: ProfileStatus.DRAFT,
-    // })
-    // status: ProfileStatus;
 
     @Column({ type: 'int', default: 1 })
     currentStep: number;
 
     @OneToOne(() => ProviderUserInfo, (info) => info.providerProfile, {
-        cascade: true,
         eager: true,
     })
     userInfo: ProviderUserInfo;
 
     @OneToMany(() => Branch, (branch) => branch.providerProfile, {
-        cascade: true,
+        onDelete: 'CASCADE',
         eager: true,
     })
     branches: Branch[];
 
     @OneToOne(() => ProviderCompliance, (c) => c.providerProfile, {
-        cascade: true,
+        onDelete: 'CASCADE',
         eager: true,
     })
     compliance: ProviderCompliance;
 
     @OneToOne(() => ProviderPayment, (p) => p.providerProfile, {
-        cascade: true,
+        onDelete: 'CASCADE',
         eager: true,
     })
     payment: ProviderPayment;
 
     @OneToOne(() => ProviderSubscription, (s) => s.providerProfile, {
-        cascade: true,
+        onDelete: 'CASCADE',
         eager: true,
     })
     subscription: ProviderSubscription;
 
-    @CreateDateColumn()
-    createdAt: Date;
+    @ManyToOne(() => User, (user) => user.profile, { onDelete: 'CASCADE' })
+    @JoinColumn({ name: 'userId' })
+    user: User;
 
-    @UpdateDateColumn()
-    updatedAt: Date;
 }

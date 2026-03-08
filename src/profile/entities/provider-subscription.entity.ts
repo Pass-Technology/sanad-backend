@@ -1,20 +1,16 @@
 import {
     Entity,
-    PrimaryGeneratedColumn,
     Column,
-    CreateDateColumn,
-    UpdateDateColumn,
     OneToOne,
     JoinColumn,
     ManyToOne,
 } from 'typeorm';
 import { ProviderProfile } from './provider-profile.entity';
 import { LookUpBillingCycle } from '../../lookup/entities/lookup-biling-cycle.entity';
+import { BaseEntity } from '../../shared/base-entity';
 
 @Entity('provider_subscriptions')
-export class ProviderSubscription {
-    @PrimaryGeneratedColumn('uuid')
-    id: string;
+export class ProviderSubscription extends BaseEntity {
 
     @Column({ type: 'uuid' })
     providerProfileId: string;
@@ -28,21 +24,14 @@ export class ProviderSubscription {
     @Column()
     selectedPlanId: string;
 
-    // @Column({ type: 'enum', enum: BillingCycle })
-    // billingCycle: BillingCycle;
+
     @Column({ type: 'varchar', default: 'monthly' })
     billingCycleId: string;
 
-    @ManyToOne(() => LookUpBillingCycle)
+    @ManyToOne(() => LookUpBillingCycle, { onDelete: 'CASCADE' })
     @JoinColumn({ name: 'billingCycleId' })
     billingCycle: LookUpBillingCycle;
 
     @Column({ type: 'timestamp', nullable: true })
     startDate: Date;
-
-    @CreateDateColumn()
-    createdAt: Date;
-
-    @UpdateDateColumn()
-    updatedAt: Date;
 }

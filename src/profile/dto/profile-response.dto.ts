@@ -1,5 +1,5 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
-import { ProfileStatus } from '../enums/profile-status.enum';
+
 
 export class StepResponseDto {
     @ApiProperty({ example: 'step-1' })

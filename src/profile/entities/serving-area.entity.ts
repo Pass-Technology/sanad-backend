@@ -1,18 +1,14 @@
 import {
     Entity,
-    PrimaryGeneratedColumn,
     Column,
-    CreateDateColumn,
-    UpdateDateColumn,
     ManyToOne,
     JoinColumn,
 } from 'typeorm';
 import { Branch } from './branch.entity';
+import { BaseEntity } from '../../shared/base-entity';
 
 @Entity('serving_areas')
-export class ServingArea {
-    @PrimaryGeneratedColumn('uuid')
-    id: string;
+export class ServingArea extends BaseEntity {
 
     @Column({ type: 'uuid' })
     branchId: string;
@@ -38,9 +34,4 @@ export class ServingArea {
     @Column({ type: 'decimal', nullable: true })
     lng: number | null;
 
-    @CreateDateColumn()
-    createdAt: Date;
-
-    @UpdateDateColumn()
-    updatedAt: Date;
 }

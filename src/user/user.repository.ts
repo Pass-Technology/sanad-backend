@@ -73,5 +73,9 @@ export class UserRepository extends BaseRepository<User> {
   async updateRefreshToken(userId: string, refreshToken: string | null): Promise<void> {
     await this.repository.update(userId, { refreshToken });
   }
+
+  async softDelete(userId: string): Promise<void> {
+    await this.repository.softDelete(userId);
+  }
 }
 

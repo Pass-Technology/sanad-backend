@@ -5,7 +5,8 @@ import {
   Post,
   UseGuards,
   Request,
-  Version,
+  Delete,
+  Param,
 } from '@nestjs/common';
 import { ApiOperation, ApiTags, ApiBearerAuth } from '@nestjs/swagger';
 import { UserService } from './user.service';
@@ -76,5 +77,13 @@ export class UserController {
   @ApiOperation({ summary: 'Reset password using OTP' })
   async resetPassword(@Body() dto: ResetPasswordDto): Promise<{ message: string }> {
     return await this.userService.resetPassword(dto);
+  }
+
+  @Delete('delete:id')
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth()
+  @ApiOperation({ summary: 'Delete user (requires authentication)' })
+  async delete(@Param('id') id: string): Promise<{ message: string }> {
+    return await this.userService.delete(id);
   }
 }

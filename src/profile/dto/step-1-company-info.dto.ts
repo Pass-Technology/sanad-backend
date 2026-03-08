@@ -1,6 +1,5 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import {
-    IsEnum,
     IsNotEmpty,
     IsOptional,
     IsString,
@@ -8,18 +7,17 @@ import {
     IsArray,
     ValidateIf,
 } from 'class-validator';
-import { ProviderType, CompanyType } from '../enums/profile-status.enum';
 
 export class CreateCompanyInfoDto {
     @ApiProperty({
-        example: "INDIVIDUAL",
+        example: "individual",
         description: 'Provider type: individual or company',
     })
     @IsNotEmpty()
     providerTypeId: string;
 
     @ApiPropertyOptional({
-        example: "PRIVATE",
+        example: "private",
         description: 'Required when providerType is company',
     })
     @ValidateIf((o: CreateCompanyInfoDto) => o.providerTypeId === "COMPANY")
@@ -35,7 +33,7 @@ export class CreateCompanyInfoDto {
         example: 'Ahmed Ahmed',
         description: 'Required when providerType is company',
     })
-    @ValidateIf((o: CreateCompanyInfoDto) => o.providerTypeId === ProviderType.COMPANY)
+    @ValidateIf((o: CreateCompanyInfoDto) => o.providerTypeId === "COMPANY")
     @IsString()
     @IsNotEmpty({ message: 'companyRepresentativeName is required when providerType is company' })
     companyRepresentativeName?: string;

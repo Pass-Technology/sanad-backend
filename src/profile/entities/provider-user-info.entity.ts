@@ -1,19 +1,15 @@
 import {
     Entity,
-    PrimaryGeneratedColumn,
     Column,
-    CreateDateColumn,
-    UpdateDateColumn,
     OneToOne,
     JoinColumn,
 } from 'typeorm';
 import { ProviderProfile } from './provider-profile.entity';
+import { BaseEntity } from '../../shared/base-entity';
 
 
 @Entity('provider_user_info')
-export class ProviderUserInfo {
-    @PrimaryGeneratedColumn('uuid')
-    id: string;
+export class ProviderUserInfo extends BaseEntity {
 
     @Column({ type: 'uuid' })
     providerProfileId: string;
@@ -39,9 +35,4 @@ export class ProviderUserInfo {
     @Column({ type: 'varchar', nullable: true })
     dateOfBirth: string | null;
 
-    @CreateDateColumn()
-    createdAt: Date;
-
-    @UpdateDateColumn()
-    updatedAt: Date;
 }
