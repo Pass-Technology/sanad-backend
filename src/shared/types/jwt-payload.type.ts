@@ -1,4 +1,4 @@
-import { UserIdentifierType } from '../../user/enums/user-identifier-type.enum';
+import { UserIdentifierType } from '../../modules/user/enums/user-identifier-type.enum';
 
 export type JwtPayload = {
   sub: string;
