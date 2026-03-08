@@ -1,6 +1,7 @@
-import { Entity, Column } from 'typeorm';
+import { Entity, Column, OneToOne } from 'typeorm';
 import { UserIdentifierType } from '../enums/user-identifier-type.enum';
 import { BaseEntity } from '../../shared/base-entity';
+import { ProviderProfile } from '../../profile/entities/provider-profile.entity';
 
 
 @Entity('users')
@@ -23,5 +24,11 @@ export class User extends BaseEntity {
 
     @Column({ type: 'varchar', nullable: true })
     refreshToken: string | null;
+
+    @OneToOne(() => ProviderProfile, (profile) => profile.user, {
+        nullable: true,
+        eager: false,
+    })
+    profile: ProviderProfile;
 
 }

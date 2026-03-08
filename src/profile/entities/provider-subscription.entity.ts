@@ -24,12 +24,11 @@ export class ProviderSubscription extends BaseEntity {
     @Column()
     selectedPlanId: string;
 
-    // @Column({ type: 'enum', enum: BillingCycle })
-    // billingCycle: BillingCycle;
+
     @Column({ type: 'varchar', default: 'monthly' })
     billingCycleId: string;
 
-    @ManyToOne(() => LookUpBillingCycle)
+    @ManyToOne(() => LookUpBillingCycle, { onDelete: 'CASCADE' })
     @JoinColumn({ name: 'billingCycleId' })
     billingCycle: LookUpBillingCycle;
 

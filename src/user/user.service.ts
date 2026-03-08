@@ -208,4 +208,16 @@ export class UserService {
 
     return { message: 'Password reset successfully' };
   }
+
+  async delete(userId: string): Promise<{ message: string }> {
+    const user = await this.userRepository.findById(userId);
+    if (!user) {
+      throw new UnauthorizedException('User not found');
+    }
+    if (user?.deletedAt) {
+      user.deletedAt == null;
+    }
+    await this.userRepository.softDelete(userId);
+    return { message: 'User deleted successfully' };
+  }
 }

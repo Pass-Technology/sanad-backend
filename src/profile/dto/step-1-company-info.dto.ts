@@ -10,14 +10,14 @@ import {
 
 export class CreateCompanyInfoDto {
     @ApiProperty({
-        example: "INDIVIDUAL",
+        example: "individual",
         description: 'Provider type: individual or company',
     })
     @IsNotEmpty()
     providerTypeId: string;
 
     @ApiPropertyOptional({
-        example: "PRIVATE",
+        example: "private",
         description: 'Required when providerType is company',
     })
     @ValidateIf((o: CreateCompanyInfoDto) => o.providerTypeId === "COMPANY")
