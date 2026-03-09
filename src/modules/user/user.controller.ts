@@ -8,7 +8,13 @@ import {
   Delete,
   Param,
 } from '@nestjs/common';
-import { ApiOperation, ApiTags, ApiBearerAuth } from '@nestjs/swagger';
+import {
+  ApiOperation,
+  ApiTags,
+  ApiBearerAuth,
+  ApiUnauthorizedResponse,
+  ApiForbiddenResponse,
+} from '@nestjs/swagger';
 import { UserService } from './user.service';
 import { RegisterDto } from './dto/register.dto';
 import { AuthDto } from './dto/auth.dto';
@@ -37,12 +43,16 @@ export class UserController {
 
   @Post('auth')
   @ApiOperation({ summary: 'Authenticate with email/mobile and password' })
+  @ApiUnauthorizedResponse({ description: 'Invalid credentials or user not found' })
+  @ApiForbiddenResponse({ description: 'Please verify your account first' })
   async auth(@Body() dto: AuthDto): Promise<AuthTokenResponseDto> {
     return await this.userService.auth(dto);
   }
 
   @Post('refresh')
   @ApiOperation({ summary: 'Refresh access token using refresh token' })
+  @ApiUnauthorizedResponse({ description: 'Invalid refresh token' })
+  @ApiForbiddenResponse({ description: 'Please verify your account first' })
   async refresh(@Body() dto: RefreshDto): Promise<AuthTokenResponseDto> {
     return await this.userService.refreshTokens(dto);
   }
@@ -57,7 +67,7 @@ export class UserController {
     if (user.isVerified && user.isProfileCompleted) {
       'user is verified and profile is completed and under review'
     }
-    console.log(user);
+    // console.log(user);
     return user;
   }
 

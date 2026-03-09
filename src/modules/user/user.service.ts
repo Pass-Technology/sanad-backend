@@ -1,4 +1,4 @@
-import { Injectable, UnauthorizedException } from '@nestjs/common';
+import { Injectable, UnauthorizedException, ForbiddenException } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { EventEmitter2 } from '@nestjs/event-emitter';
 import * as bcrypt from 'bcrypt';
@@ -85,7 +85,7 @@ export class UserService {
     }
 
     if (!user.isVerified) {
-      throw new UnauthorizedException('Please verify your account first');
+      throw new ForbiddenException('Please verify your account first');
     }
 
     return this.generateTokens(user);
@@ -103,8 +103,12 @@ export class UserService {
       }
 
       const user = await this.userRepository.findById(decoded.sub);
-      if (!user || !user.refreshToken || !user.isVerified) {
-        throw new UnauthorizedException('Invalid refresh token or account not verified');
+      if (!user || !user.refreshToken) {
+        throw new UnauthorizedException('Invalid refresh token');
+      }
+
+      if (!user.isVerified) {
+        throw new ForbiddenException('Please verify your account first');
       }
 
 
