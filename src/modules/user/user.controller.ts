@@ -4,10 +4,10 @@ import {
   Get,
   Post,
   UseGuards,
-  Request,
   Delete,
   Param,
 } from '@nestjs/common';
+import { CurrentUser } from '../../shared/decorators/current-user.decorator';
 import {
   ApiOperation,
   ApiTags,
@@ -62,13 +62,10 @@ export class UserController {
   @UseGuards(JwtAuthGuard)
   @ApiBearerAuth()
   @ApiOperation({ summary: 'Get current user info from token' })
-  getInfo(@Request() req: { user: UserInfoResponseDto }) {
-    const user = req.user
-    if (user.isVerified && user.isProfileCompleted) {
-      'user is verified and profile is completed and under review'
-    }
-    // console.log(user);
-    return user;
+  getInfo(@CurrentUser() user: UserInfoResponseDto) {
+    return this.userService.getMe(user)
+
+
   }
 
   @Post('change-password')
@@ -76,10 +73,10 @@ export class UserController {
   @ApiBearerAuth()
   @ApiOperation({ summary: 'Change user password (requires authentication)' })
   async changePassword(
-    @Request() req: { user: UserInfoResponseDto },
+    @CurrentUser() user: UserInfoResponseDto,
     @Body() dto: ChangePasswordDto,
   ): Promise<{ message: string }> {
-    return await this.userService.changePassword(req.user.userId, dto);
+    return await this.userService.changePassword(user.userId, dto);
   }
 
   @Post('forgot-password')

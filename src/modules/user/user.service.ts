@@ -16,6 +16,7 @@ import { ResetPasswordDto } from './dto/reset-password.dto';
 import { SendOtpDto } from '../otp/dto/send-otp.dto';
 import { OtpService } from '../otp/otp.service';
 import { OtpRepository } from '../otp/otp.repository';
+import { UserInfoResponseDto } from './dto/user-info-response.dto';
 
 
 @Injectable()
@@ -227,5 +228,14 @@ export class UserService {
     }
     await this.userRepository.softDelete(userId);
     return { message: 'User deleted successfully' };
+  }
+
+
+  getMe(user: UserInfoResponseDto) {
+    // const { userId, identifier, identifierType, isVerified, isProfileCompleted } = user;
+    // if (!isVerified || !isProfileCompleted) {
+
+    // }
+    return user;
   }
 }
