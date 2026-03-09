@@ -6,15 +6,26 @@ export const profileStatusSeed = [
 ];
 
 
+export const ProviderType = {
+    INDIVIDUAL: 'individual',
+    COMPANY: 'company'
+} as const;
+
 export const providerTypeSeed = [
-    { id: 'individual', label: 'Individual' },
-    { id: 'company', label: 'Company' },
+    { id: ProviderType.INDIVIDUAL, label: 'Individual' },
+    { id: ProviderType.COMPANY, label: 'Company' },
 ];
 
+export const CompanyType = {
+    PRIVATE: 'private',
+    GOVERNMENT: 'government',
+    SEMI_GOVERNMENT: 'semi-government'
+} as const;
+
 export const companyTypeSeed = [
-    { id: 'private', label: 'Private' },
-    { id: 'government', label: 'Government' },
-    { id: 'semi-government', label: 'Semi-Government' },
+    { id: CompanyType.PRIVATE, label: 'Private' },
+    { id: CompanyType.GOVERNMENT, label: 'Government' },
+    { id: CompanyType.SEMI_GOVERNMENT, label: 'Semi-Government' },
 ];
 
 export const billingCycleSeed = [
