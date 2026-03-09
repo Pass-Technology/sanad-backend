@@ -8,7 +8,7 @@ export class CreateServicesDto {
         type: [String],
     })
     @IsArray()
-    @ArrayMinSize(0, { message: 'At least one service must be selected' })
+    @ArrayMinSize(1, { message: 'At least one service must be selected' })
     @IsString({ each: true })
     selectedServiceIds: string[];
 }

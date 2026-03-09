@@ -27,7 +27,7 @@ export class UserEntity extends BaseEntity {
 
     @OneToOne(() => ProviderProfileEntity, (profile) => profile.user, {
         nullable: true,
-        eager: false,
+        // eager: false,
     })
     profile: ProviderProfileEntity;
 

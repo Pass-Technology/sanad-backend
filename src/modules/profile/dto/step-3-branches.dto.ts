@@ -8,11 +8,18 @@ import {
     IsOptional,
     IsString,
     IsUrl,
+    Matches,
     Min,
     ValidateNested,
 } from 'class-validator';
 
 export class ServingAreaDto {
+
+    @ApiPropertyOptional()
+    @IsOptional()
+    @IsString()
+    id?: string;
+
     @ApiProperty({ example: 10, minimum: 1 })
     @IsNumber()
     @Min(1)
@@ -21,6 +28,7 @@ export class ServingAreaDto {
     @ApiPropertyOptional({ example: '+971501234567' })
     @IsOptional()
     @IsString()
+    @Matches(/^\+[1-9]\d{6,14}$/)
     phone?: string;
 
     @ApiPropertyOptional({ example: 'https://maps.google.com/...' })
@@ -63,11 +71,13 @@ export class CreateBranchDto {
     @ApiPropertyOptional({ example: '+97141234567' })
     @IsOptional()
     @IsString()
+    @Matches(/^\+[1-9]\d{6,14}$/)
     branchPhone?: string;
 
     @ApiPropertyOptional({ example: '+971501234567' })
     @IsOptional()
     @IsString()
+    @Matches(/^\+[1-9]\d{6,14}$/)
     managerPhone?: string;
 
     @ApiPropertyOptional({ example: 'https://maps.google.com/...' })

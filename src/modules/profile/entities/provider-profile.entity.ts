@@ -69,31 +69,31 @@ export class ProviderProfileEntity extends BaseEntity {
     currentStep: number;
 
     @OneToOne(() => ProviderUserInfoEntity, (info) => info.providerProfile, {
-        eager: true,
+        // eager: true,
     })
     userInfo: ProviderUserInfoEntity;
 
     @OneToMany(() => BranchEntity, (branch) => branch.providerProfile, {
         onDelete: 'CASCADE',
-        eager: true,
+        // eager: true,
     })
     branches: BranchEntity[];
 
     @OneToOne(() => ProviderComplianceEntity, (c) => c.providerProfile, {
         onDelete: 'CASCADE',
-        eager: true,
+        // eager: true,
     })
     compliance: ProviderComplianceEntity;
 
     @OneToOne(() => ProviderPaymentEntity, (p) => p.providerProfile, {
         onDelete: 'CASCADE',
-        eager: true,
+        // eager: true,
     })
     payment: ProviderPaymentEntity;
 
     @OneToOne(() => ProviderSubscriptionEntity, (s) => s.providerProfile, {
         onDelete: 'CASCADE',
-        eager: true,
+        // eager: true,
     })
     subscription: ProviderSubscriptionEntity;
 

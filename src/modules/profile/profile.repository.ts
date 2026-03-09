@@ -29,9 +29,9 @@ export class ProfileRepository {
     ) { }
 
     /**
-     * 
-     * @param userId 
-     * @returns provider profile if it exists | null if not 
+     *
+     * @param userId
+     * @returns provider profile if it exists | null if not
      */
     async findProfileByUserId(userId: string): Promise<ProviderProfileEntity | null> {
         return await this.profileRepo.findOne({
@@ -47,9 +47,9 @@ export class ProfileRepository {
         });
     }
     /**
-     * 
-     * @param data 
-     * @returns provider profile 
+     *
+     * @param data
+     * @returns provider profile
      */
     async createProfile(data: Partial<ProviderProfileEntity>): Promise<ProviderProfileEntity> {
         const profile = this.profileRepo.create(data);
@@ -57,9 +57,9 @@ export class ProfileRepository {
     }
 
     /**
-     * 
-     * @param id 
-     * @param data 
+     *
+     * @param id
+     * @param data
      * @returns updated provider profile
      */
     async updateProfile(
@@ -71,8 +71,8 @@ export class ProfileRepository {
     }
 
     /**
-     * 
-     * @param profileId 
+     *
+     * @param profileId
      * @returns provider user info
      */
     async findUserInfoByProfileId(profileId: string): Promise<ProviderUserInfoEntity | null> {
@@ -80,8 +80,8 @@ export class ProfileRepository {
     }
 
     /**
-     * 
-     * @param data 
+     *
+     * @param data
      * @returns proivder user info
      */
     async saveUserInfo(data: Partial<ProviderUserInfoEntity>): Promise<ProviderUserInfoEntity> {

@@ -7,6 +7,7 @@ import {
     IsArray,
     ValidateIf,
 } from 'class-validator';
+import { ProviderType } from '../../../database/seeds/lookup.seed';
 
 export class CreateCompanyInfoDto {
     @ApiProperty({
@@ -20,7 +21,7 @@ export class CreateCompanyInfoDto {
         example: "private",
         description: 'Required when providerType is company',
     })
-    @ValidateIf((o: CreateCompanyInfoDto) => o.providerTypeId === "COMPANY")
+    @ValidateIf((o: CreateCompanyInfoDto) => o.providerTypeId === ProviderType.COMPANY)
     @IsNotEmpty({ message: 'companyType is required when providerType is company' })
     companyTypeId?: string;
 
@@ -33,7 +34,7 @@ export class CreateCompanyInfoDto {
         example: 'Ahmed Ahmed',
         description: 'Required when providerType is company',
     })
-    @ValidateIf((o: CreateCompanyInfoDto) => o.providerTypeId === "COMPANY")
+    @ValidateIf((o: CreateCompanyInfoDto) => o.providerTypeId === ProviderType.COMPANY)
     @IsString()
     @IsNotEmpty({ message: 'companyRepresentativeName is required when providerType is company' })
     companyRepresentativeName?: string;

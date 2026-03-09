@@ -46,8 +46,8 @@ export class BranchEntity extends BaseEntity {
     socialMediaLink: string | null;
 
     @OneToMany(() => ServingAreaEntity, (area) => area.branch, {
-        cascade: true,
-        eager: true,
+        // cascade: true,
+        // eager: true,
     })
     servingAreas: ServingAreaEntity[];
 
