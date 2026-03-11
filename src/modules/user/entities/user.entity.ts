@@ -1,6 +1,6 @@
 import { Entity, Column, OneToOne } from 'typeorm';
 import { UserIdentifierType } from '../enums/user-identifier-type.enum';
-import { BaseEntity } from '../../../shared/base-entity';
+import { BaseEntity } from '../../../database/base-entity';
 import { ProviderProfileEntity } from '../../profile/entities/provider-profile.entity';
 
 

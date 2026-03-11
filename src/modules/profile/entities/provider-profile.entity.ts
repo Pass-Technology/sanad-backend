@@ -14,7 +14,7 @@ import { ProviderSubscriptionEntity } from './provider-subscription.entity';
 import { LookUpProfileStatusEntity } from '../lookup-tables/entities/lookup-profile-status.entity';
 import { LookUpProviderTypeEntity } from '../lookup-tables/entities/lookup-provider-type.entity';
 import { LookUpCompanyTypeEntity } from '../lookup-tables/entities/lookup-company-type.entity';
-import { BaseEntity } from '../../../shared/base-entity';
+import { BaseEntity } from '../../../database/base-entity';
 import { UserEntity } from '../../user/entities/user.entity';
 
 @Entity('provider_profiles')
@@ -22,8 +22,8 @@ export class ProviderProfileEntity extends BaseEntity {
     @Column({ type: 'uuid' })
     userId: string;
 
-    @Column({ type: 'varchar', default: 'draft' })
-    statusId: string;
+    // @Column({ type: 'varchar', default: 'draft' })
+    // statusId: string;
 
     @ManyToOne(() => LookUpProfileStatusEntity, { onDelete: 'CASCADE' })
     @JoinColumn({ name: 'statusId' })
@@ -44,7 +44,7 @@ export class ProviderProfileEntity extends BaseEntity {
     companyType: LookUpCompanyTypeEntity | null;
 
     @Column({ type: 'varchar', nullable: true })
-    tradeName: string;
+    tradeName: string | null;
 
     @Column({ type: 'varchar', nullable: true })
     companyRepresentativeName: string | null;

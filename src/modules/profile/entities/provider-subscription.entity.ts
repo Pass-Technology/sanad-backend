@@ -7,7 +7,7 @@ import {
 } from 'typeorm';
 import { ProviderProfileEntity } from './provider-profile.entity';
 import { LookUpBillingCycleEntity } from '../lookup-tables/entities/lookup-biling-cycle.entity';
-import { BaseEntity } from '../../../shared/base-entity';
+import { BaseEntity } from '../../../database/base-entity';
 
 @Entity('provider_subscriptions')
 export class ProviderSubscriptionEntity extends BaseEntity {
@@ -25,8 +25,9 @@ export class ProviderSubscriptionEntity extends BaseEntity {
     selectedPlanId: string;
 
 
-    @Column({ type: 'varchar', default: 'monthly' })
-    billingCycleId: string;
+    // TODO: change to uuid and make it relation
+    // @Column({ type: 'varchar', default: 'monthly' })
+    // billingCycleId: string;
 
     @ManyToOne(() => LookUpBillingCycleEntity, { onDelete: 'CASCADE' })
     @JoinColumn({ name: 'billingCycleId' })

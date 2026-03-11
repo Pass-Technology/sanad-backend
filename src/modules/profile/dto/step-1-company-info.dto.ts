@@ -7,7 +7,7 @@ import {
     IsArray,
     ValidateIf,
 } from 'class-validator';
-import { ProviderType } from '../../../database/seeds/lookup.seed';
+import { ProviderType } from '../../../database/seeds/lookup-seeds/provider-type.seed';
 
 export class CreateCompanyInfoDto {
     @ApiProperty({
