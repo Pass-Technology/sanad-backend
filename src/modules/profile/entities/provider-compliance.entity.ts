@@ -5,7 +5,7 @@ import {
     JoinColumn,
 } from 'typeorm';
 import { ProviderProfileEntity } from './provider-profile.entity';
-import { BaseEntity } from '../../../shared/base-entity';
+import { BaseEntity } from '../../../database/base-entity';
 
 @Entity('provider_compliance')
 export class ProviderComplianceEntity extends BaseEntity {

@@ -7,7 +7,7 @@ import {
 } from 'typeorm';
 import { ProviderProfileEntity } from './provider-profile.entity';
 import { ServingAreaEntity } from './serving-area.entity';
-import { BaseEntity } from '../../../shared/base-entity';
+import { BaseEntity } from '../../../database/base-entity';
 
 @Entity('branches')
 export class BranchEntity extends BaseEntity {

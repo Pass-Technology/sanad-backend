@@ -127,7 +127,7 @@ export class ProfileRepository {
     }
 
     async deleteServingAreasByBranchId(branchId: string): Promise<void> {
-        await this.servingAreaRepo.delete({ branchId });
+        // await this.servingAreaRepo.delete({ branchId });
     }
 
     async saveServingAreas(areas: Partial<ServingAreaEntity>[]): Promise<ServingAreaEntity[]> {

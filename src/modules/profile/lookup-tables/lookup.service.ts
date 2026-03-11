@@ -24,14 +24,14 @@ export class LookUpService {
     async getProfileStatus(lang: string = 'en') {
         const cached = await this.lookupCacheService.get<LookUpProfileStatusEntity[]>('lookup:profile-status');
         let data: LookUpProfileStatusEntity[];
-        
+
         if (cached) {
             data = cached;
         } else {
             data = await this.profileStatusrRepo.find();
             await this.lookupCacheService.set('lookup:profile-status', data);
         }
-        
+
         return data.map(item => this.localize(item, lang));
     }
 
@@ -94,5 +94,10 @@ export class LookUpService {
     async validateCompanyTypeId(id: string): Promise<boolean> {
         const data = await this.getCompanyTypes('en');
         return data.some(t => t.id === id);
+    }
+
+
+    async getDraftStatus() {
+        return await this.profileStatusrRepo.findOne({ where: { labelEn: 'Draft' } });
     }
 }

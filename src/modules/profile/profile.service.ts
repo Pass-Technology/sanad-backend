@@ -3,6 +3,8 @@ import {
     NotFoundException,
     ForbiddenException,
     BadRequestException,
+    HttpException,
+    HttpStatus,
 } from '@nestjs/common';
 import { DataSource } from 'typeorm';
 import { ProfileRepository } from './profile.repository';
@@ -42,9 +44,15 @@ export class ProfileService {
         const existing = await this.profileRepo.findProfileByUserId(userId);
         if (existing) return existing;
 
+        const draftRecord = await this.lookupService.getDraftStatus();
+
+        if (!draftRecord) {
+            throw new HttpException(`Draft status not found`, HttpStatus.CONFLICT)
+        }
+
         return this.profileRepo.createProfile({
             userId,
-            statusId: 'draft',
+            status: draftRecord,
             currentStep: 1,
         });
     }
@@ -64,7 +72,7 @@ export class ProfileService {
         return {
             message: `${stepLabel} saved successfully`,
             currentStep: profile.currentStep,
-            statusId: profile.statusId,
+            statusId: profile.status.id,
             data,
         };
     }
@@ -142,7 +150,7 @@ export class ProfileService {
 
         return {
             currentStep: profile.currentStep,
-            statusId: profile.statusId,
+            statusId: profile.status.id,
             data: profile,
         };
     }

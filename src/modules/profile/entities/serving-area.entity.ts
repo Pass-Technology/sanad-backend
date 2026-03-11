@@ -5,13 +5,10 @@ import {
     JoinColumn,
 } from 'typeorm';
 import { BranchEntity } from './branch.entity';
-import { BaseEntity } from '../../../shared/base-entity';
+import { BaseEntity } from '../../../database/base-entity';
 
 @Entity('serving_areas')
 export class ServingAreaEntity extends BaseEntity {
-
-    @Column({ type: 'uuid' })
-    branchId: string;
 
     @ManyToOne(() => BranchEntity, (branch) => branch.servingAreas, {
         onDelete: 'CASCADE',

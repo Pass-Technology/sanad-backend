@@ -152,7 +152,7 @@ export class ProfileSaverService {
         });
         if (subscription) {
             subscription.selectedPlanId = dto.subscription.selectedPlanId;
-            subscription.billingCycleId = dto.subscription.billingCycleId;
+            subscription.billingCycle.id = dto.subscription.billingCycleId;
             subscription.startDate = new Date();
         } else {
             subscription = manager.create(ProviderSubscriptionEntity, {
@@ -167,7 +167,7 @@ export class ProfileSaverService {
         // finalization fields
         await manager.update(ProviderProfileEntity, profile.id, {
             currentStep: 8,
-            statusId: 'pending_review',
+            status: { id: 'pending_review' }
         });
 
         const completeProfile = await manager.findOne(ProviderProfileEntity, {

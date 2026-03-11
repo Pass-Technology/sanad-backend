@@ -1,8 +1,7 @@
-import { Column, PrimaryColumn } from "typeorm";
+import { BaseEntity } from "../../../../database/base-entity";
+import { Column } from "typeorm";
 
-export abstract class LookupBaseEntity {
-    @PrimaryColumn({ type: 'varchar' })
-    id: string;
+export abstract class LookupBaseEntity extends BaseEntity {
 
     @Column({ type: 'varchar' })
     labelEn: string;
