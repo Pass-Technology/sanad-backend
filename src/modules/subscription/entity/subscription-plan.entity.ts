@@ -1,8 +1,11 @@
-import { Entity, Column } from "typeorm";
-import { BaseEntity } from '../../../shared/base-entity';
+import { Entity, Column, OneToMany, PrimaryColumn, CreateDateColumn, UpdateDateColumn, DeleteDateColumn } from "typeorm";
+import { SubscriptionPlanFeatureEntity } from "./subscription-plan-feature.entity";
 
 @Entity('subscription_plans')
-export class SubscriptionPlanEntity extends BaseEntity {
+export class SubscriptionPlanEntity {
+
+    @PrimaryColumn({ type: 'varchar' })
+    id: string;
 
     @Column()
     name: string;
@@ -21,4 +24,16 @@ export class SubscriptionPlanEntity extends BaseEntity {
 
     @Column({ default: true })
     isActive: boolean;
+
+    @CreateDateColumn()
+    createdAt: Date;
+
+    @UpdateDateColumn()
+    updatedAt: Date;
+
+    @DeleteDateColumn()
+    deletedAt: Date;
+
+    @OneToMany(() => SubscriptionPlanFeatureEntity, feature => feature.plan)
+    features: SubscriptionPlanFeatureEntity[];
 }
