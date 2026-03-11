@@ -2,6 +2,7 @@ import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { AppConfigModule } from '../config/config.module';
 import { AppConfigService } from '../config/config.service';
+import { SnakeNamingStrategy } from 'typeorm-naming-strategies';
 
 @Module({
     imports: [
@@ -19,6 +20,7 @@ import { AppConfigService } from '../config/config.service';
                 autoLoadEntities: true,
                 synchronize: false,
                 ssl: true,
+                namingStrategy: new SnakeNamingStrategy(),
                 extra: {
                     max: 1,
                     connectionTimeoutMillis: 5000,

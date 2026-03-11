@@ -1,6 +1,6 @@
-export const billingCycleSeed = [
+export const billingCycleObjects = [
     {
-        id: 'monthly',
+
         labelEn: 'Monthly',
         labelAr: 'شهري',
         months: 1,
@@ -9,7 +9,6 @@ export const billingCycleSeed = [
         badgeAr: null
     },
     {
-        id: '3months',
         labelEn: '3 Months',
         labelAr: '3 أشهر',
         months: 3,
@@ -18,7 +17,7 @@ export const billingCycleSeed = [
         badgeAr: 'وفر 10%'
     },
     {
-        id: '6months',
+
         labelEn: '6 Months',
         labelAr: '6 أشهر',
         months: 6,
@@ -27,7 +26,7 @@ export const billingCycleSeed = [
         badgeAr: 'وفر 25%'
     },
     {
-        id: 'yearly',
+
         labelEn: 'Yearly',
         labelAr: 'سنوي',
         months: 12,

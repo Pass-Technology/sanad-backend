@@ -3,40 +3,30 @@ import { LookUpProfileStatusEntity } from '../../modules/profile/lookup-tables/e
 import { LookUpProviderTypeEntity } from '../../modules/profile/lookup-tables/entities/lookup-provider-type.entity';
 import { LookUpCompanyTypeEntity } from '../../modules/profile/lookup-tables/entities/lookup-company-type.entity';
 import { LookUpBillingCycleEntity } from 'src/modules/profile/lookup-tables/entities/lookup-biling-cycle.entity';
-import { billingCycleSeed } from './lookup-seeds/billing-cycle.seed';
-import { companyTypeSeed } from './lookup-seeds/company-type.seed';
-import { profileStatusSeed } from './lookup-seeds/profile-status.seed';
-import { providerTypeSeed } from './lookup-seeds/provider-type.seed';
-import { SubscriptionPlanFeatureEntity } from 'src/modules/subscription/entity/subscription-plan-feature.entity';
-import { SubscriptionPlanEntity } from 'src/modules/subscription/entity/subscription-plan.entity';
-import { subscriptionPlanFeaturesSeed } from './subscriptions-seeds/subscription-plan-feature.seed';
-import { subscriptionPlansSeed } from './subscriptions-seeds/subscription-plan.seed';
+
+import { billingCycleSeed } from './lookup-seeds/billing-cycle/billing-cycle.seed';
+import { profileStatusSeed } from './lookup-seeds/profile-status/profile-status.seed';
+import { providerTypeSeed } from './lookup-seeds/provider-type/provider-type.seed';
+import { companyTypeSeed } from './lookup-seeds/company-type/company-type.seed';
+
 
 
 async function runSeed() {
     const dataSource = await AppDataSource.initialize();
 
-    const profileStatusRepo = dataSource.getRepository(LookUpProfileStatusEntity);
-    const providerTypeRepo = dataSource.getRepository(LookUpProviderTypeEntity);
-    const companyTypeRepo = dataSource.getRepository(LookUpCompanyTypeEntity);
-    const billingCycleRepo = dataSource.getRepository(LookUpBillingCycleEntity);
-    const subscriptionPlanRepo = dataSource.getRepository(SubscriptionPlanEntity);
-    const subscriptionPlanFeatureRepo = dataSource.getRepository(SubscriptionPlanFeatureEntity);
+    // const subscriptionPlanRepo = dataSource.getRepository(SubscriptionPlanEntity);
+    // const subscriptionPlanFeatureRepo = dataSource.getRepository(SubscriptionPlanFeatureEntity);
+
+    console.log('Lookup tables starting to seed');
 
     // Lookup seeds
-    await profileStatusRepo.upsert(profileStatusSeed, ['id']);
-    await providerTypeRepo.upsert(providerTypeSeed, ['id']);
-    await companyTypeRepo.upsert(companyTypeSeed, ['id']);
-    await billingCycleRepo.upsert(billingCycleSeed, ['id']);
+    await billingCycleSeed(dataSource);
+    await profileStatusSeed(dataSource);
+    await providerTypeSeed(dataSource);
+    await companyTypeSeed(dataSource);
+
 
     console.log('Lookup tables seeded successfully');
-
-    // Subscription seeds
-    await subscriptionPlanRepo.upsert(subscriptionPlansSeed, ['id']);
-    await subscriptionPlanFeatureRepo.upsert(subscriptionPlanFeaturesSeed, ['planId', 'featureText']);
-
-    console.log('Subscription plans seeded successfully');
-
 
     await dataSource.destroy();
     process.exit(0);
