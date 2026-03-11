@@ -12,12 +12,10 @@ import { BaseEntity } from '../../../database/base-entity';
 @Entity('branches')
 export class BranchEntity extends BaseEntity {
 
-    @Column({ type: 'uuid' })
-    providerProfileId: string;
-
     @ManyToOne(() => ProviderProfileEntity, (profile) => profile.branches, {
         onDelete: 'CASCADE',
     })
+    @JoinColumn()
     providerProfile: ProviderProfileEntity;
 
     @Column()

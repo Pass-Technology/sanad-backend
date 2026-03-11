@@ -4,13 +4,11 @@ import { BaseEntity } from '../../../database/base-entity';
 
 
 @Entity('subscription_plan_features')
-@Unique(['planId', 'featureText'])
+@Unique(['plan', 'featureText'])
 export class SubscriptionPlanFeatureEntity extends BaseEntity {
 
-    @Column({ type: 'uuid' })
-    planId: string;
-
     @ManyToOne(() => SubscriptionPlanEntity, { onDelete: 'CASCADE' })
+    @JoinColumn()
     plan: SubscriptionPlanEntity;
 
     @Column()

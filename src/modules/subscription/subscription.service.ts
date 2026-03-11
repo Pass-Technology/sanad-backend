@@ -114,7 +114,7 @@ export class SubscriptionService {
         }
 
         const feature = this.featureRepo.create({
-            planId,
+            plan: plan,
             featureText: dto.featureText,
             displayOrder: dto.displayOrder,
         });

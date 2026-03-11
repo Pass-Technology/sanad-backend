@@ -19,25 +19,17 @@ import { UserEntity } from '../../user/entities/user.entity';
 
 @Entity('provider_profiles')
 export class ProviderProfileEntity extends BaseEntity {
-    @Column({ type: 'uuid' })
-    userId: string;
-
-    @Column({ type: 'uuid' })
-    statusId: string;
 
     @ManyToOne(() => LookUpProfileStatusEntity, { onDelete: 'CASCADE' })
+    @JoinColumn()
     status: LookUpProfileStatusEntity;
 
-    @Column({ type: 'uuid', nullable: true })
-    providerTypeId: string | null;
-
-    @ManyToOne(() => LookUpProviderTypeEntity, { onDelete: 'CASCADE' })
+    @ManyToOne(() => LookUpProviderTypeEntity, { onDelete: 'CASCADE', nullable: true })
+    @JoinColumn()
     providerType: LookUpProviderTypeEntity | null;
 
-    @Column({ type: 'uuid', nullable: true })
-    companyTypeId: string | null;
-
-    @ManyToOne(() => LookUpCompanyTypeEntity, { onDelete: 'CASCADE' })
+    @ManyToOne(() => LookUpCompanyTypeEntity, { onDelete: 'CASCADE', nullable: true })
+    @JoinColumn()
     companyType: LookUpCompanyTypeEntity | null;
 
     @Column({ type: 'varchar', nullable: true })
@@ -95,6 +87,7 @@ export class ProviderProfileEntity extends BaseEntity {
     subscription: ProviderSubscriptionEntity;
 
     @ManyToOne(() => UserEntity, (user) => user.profile, { onDelete: 'CASCADE' })
+    @JoinColumn()
     user: UserEntity;
 
 }

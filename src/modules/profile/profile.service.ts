@@ -52,7 +52,7 @@ export class ProfileService {
         }
 
         return this.profileRepo.createProfile({
-            userId,
+            user: { id: userId } as UserEntity,
             status: draftRecord,
             currentStep: 1,
         });
@@ -73,7 +73,7 @@ export class ProfileService {
         return {
             message: `${stepLabel} saved successfully`,
             currentStep: profile.currentStep,
-            statusId: profile.status.id,
+            statusId: profile.status?.id,
             data,
         };
     }
@@ -151,7 +151,7 @@ export class ProfileService {
 
         return {
             currentStep: profile.currentStep,
-            statusId: profile.statusId,
+            statusId: profile.status?.id,
             data: profile,
         };
     }
@@ -176,7 +176,7 @@ export class ProfileService {
         const profile = await this.getOrCreateProfile(userId);
         const branch = await this.profileRepo.findBranchById(branchId);
 
-        if (!branch || branch.providerProfileId !== profile.id) {
+        if (!branch || branch.providerProfile?.id !== profile.id) {
             throw new NotFoundException('Branch not found');
         }
 
@@ -197,7 +197,7 @@ export class ProfileService {
         if (dto.servingAreas?.length) {
             await this.profileRepo.saveServingAreas(
                 dto.servingAreas.map((area) => ({
-                    branchId,
+                    branch: { id: branchId } as BranchEntity,
                     radiusKm: area.radiusKm,
                     phone: area.phone ?? null,
                     mapLink: area.mapLink ?? null,
@@ -218,7 +218,7 @@ export class ProfileService {
         const profile = await this.getOrCreateProfile(userId);
         const branch = await this.profileRepo.findBranchById(branchId);
 
-        if (!branch || branch.providerProfileId !== profile.id) {
+        if (!branch || branch.providerProfile?.id !== profile.id) {
             throw new NotFoundException('Branch not found');
         }
 

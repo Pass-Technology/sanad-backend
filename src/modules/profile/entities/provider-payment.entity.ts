@@ -10,9 +10,6 @@ import { BaseEntity } from '../../../database/base-entity';
 @Entity('provider_payments')
 export class ProviderPaymentEntity extends BaseEntity {
 
-    @Column({ type: 'uuid' })
-    providerProfileId: string;
-
     @OneToOne(() => ProviderProfileEntity, (profile) => profile.payment, {
         onDelete: 'CASCADE',
     })

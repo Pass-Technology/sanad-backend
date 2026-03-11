@@ -35,8 +35,12 @@ export class ProfileRepository {
      */
     async findProfileByUserId(userId: string): Promise<ProviderProfileEntity | null> {
         return await this.profileRepo.findOne({
-            where: { userId },
+            where: { user: { id: userId } },
             relations: [
+                'status',
+                'providerType',
+                'companyType',
+                'user',
                 'userInfo',
                 'branches',
                 'branches.servingAreas',
@@ -76,7 +80,7 @@ export class ProfileRepository {
      * @returns provider user info
      */
     async findUserInfoByProfileId(profileId: string): Promise<ProviderUserInfoEntity | null> {
-        return await this.userInfoRepo.findOne({ where: { providerProfileId: profileId } });
+        return await this.userInfoRepo.findOne({ where: { providerProfile: { id: profileId } } });
     }
 
     /**
@@ -85,7 +89,7 @@ export class ProfileRepository {
      * @returns proivder user info
      */
     async saveUserInfo(data: Partial<ProviderUserInfoEntity>): Promise<ProviderUserInfoEntity> {
-        const existing = await this.findUserInfoByProfileId(data.providerProfileId!);
+        const existing = await this.findUserInfoByProfileId(data.providerProfile?.id!);
         if (existing) {
             await this.userInfoRepo.update(existing.id, data);
             return await this.userInfoRepo.findOneOrFail({ where: { id: existing.id } });
@@ -97,7 +101,7 @@ export class ProfileRepository {
 
     async findBranchesByProfileId(profileId: string): Promise<BranchEntity[]> {
         return await this.branchRepo.find({
-            where: { providerProfileId: profileId },
+            where: { providerProfile: { id: profileId } },
             relations: ['servingAreas'],
         });
     }
@@ -105,7 +109,7 @@ export class ProfileRepository {
     async findBranchById(id: string): Promise<BranchEntity | null> {
         return await this.branchRepo.findOne({
             where: { id },
-            relations: ['servingAreas'],
+            relations: ['servingAreas', 'providerProfile'],
         });
     }
 
@@ -127,7 +131,7 @@ export class ProfileRepository {
     }
 
     async deleteServingAreasByBranchId(branchId: string): Promise<void> {
-        // await this.servingAreaRepo.delete({ branchId });
+        await this.servingAreaRepo.delete({ branch: { id: branchId } });
     }
 
     async saveServingAreas(areas: Partial<ServingAreaEntity>[]): Promise<ServingAreaEntity[]> {
@@ -140,13 +144,13 @@ export class ProfileRepository {
         for (const branch of branches) {
             await this.deleteServingAreasByBranchId(branch.id);
         }
-        await this.branchRepo.delete({ providerProfileId: profileId });
+        await this.branchRepo.delete({ providerProfile: { id: profileId } });
     }
 
 
     async saveCompliance(data: Partial<ProviderComplianceEntity>): Promise<ProviderComplianceEntity> {
         const existing = await this.complianceRepo.findOne({
-            where: { providerProfileId: data.providerProfileId! },
+            where: { providerProfile: { id: data.providerProfile?.id! } },
         });
         if (existing) {
             await this.complianceRepo.update(existing.id, data);
@@ -159,7 +163,7 @@ export class ProfileRepository {
 
     async savePayment(data: Partial<ProviderPaymentEntity>): Promise<ProviderPaymentEntity> {
         const existing = await this.paymentRepo.findOne({
-            where: { providerProfileId: data.providerProfileId! },
+            where: { providerProfile: { id: data.providerProfile?.id! } },
         });
         if (existing) {
             await this.paymentRepo.update(existing.id, data);
@@ -172,7 +176,7 @@ export class ProfileRepository {
 
     async saveSubscription(data: Partial<ProviderSubscriptionEntity>): Promise<ProviderSubscriptionEntity> {
         const existing = await this.subscriptionRepo.findOne({
-            where: { providerProfileId: data.providerProfileId! },
+            where: { providerProfile: { id: data.providerProfile?.id! } },
         });
         if (existing) {
             await this.subscriptionRepo.update(existing.id, data);

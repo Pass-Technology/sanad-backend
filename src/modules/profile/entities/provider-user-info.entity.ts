@@ -11,9 +11,6 @@ import { BaseEntity } from '../../../database/base-entity';
 @Entity('provider_user_info')
 export class ProviderUserInfoEntity extends BaseEntity {
 
-    @Column({ type: 'uuid' })
-    providerProfileId: string;
-
     @OneToOne(() => ProviderProfileEntity, (profile) => profile.userInfo, {
         onDelete: 'CASCADE',
     })

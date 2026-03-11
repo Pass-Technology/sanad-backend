@@ -10,6 +10,11 @@ import { ProviderSubscriptionEntity } from "./entities/provider-subscription.ent
 import { ProviderUserInfoEntity } from "./entities/provider-user-info.entity";
 import { ServingAreaEntity } from "./entities/serving-area.entity";
 import { LOOKUP_IDS } from "../../shared/constants/lookup-ids";
+import { LookUpProfileStatusEntity } from "./lookup-tables/entities/lookup-profile-status.entity";
+import { LookUpProviderTypeEntity } from "./lookup-tables/entities/lookup-provider-type.entity";
+import { LookUpCompanyTypeEntity } from "./lookup-tables/entities/lookup-company-type.entity";
+import { SubscriptionPlanEntity } from "../subscription/entity/subscription-plan.entity";
+import { LookUpBillingCycleEntity } from "./lookup-tables/entities/lookup-biling-cycle.entity";
 
 @Injectable()
 export class ProfileSaverService {
@@ -18,20 +23,24 @@ export class ProfileSaverService {
         userId: string,
         dto: CreateFullProfileDto,
     ) {
-        let profile = await manager.findOne(ProviderProfileEntity, { where: { userId } });
+        let profile = await manager.findOne(ProviderProfileEntity, {
+            where: { user: { id: userId } },
+        });
         if (!profile) {
             profile = manager.create(ProviderProfileEntity, {
-                userId,
-                statusId: LOOKUP_IDS.PROFILE_STATUS.DRAFT,
+                user: { id: userId } as UserEntity,
+                status: { id: LOOKUP_IDS.PROFILE_STATUS.DRAFT } as LookUpProfileStatusEntity,
                 currentStep: 1,
             });
             profile = await manager.save(ProviderProfileEntity, profile);
         }
 
         // Step 1 — Company Info
-        profile.providerTypeId = dto.companyInfo.providerTypeId;
+        profile.providerType = { id: dto.companyInfo.providerTypeId } as LookUpProviderTypeEntity;
         console.log(dto.companyInfo.providerTypeId)
-        profile.companyTypeId = dto.companyInfo.companyTypeId ?? null;
+        profile.companyType = dto.companyInfo.companyTypeId
+            ? { id: dto.companyInfo.companyTypeId } as LookUpCompanyTypeEntity
+            : null;
         profile.tradeName = dto.companyInfo.tradeName;
         profile.companyRepresentativeName = dto.companyInfo.companyRepresentativeName ?? null;
         profile.companyDescription = dto.companyInfo.companyDescription ?? null;
@@ -46,7 +55,7 @@ export class ProfileSaverService {
 
         // Step 2 — User Info
         let userInfo = await manager.findOne(ProviderUserInfoEntity, {
-            where: { providerProfileId: profile.id },
+            where: { providerProfile: { id: profile.id } },
         });
         if (userInfo) {
             userInfo.fullName = dto.userInfo.fullName;
@@ -56,7 +65,7 @@ export class ProfileSaverService {
             userInfo.dateOfBirth = dto.userInfo.dateOfBirth!;
         } else {
             userInfo = manager.create(ProviderUserInfoEntity, {
-                providerProfileId: profile.id,
+                providerProfile: { id: profile.id } as ProviderProfileEntity,
                 fullName: dto.userInfo.fullName,
                 email: dto.userInfo.email,
                 mobileNumber: dto.userInfo.mobileNumber ?? null,
@@ -68,17 +77,17 @@ export class ProfileSaverService {
 
         // Step 3 — Branches (clear existing, then re-create)
         const existingBranches = await manager.find(BranchEntity, {
-            where: { providerProfileId: profile.id },
+            where: { providerProfile: { id: profile.id } },
         });
         console.log(profile.id)
         for (const b of existingBranches) {
-            await manager.delete(ServingAreaEntity, { branchId: b.id });
+            await manager.delete(ServingAreaEntity, { branch: { id: b.id } });
         }
-        await manager.delete(BranchEntity, { providerProfileId: profile.id });
+        await manager.delete(BranchEntity, { providerProfile: { id: profile.id } });
 
         for (const branchDto of dto.branches.branches) {
             const branch = manager.create(BranchEntity, {
-                providerProfileId: profile.id,
+                providerProfile: { id: profile.id } as ProviderProfileEntity,
                 branchName: branchDto.branchName,
                 branchManagerName: branchDto.branchManagerName,
                 branchAddress: branchDto.branchAddress,
@@ -93,7 +102,7 @@ export class ProfileSaverService {
             if (branchDto.servingAreas?.length) {
                 const areas = branchDto.servingAreas.map((area) =>
                     manager.create(ServingAreaEntity, {
-                        branchId: savedBranch.id,
+                        branch: { id: savedBranch.id } as BranchEntity,
                         radiusKm: area.radiusKm,
                         phone: area.phone ?? null,
                         mapLink: area.mapLink ?? null,
@@ -107,7 +116,7 @@ export class ProfileSaverService {
 
         // Step 5 — Compliance
         let compliance = await manager.findOne(ProviderComplianceEntity, {
-            where: { providerProfileId: profile.id },
+            where: { providerProfile: { id: profile.id } },
         });
         if (compliance) {
             compliance.ownerIdFile = dto.compliance.ownerIdFile;
@@ -116,7 +125,7 @@ export class ProfileSaverService {
             compliance.tradeLicenseExpiryDate = dto.compliance.tradeLicenseExpiryDate;
         } else {
             compliance = manager.create(ProviderComplianceEntity, {
-                providerProfileId: profile.id,
+                providerProfile: { id: profile.id } as ProviderProfileEntity,
                 ownerIdFile: dto.compliance.ownerIdFile,
                 ownerIdExpiryDate: dto.compliance.ownerIdExpiryDate,
                 tradeLicenseFile: dto.compliance.tradeLicenseFile,
@@ -127,7 +136,7 @@ export class ProfileSaverService {
 
         // Step 6 — Payment
         let payment = await manager.findOne(ProviderPaymentEntity, {
-            where: { providerProfileId: profile.id },
+            where: { providerProfile: { id: profile.id } },
         });
         if (payment) {
             payment.bankName = dto.payment.bankName;
@@ -137,7 +146,7 @@ export class ProfileSaverService {
             payment.paymentMethodIds = dto.payment.paymentMethodIds;
         } else {
             payment = manager.create(ProviderPaymentEntity, {
-                providerProfileId: profile.id,
+                providerProfile: { id: profile.id } as ProviderProfileEntity,
                 bankName: dto.payment.bankName,
                 accountHolderName: dto.payment.accountHolderName,
                 accountNumber: dto.payment.accountNumber,
@@ -149,17 +158,17 @@ export class ProfileSaverService {
 
         // Step 7 — Subscription
         let subscription = await manager.findOne(ProviderSubscriptionEntity, {
-            where: { providerProfileId: profile.id },
+            where: { providerProfile: { id: profile.id } },
         });
         if (subscription) {
-            subscription.selectedPlanId = dto.subscription.selectedPlanId;
-            subscription.billingCycle.id = dto.subscription.billingCycleId;
+            subscription.selectedPlan = { id: dto.subscription.selectedPlanId } as SubscriptionPlanEntity;
+            subscription.billingCycle = { id: dto.subscription.billingCycleId } as LookUpBillingCycleEntity;
             subscription.startDate = new Date();
         } else {
             subscription = manager.create(ProviderSubscriptionEntity, {
-                providerProfileId: profile.id,
-                selectedPlanId: dto.subscription.selectedPlanId,
-                billingCycleId: dto.subscription.billingCycleId,
+                providerProfile: { id: profile.id } as ProviderProfileEntity,
+                selectedPlan: { id: dto.subscription.selectedPlanId } as SubscriptionPlanEntity,
+                billingCycle: { id: dto.subscription.billingCycleId } as LookUpBillingCycleEntity,
                 startDate: new Date(),
             });
         }
@@ -168,7 +177,7 @@ export class ProfileSaverService {
         // finalization fields
         await manager.update(ProviderProfileEntity, profile.id, {
             currentStep: 8,
-            statusId: LOOKUP_IDS.PROFILE_STATUS.PENDING_REVIEW
+            status: { id: LOOKUP_IDS.PROFILE_STATUS.PENDING_REVIEW } as LookUpProfileStatusEntity,
         });
 
         const completeProfile = await manager.findOne(ProviderProfileEntity, {
@@ -183,7 +192,7 @@ export class ProfileSaverService {
             ],
         });
 
-        await manager.update(UserEntity, profile.userId, {
+        await manager.update(UserEntity, userId, {
             isProfileCompleted: true,
         });
         return completeProfile!;

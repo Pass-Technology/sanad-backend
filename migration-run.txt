@@ -1,0 +1,79 @@
+(node:16168) Warning: SECURITY WARNING: The SSL modes 'prefer', 'require', and 'verify-ca' are treated as aliases for 'verify-full'.
+In the next major version (pg-connection-string v3.0.0 and pg v9.0.0), these modes will adopt standard libpq semantics, which have weaker security guarantees.
+
+To prepare for this change:
+- If you want the current behavior, explicitly use 'sslmode=verify-full'
+- If you want libpq compatibility now, use 'uselibpqcompat=true&sslmode=require'
+
+See https://www.postgresql.org/docs/current/libpq-ssl.html for libpq SSL mode definitions.
+(Use `node --trace-warnings ...` to show where the warning was created)
+QueryFailedError: relation "provider_user_info" does not exist
+    at PostgresQueryRunner.query (C:\Users\madco\Desktop\pass\sanad-backend\node_modules\typeorm\src\driver\postgres\PostgresQueryRunner.ts:325:19)
+    at processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async UuidAndAutoMappedRelationsRefactor1773268933164.up (C:\Users\madco\Desktop\pass\sanad-backend\src\database\migrations\1773268933164-uuid-and-auto-mapped-relations-refactor.ts:7:9)
+    at async MigrationExecutor.executePendingMigrations (C:\Users\madco\Desktop\pass\sanad-backend\node_modules\src\migration\MigrationExecutor.ts:336:17)
+    at async DataSource.runMigrations (C:\Users\madco\Desktop\pass\sanad-backend\node_modules\src\data-source\DataSource.ts:404:13)
+    at async Object.handler (C:\Users\madco\Desktop\pass\sanad-backend\node_modules\src\commands\MigrationRunCommand.ts:76:13) {
+  query: 'ALTER TABLE "provider_user_info" DROP CONSTRAINT "FK_c5708135f38e549be0deea94891"',
+  parameters: undefined,
+  driverError: error: relation "provider_user_info" does not exist
+      at C:\Users\madco\Desktop\pass\sanad-backend\node_modules\pg\lib\client.js:631:17
+      at processTicksAndRejections (node:internal/process/task_queues:105:5)
+      at async PostgresQueryRunner.query (C:\Users\madco\Desktop\pass\sanad-backend\node_modules\typeorm\src\driver\postgres\PostgresQueryRunner.ts:254:25)
+      at async UuidAndAutoMappedRelationsRefactor1773268933164.up (C:\Users\madco\Desktop\pass\sanad-backend\src\database\migrations\1773268933164-uuid-and-auto-mapped-relations-refactor.ts:7:9)
+      at async MigrationExecutor.executePendingMigrations (C:\Users\madco\Desktop\pass\sanad-backend\node_modules\src\migration\MigrationExecutor.ts:336:17)
+      at async DataSource.runMigrations (C:\Users\madco\Desktop\pass\sanad-backend\node_modules\src\data-source\DataSource.ts:404:13)
+      at async Object.handler (C:\Users\madco\Desktop\pass\sanad-backend\node_modules\src\commands\MigrationRunCommand.ts:76:13) {
+    length: 116,
+    severity: 'ERROR',
+    code: '42P01',
+    detail: undefined,
+    hint: undefined,
+    position: undefined,
+    internalPosition: undefined,
+    internalQuery: undefined,
+    where: undefined,
+    schema: undefined,
+    table: undefined,
+    column: undefined,
+    dataType: undefined,
+    constraint: undefined,
+    file: 'namespace.c',
+    line: '637',
+    routine: 'RangeVarGetRelidExtended'
+  },
+  length: 116,
+  severity: 'ERROR',
+  code: '42P01',
+  detail: undefined,
+  hint: undefined,
+  position: undefined,
+  internalPosition: undefined,
+  internalQuery: undefined,
+  where: undefined,
+  schema: undefined,
+  table: undefined,
+  column: undefined,
+  dataType: undefined,
+  constraint: undefined,
+  file: 'namespace.c',
+  line: '637',
+  routine: 'RangeVarGetRelidExtended'
+}
+
+[dotenv@17.2.3] injecting env (0) from .env -- tip: 🔐 encrypt with Dotenvx: https://dotenvx.com
+[90m[4mquery:[24m[39m [94mSELECT[0m [95mversion[0m[37m([0m[37m)[0m
+[90m[4mquery:[24m[39m [94mSELECT[0m [37m*[0m [94mFROM[0m [95mcurrent_schema[0m[37m([0m[37m)[0m
+[90m[4mquery:[24m[39m [94mCREATE[0m [37mEXTENSION[0m [94mIF[0m [94mNOT[0m [94mEXISTS[0m [37m"uuid-ossp"[0m
+[90m[4mquery:[24m[39m [94mSELECT[0m [37m*[0m [94mFROM[0m [37m"information_schema"[0m[37m.[0m[37m"tables"[0m [94mWHERE[0m [37m"table_schema"[0m [37m=[0m [37m'public'[0m [94mAND[0m [37m"table_name"[0m [37m=[0m [37m'migrations'[0m
+[90m[4mquery:[24m[39m [94mSELECT[0m [37m*[0m [94mFROM[0m [37m"migrations"[0m [37m"migrations"[0m [94mORDER BY[0m [37m"id"[0m [94mDESC[0m
+[4m0 migrations are already loaded in the database.[24m
+[4m2 migrations were found in the source code.[24m
+[4m2 migrations are new migrations must be executed.[24m
+[90m[4mquery:[24m[39m [37mSTART[0m [37mTRANSACTION[0m
+[90m[4mquery:[24m[39m [94mALTER TABLE[0m [37m"provider_user_info"[0m [94mDROP CONSTRAINT[0m [37m"FK_c5708135f38e549be0deea94891"[0m
+[4m[31mquery failed:[39m[24m [94mALTER TABLE[0m [37m"provider_user_info"[0m [94mDROP CONSTRAINT[0m [37m"FK_c5708135f38e549be0deea94891"[0m
+[4m[31merror:[39m[24m error: relation "provider_user_info" does not exist
+[4mMigration "UuidAndAutoMappedRelationsRefactor1773268933164" failed, error: relation "provider_user_info" does not exist[24m
+[90m[4mquery:[24m[39m [37mROLLBACK[0m
+[30m[41mError during migration run:[49m[39m
