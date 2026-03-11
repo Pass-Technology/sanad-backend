@@ -4,6 +4,6 @@ export const ProviderType = {
 } as const;
 
 export const providerTypeSeed = [
-    { id: ProviderType.INDIVIDUAL, label: 'Individual' },
-    { id: ProviderType.COMPANY, label: 'Company' },
+    { id: ProviderType.INDIVIDUAL, labelEn: 'Individual', labelAr: 'فرد' },
+    { id: ProviderType.COMPANY, labelEn: 'Company', labelAr: 'شركة' },
 ];

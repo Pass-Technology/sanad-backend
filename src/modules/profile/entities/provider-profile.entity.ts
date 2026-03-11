@@ -44,7 +44,7 @@ export class ProviderProfileEntity extends BaseEntity {
     companyType: LookUpCompanyTypeEntity | null;
 
     @Column({ type: 'varchar', nullable: true })
-    tradeName: string;
+    tradeName: string | null;
 
     @Column({ type: 'varchar', nullable: true })
     companyRepresentativeName: string | null;

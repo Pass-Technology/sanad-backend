@@ -21,49 +21,78 @@ export class LookUpService {
         private readonly lookupCacheService: LookupCacheService,
     ) { }
 
-    async getProfileStatus() {
-        const cached = await this.lookupCacheService.get('lookup:profile-status');
-        if (cached) return cached;
-
-        const data = await this.profileStatusrRepo.find();
-        await this.lookupCacheService.set('lookup:profile-status', data);
-        return data;
+    async getProfileStatus(lang: string = 'en') {
+        const cached = await this.lookupCacheService.get<LookUpProfileStatusEntity[]>('lookup:profile-status');
+        let data: LookUpProfileStatusEntity[];
+        
+        if (cached) {
+            data = cached;
+        } else {
+            data = await this.profileStatusrRepo.find();
+            await this.lookupCacheService.set('lookup:profile-status', data);
+        }
+        
+        return data.map(item => this.localize(item, lang));
     }
 
-    async getProviderTypes() {
-        const cached = await this.lookupCacheService.get('lookup:provider-types');
-        if (cached) return cached;
+    async getProviderTypes(lang: string = 'en') {
+        const cached = await this.lookupCacheService.get<LookUpProviderTypeEntity[]>('lookup:provider-types');
+        let data: LookUpProviderTypeEntity[];
 
-        const data = await this.providerTypeRepo.find();
-        await this.lookupCacheService.set('lookup:provider-types', data);
-        return data;
+        if (cached) {
+            data = cached;
+        } else {
+            data = await this.providerTypeRepo.find();
+            await this.lookupCacheService.set('lookup:provider-types', data);
+        }
+
+        return data.map(item => this.localize(item, lang));
     }
 
-    async getCompanyTypes() {
-        const cached = await this.lookupCacheService.get('lookup:company-types');
-        if (cached) return cached;
+    async getCompanyTypes(lang: string = 'en') {
+        const cached = await this.lookupCacheService.get<LookUpCompanyTypeEntity[]>('lookup:company-types');
+        let data: LookUpCompanyTypeEntity[];
 
-        const data = await this.companyTypeRepo.find();
-        await this.lookupCacheService.set('lookup:company-types', data);
-        return data;
+        if (cached) {
+            data = cached;
+        } else {
+            data = await this.companyTypeRepo.find();
+            await this.lookupCacheService.set('lookup:company-types', data);
+        }
+
+        return data.map(item => this.localize(item, lang));
     }
 
-    async getBillingCycles() {
-        const cached = await this.lookupCacheService.get('lookup:billing-cycles');
-        if (cached) return cached;
+    async getBillingCycles(lang: string = 'en') {
+        const cached = await this.lookupCacheService.get<LookUpBillingCycleEntity[]>('lookup:billing-cycles');
+        let data: LookUpBillingCycleEntity[];
 
-        const data = await this.billingCycleRepo.find();
-        await this.lookupCacheService.set('lookup:billing-cycles', data);
-        return data;
+        if (cached) {
+            data = cached;
+        } else {
+            data = await this.billingCycleRepo.find();
+            await this.lookupCacheService.set('lookup:billing-cycles', data);
+        }
+
+        return data.map(item => this.localize(item, lang));
+    }
+
+    private localize(entity: any, lang: string) {
+        const { labelEn, labelAr, badgeEn, badgeAr, ...rest } = entity;
+        return {
+            ...rest,
+            label: lang === 'ar' ? labelAr : labelEn,
+            ...(badgeEn !== undefined && { badge: lang === 'ar' ? badgeAr : badgeEn })
+        };
     }
 
     async validateProviderTypeId(id: string): Promise<boolean> {
-        const types = await this.getProviderTypes() as { id: string }[];
-        return types.some(t => t.id === id);
+        const data = await this.getProviderTypes('en');
+        return data.some(t => t.id === id);
     }
 
     async validateCompanyTypeId(id: string): Promise<boolean> {
-        const types = await this.getCompanyTypes() as { id: string }[];
-        return types.some(t => t.id === id);
+        const data = await this.getCompanyTypes('en');
+        return data.some(t => t.id === id);
     }
 }

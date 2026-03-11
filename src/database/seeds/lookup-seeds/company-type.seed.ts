@@ -5,7 +5,7 @@ export const CompanyType = {
 } as const;
 
 export const companyTypeSeed = [
-    { id: CompanyType.PRIVATE, label: 'Private' },
-    { id: CompanyType.GOVERNMENT, label: 'Government' },
-    { id: CompanyType.SEMI_GOVERNMENT, label: 'Semi-Government' },
+    { id: CompanyType.PRIVATE, labelEn: 'Private', labelAr: 'خاص' },
+    { id: CompanyType.GOVERNMENT, labelEn: 'Government', labelAr: 'حكومي' },
+    { id: CompanyType.SEMI_GOVERNMENT, labelEn: 'Semi-Government', labelAr: 'شبه حكومي' },
 ];

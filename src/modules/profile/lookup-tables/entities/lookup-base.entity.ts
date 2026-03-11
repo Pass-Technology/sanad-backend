@@ -5,5 +5,8 @@ export abstract class LookupBaseEntity {
     id: string;
 
     @Column({ type: 'varchar' })
-    label: string;
+    labelEn: string;
+
+    @Column({ type: 'varchar' })
+    labelAr: string;
 }

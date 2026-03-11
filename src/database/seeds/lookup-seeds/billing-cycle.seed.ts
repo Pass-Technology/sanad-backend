@@ -1,30 +1,38 @@
 export const billingCycleSeed = [
     {
         id: 'monthly',
-        label: 'Monthly',
+        labelEn: 'Monthly',
+        labelAr: 'شهري',
         months: 1,
         discountPercent: 0,
-        badge: null
+        badgeEn: null,
+        badgeAr: null
     },
     {
         id: '3months',
-        label: '3 Months',
+        labelEn: '3 Months',
+        labelAr: '3 أشهر',
         months: 3,
         discountPercent: 10,
-        badge: 'Save 10%'
+        badgeEn: 'Save 10%',
+        badgeAr: 'وفر 10%'
     },
     {
         id: '6months',
-        label: '6 Months',
+        labelEn: '6 Months',
+        labelAr: '6 أشهر',
         months: 6,
         discountPercent: 25,
-        badge: 'Save 25%'
+        badgeEn: 'Save 25%',
+        badgeAr: 'وفر 25%'
     },
     {
         id: 'yearly',
-        label: 'Yearly',
+        labelEn: 'Yearly',
+        labelAr: 'سنوي',
         months: 12,
         discountPercent: 15,
-        badge: 'Save 15%'
+        badgeEn: 'Save 15%',
+        badgeAr: 'وفر 15%'
     }
 ];

@@ -10,5 +10,8 @@ export class LookUpBillingCycleEntity extends LookupBaseEntity {
     discountPercent: number;
 
     @Column({ type: 'varchar', nullable: true })
-    badge: string | null;
+    badgeEn: string | null;
+
+    @Column({ type: 'varchar', nullable: true })
+    badgeAr: string | null;
 }

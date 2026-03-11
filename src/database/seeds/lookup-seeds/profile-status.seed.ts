@@ -1,6 +1,6 @@
 export const profileStatusSeed = [
-    { id: 'draft', label: 'Draft' },
-    { id: 'pending_review', label: 'Pending Review' },
-    { id: 'approved', label: 'Approved' },
-    { id: 'rejected', label: 'Rejected' }
+    { id: 'draft', labelEn: 'Draft', labelAr: 'مسودة' },
+    { id: 'pending_review', labelEn: 'Pending Review', labelAr: 'قيد المراجعة' },
+    { id: 'approved', labelEn: 'Approved', labelAr: 'مقبول' },
+    { id: 'rejected', labelEn: 'Rejected', labelAr: 'مرفوض' }
 ];

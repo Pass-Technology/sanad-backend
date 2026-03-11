@@ -1,4 +1,4 @@
-import { Controller, Get, UseGuards } from "@nestjs/common";
+import { Controller, Get, Headers, UseGuards } from "@nestjs/common";
 import { LookUpService } from "./lookup.service";
 import { ApiBearerAuth, ApiOperation, ApiTags } from "@nestjs/swagger";
 import { JwtAuthGuard } from '../../user/guards/jwt-auth.guard';
@@ -13,25 +13,25 @@ export class LookUpController {
 
     @Get('profile-status')
     @ApiOperation({ summary: 'get profile statuses' })
-    async getProfileStatus() {
-        return await this.lookUpService.getProfileStatus()
+    async getProfileStatus(@Headers('accept-language') lang: string = 'en') {
+        return await this.lookUpService.getProfileStatus(lang)
     }
 
     @Get('provider-types')
     @ApiOperation({ summary: 'get provider types' })
-    async getProviderTypes() {
-        return await this.lookUpService.getProviderTypes()
+    async getProviderTypes(@Headers('accept-language') lang: string = 'en') {
+        return await this.lookUpService.getProviderTypes(lang)
     }
 
     @Get('company-types')
     @ApiOperation({ summary: 'get company types' })
-    async getCompanyTypes() {
-        return await this.lookUpService.getCompanyTypes()
+    async getCompanyTypes(@Headers('accept-language') lang: string = 'en') {
+        return await this.lookUpService.getCompanyTypes(lang)
     }
 
     @Get('billing-cycles')
     @ApiOperation({ summary: 'get billing cycles' })
-    async getBillingCycles() {
-        return await this.lookUpService.getBillingCycles()
+    async getBillingCycles(@Headers('accept-language') lang: string = 'en') {
+        return await this.lookUpService.getBillingCycles(lang)
     }
 }
