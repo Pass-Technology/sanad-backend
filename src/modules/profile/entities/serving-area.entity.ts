@@ -10,10 +10,12 @@ import { BaseEntity } from '../../../database/base-entity';
 @Entity('serving_areas')
 export class ServingAreaEntity extends BaseEntity {
 
+    @Column({ type: 'uuid' })
+    branchId: string;
+
     @ManyToOne(() => BranchEntity, (branch) => branch.servingAreas, {
         onDelete: 'CASCADE',
     })
-    @JoinColumn({ name: 'branchId' })
     branch: BranchEntity;
 
     @Column({ type: 'decimal' })

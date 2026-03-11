@@ -6,6 +6,7 @@ import {
     HttpException,
     HttpStatus,
 } from '@nestjs/common';
+import { LOOKUP_IDS } from 'src/shared/constants/lookup-ids';
 import { DataSource } from 'typeorm';
 import { ProfileRepository } from './profile.repository';
 import { CreateBranchDto } from './dto/step-3-branches.dto';
@@ -143,14 +144,14 @@ export class ProfileService {
         if (!profile) {
             return {
                 currentStep: 1,
-                statusId: 'draft',
+                statusId: LOOKUP_IDS.PROFILE_STATUS.DRAFT,
                 data: null,
             };
         }
 
         return {
             currentStep: profile.currentStep,
-            statusId: profile.status.id,
+            statusId: profile.statusId,
             data: profile,
         };
     }

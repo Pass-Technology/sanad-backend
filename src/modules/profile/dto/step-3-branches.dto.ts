@@ -8,6 +8,7 @@ import {
     IsOptional,
     IsString,
     IsUrl,
+    IsUUID,
     Matches,
     Min,
     ValidateNested,
@@ -17,7 +18,7 @@ export class ServingAreaDto {
 
     @ApiPropertyOptional()
     @IsOptional()
-    @IsString()
+    @IsUUID()
     id?: string;
 
     @ApiProperty({ example: 10, minimum: 1 })

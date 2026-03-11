@@ -1,10 +1,11 @@
-import { Entity, Column, OneToMany, PrimaryColumn, CreateDateColumn, UpdateDateColumn, DeleteDateColumn } from "typeorm";
+import { Entity, Column, OneToMany, PrimaryGeneratedColumn, CreateDateColumn, UpdateDateColumn, DeleteDateColumn } from "typeorm";
 import { SubscriptionPlanFeatureEntity } from "./subscription-plan-feature.entity";
+import { ProviderSubscriptionEntity } from "../../profile/entities/provider-subscription.entity";
 
 @Entity('subscription_plans')
 export class SubscriptionPlanEntity {
 
-    @PrimaryColumn({ type: 'varchar' })
+    @PrimaryGeneratedColumn('uuid')
     id: string;
 
     @Column()
@@ -36,4 +37,7 @@ export class SubscriptionPlanEntity {
 
     @OneToMany(() => SubscriptionPlanFeatureEntity, feature => feature.plan)
     features: SubscriptionPlanFeatureEntity[];
+
+    @OneToMany(() => ProviderSubscriptionEntity, sub => sub.selectedPlan)
+    subscriptions: ProviderSubscriptionEntity[];
 }

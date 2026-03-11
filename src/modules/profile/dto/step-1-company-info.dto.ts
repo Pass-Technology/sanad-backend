@@ -6,8 +6,9 @@ import {
     IsUrl,
     IsArray,
     ValidateIf,
+    IsUUID,
 } from 'class-validator';
-import { ProviderType } from '../../../database/seeds/lookup-seeds/provider-type/provider-type.objects';
+// import { ProviderType } from '../../../database/seeds/lookup-seeds/provider-type/provider-type.objects';
 
 export class CreateCompanyInfoDto {
     @ApiProperty({
@@ -15,14 +16,17 @@ export class CreateCompanyInfoDto {
         description: 'Provider type: individual or company',
     })
     @IsNotEmpty()
+    @IsUUID()
     providerTypeId: string;
 
     @ApiPropertyOptional({
         example: "private",
         description: 'Required when providerType is company',
     })
-    @ValidateIf((o: CreateCompanyInfoDto) => o.providerTypeId === ProviderType.COMPANY)
-    @IsNotEmpty({ message: 'companyType is required when providerType is company' })
+    // @ValidateIf((o: CreateCompanyInfoDto) => o.providerTypeId === ProviderType.COMPANY)
+    // @IsNotEmpty({ message: 'companyType is required when providerType is company' })
+    @IsNotEmpty()
+    @IsUUID()
     companyTypeId?: string;
 
     @ApiProperty({ example: 'Sanad Services LLC' })

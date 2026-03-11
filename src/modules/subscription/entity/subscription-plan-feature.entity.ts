@@ -7,11 +7,10 @@ import { BaseEntity } from '../../../database/base-entity';
 @Unique(['planId', 'featureText'])
 export class SubscriptionPlanFeatureEntity extends BaseEntity {
 
-    @Column({ type: 'varchar' })
+    @Column({ type: 'uuid' })
     planId: string;
 
     @ManyToOne(() => SubscriptionPlanEntity, { onDelete: 'CASCADE' })
-    @JoinColumn({ name: 'planId' })
     plan: SubscriptionPlanEntity;
 
     @Column()

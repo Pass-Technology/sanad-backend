@@ -1,9 +1,9 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsString, IsNumber, IsOptional, IsBoolean, Min } from 'class-validator';
+import { IsString, IsNumber, IsOptional, IsBoolean, Min, IsUUID } from 'class-validator';
 
 export class CreatePlanDto {
     @ApiProperty({ example: 'Growth' })
-    @IsString()
+    @IsUUID()
     id: string;
 
     @ApiProperty({ example: 'Growth' })

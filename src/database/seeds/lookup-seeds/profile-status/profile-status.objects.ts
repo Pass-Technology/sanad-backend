@@ -1,6 +1,6 @@
 export const profileStatusObjects = [
-    { labelEn: 'Draft', labelAr: 'مسودة' },
-    { labelEn: 'Pending Review', labelAr: 'قيد المراجعة' },
-    { labelEn: 'Approved', labelAr: 'مقبول' },
-    { labelEn: 'Rejected', labelAr: 'مرفوض' }
+    { id: 'de305d54-75b4-431b-adb2-eb6b9e546013', labelEn: 'Draft', labelAr: 'مسودة' },
+    { id: '8f3b7d1e-84b2-4d2c-8b8a-1c8a1e8a1e8a', labelEn: 'Pending Review', labelAr: 'قيد المراجعة' },
+    { id: 'c1a2d3e4-b5c6-4d7e-8f9a-0b1c2d3e4f5a', labelEn: 'Approved', labelAr: 'مقبول' },
+    { id: 'd2e3f4a5-b6c7-4d8e-9f0a-1b2c3d4e5f6a', labelEn: 'Rejected', labelAr: 'مرفوض' }
 ];

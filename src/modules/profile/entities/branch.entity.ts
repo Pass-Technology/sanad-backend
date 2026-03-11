@@ -18,7 +18,6 @@ export class BranchEntity extends BaseEntity {
     @ManyToOne(() => ProviderProfileEntity, (profile) => profile.branches, {
         onDelete: 'CASCADE',
     })
-    @JoinColumn({ name: 'providerProfileId' })
     providerProfile: ProviderProfileEntity;
 
     @Column()

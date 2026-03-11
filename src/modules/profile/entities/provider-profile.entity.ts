@@ -22,25 +22,22 @@ export class ProviderProfileEntity extends BaseEntity {
     @Column({ type: 'uuid' })
     userId: string;
 
-    // @Column({ type: 'varchar', default: 'draft' })
-    // statusId: string;
+    @Column({ type: 'uuid' })
+    statusId: string;
 
     @ManyToOne(() => LookUpProfileStatusEntity, { onDelete: 'CASCADE' })
-    @JoinColumn({ name: 'statusId' })
     status: LookUpProfileStatusEntity;
 
-    @Column({ type: 'varchar', nullable: true })
+    @Column({ type: 'uuid', nullable: true })
     providerTypeId: string | null;
 
     @ManyToOne(() => LookUpProviderTypeEntity, { onDelete: 'CASCADE' })
-    @JoinColumn({ name: 'providerTypeId' })
     providerType: LookUpProviderTypeEntity | null;
 
-    @Column({ type: 'varchar', nullable: true })
+    @Column({ type: 'uuid', nullable: true })
     companyTypeId: string | null;
 
     @ManyToOne(() => LookUpCompanyTypeEntity, { onDelete: 'CASCADE' })
-    @JoinColumn({ name: 'companyTypeId' })
     companyType: LookUpCompanyTypeEntity | null;
 
     @Column({ type: 'varchar', nullable: true })
@@ -98,7 +95,6 @@ export class ProviderProfileEntity extends BaseEntity {
     subscription: ProviderSubscriptionEntity;
 
     @ManyToOne(() => UserEntity, (user) => user.profile, { onDelete: 'CASCADE' })
-    @JoinColumn({ name: 'userId' })
     user: UserEntity;
 
 }

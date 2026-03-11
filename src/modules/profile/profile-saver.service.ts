@@ -9,6 +9,7 @@ import { ProviderProfileEntity } from "./entities/provider-profile.entity";
 import { ProviderSubscriptionEntity } from "./entities/provider-subscription.entity";
 import { ProviderUserInfoEntity } from "./entities/provider-user-info.entity";
 import { ServingAreaEntity } from "./entities/serving-area.entity";
+import { LOOKUP_IDS } from "../../shared/constants/lookup-ids";
 
 @Injectable()
 export class ProfileSaverService {
@@ -21,7 +22,7 @@ export class ProfileSaverService {
         if (!profile) {
             profile = manager.create(ProviderProfileEntity, {
                 userId,
-                statusId: "draft",
+                statusId: LOOKUP_IDS.PROFILE_STATUS.DRAFT,
                 currentStep: 1,
             });
             profile = await manager.save(ProviderProfileEntity, profile);
@@ -167,7 +168,7 @@ export class ProfileSaverService {
         // finalization fields
         await manager.update(ProviderProfileEntity, profile.id, {
             currentStep: 8,
-            status: { id: 'pending_review' }
+            statusId: LOOKUP_IDS.PROFILE_STATUS.PENDING_REVIEW
         });
 
         const completeProfile = await manager.findOne(ProviderProfileEntity, {

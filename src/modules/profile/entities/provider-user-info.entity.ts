@@ -17,7 +17,7 @@ export class ProviderUserInfoEntity extends BaseEntity {
     @OneToOne(() => ProviderProfileEntity, (profile) => profile.userInfo, {
         onDelete: 'CASCADE',
     })
-    @JoinColumn({ name: 'providerProfileId' })
+    @JoinColumn()
     providerProfile: ProviderProfileEntity;
 
     @Column()
