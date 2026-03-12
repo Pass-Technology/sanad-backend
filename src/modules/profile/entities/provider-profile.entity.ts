@@ -20,15 +20,10 @@ import { UserEntity } from '../../user/entities/user.entity';
 @Entity('provider_profiles')
 export class ProviderProfileEntity extends BaseEntity {
 
-    // @Column()
-    // statusId: string;
-
     @ManyToOne(() => LookUpProfileStatusEntity, { cascade: true, onDelete: 'CASCADE' })
     @JoinColumn()
     status: LookUpProfileStatusEntity;
 
-    // @Column({ nullable: true })
-    // providerTypeId: string | null;
 
     @ManyToOne(() => LookUpProviderTypeEntity, {
         nullable: true,
@@ -38,8 +33,6 @@ export class ProviderProfileEntity extends BaseEntity {
     @JoinColumn()
     providerType: LookUpProviderTypeEntity;
 
-    // @Column({ nullable: true })
-    // companyTypeId: string | null;
 
     @ManyToOne(() => LookUpCompanyTypeEntity, { cascade: true, onDelete: 'CASCADE', nullable: true })
     @JoinColumn({ name: 'companyTypeId' })
@@ -71,14 +64,12 @@ export class ProviderProfileEntity extends BaseEntity {
     currentStep: number;
 
     @OneToOne(() => ProviderUserInfoEntity, (info) => info.providerProfile, {
-        // eager: true,
         cascade: true
     })
     userInfo: ProviderUserInfoEntity;
 
     @OneToMany(() => BranchEntity, (branch) => branch.providerProfile, {
         onDelete: 'CASCADE',
-        // eager: true,
         cascade: true
     })
     branches: BranchEntity[];
@@ -86,26 +77,20 @@ export class ProviderProfileEntity extends BaseEntity {
     @OneToOne(() => ProviderComplianceEntity, (c) => c.providerProfile, {
         onDelete: 'CASCADE',
         cascade: true
-        // eager: true,
     })
     compliance: ProviderComplianceEntity;
 
     @OneToOne(() => ProviderPaymentEntity, (p) => p.providerProfile, {
         onDelete: 'CASCADE',
         cascade: true
-        // eager: true,
     })
     payment: ProviderPaymentEntity;
 
     @OneToOne(() => ProviderSubscriptionEntity, (s) => s.providerProfile, {
         onDelete: 'CASCADE',
-        // cascade: true
-        // eager: true,
+        cascade: true
     })
     subscription: ProviderSubscriptionEntity;
-
-    // @Column()
-    // userId: string;
 
     @ManyToOne(() => UserEntity, (user) => user.profile, { onDelete: 'CASCADE' })
     @JoinColumn()

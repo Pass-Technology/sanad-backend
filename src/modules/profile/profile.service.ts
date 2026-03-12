@@ -1,8 +1,6 @@
 import {
     Injectable,
     NotFoundException,
-    ForbiddenException,
-    BadRequestException,
     HttpException,
     HttpStatus,
 } from '@nestjs/common';
@@ -14,12 +12,9 @@ import { CreateFullProfileDto } from './dto/create-full-profile.dto';
 import { ProviderProfileEntity } from './entities/provider-profile.entity';
 import { ProviderUserInfoEntity } from './entities/provider-user-info.entity';
 import { BranchEntity } from './entities/branch.entity';
-import { ServingAreaEntity } from './entities/serving-area.entity';
 import { ProviderComplianceEntity } from './entities/provider-compliance.entity';
 import { ProviderPaymentEntity } from './entities/provider-payment.entity';
 import { ProviderSubscriptionEntity } from './entities/provider-subscription.entity';
-import { StepResponseDto, ProgressResponseDto } from './dto/profile-response.dto';
-import { UserEntity } from 'src/modules/user/entities/user.entity';
 import { LookUpService } from './lookup-tables/lookup.service';
 import { ProfileSaverService } from './profile-saver.service';
 import { CreateCompanyInfoDto } from './dto/step-1-company-info.dto';
@@ -38,69 +33,6 @@ export class ProfileService {
         private readonly lookupService: LookUpService,
         private readonly profileSaver: ProfileSaverService,
     ) { }
-
-
-
-    // /**
-    //  * 
-    //  * @param userId 
-    //  * @returns get the profile or create a new one if it doesn't exist
-    //  */
-    // private async getOrCreateProfile(userId: string): Promise<ProviderProfileEntity> {
-    //     const existing = await this.profileRepo.findProfileByUserId(userId);
-    //     if (existing) return existing;
-
-    //     const draftRecord = await this.lookupService.getDraftStatus();
-
-    //     if (!draftRecord) {
-    //         throw new HttpException(`Draft status not found`, HttpStatus.CONFLICT)
-    //     }
-
-    //     return this.profileRepo.createProfile({
-    //         status: draftRecord,
-    //         currentStep: 1,
-    //     });
-    // }
-
-    /**
-    //  * 
-    //  * @param stepLabel 
-    //  * @param profile 
-    //  * @param data 
-    //  * @returns a message response of the step
-     */
-    // private buildStepResponse(
-    //     profile: ProviderProfileEntity,
-    //     data: unknown,
-    // ){
-    //     return {
-
-    //         statusId: profile.status.id,
-    //         data,
-    //     };
-    // }
-
-    // /**
-    //  * 
-    //  * @param profileId 
-    //  * @param completedStep 
-    //  * @param currentStep 
-    //  * @returns Advance currentStep only if the user hasn't already passed this step.
-    //  */
-    // private async advanceStep(
-    //     profileId: string,
-    //     completedStep: number,
-    //     currentStep: number,
-    // ): Promise<ProviderProfileEntity> {
-    //     const nextStep = completedStep + 1;
-    //     if (currentStep <= completedStep) {
-    //         return await this.profileRepo.updateProfile(profileId, {
-    //             currentStep: Math.min(nextStep, 8),
-    //         });
-    //     }
-    //     return await this.profileRepo.updateProfile(profileId, {});
-    // }
-
 
 
     async submitFullProfile(
@@ -122,24 +54,22 @@ export class ProfileService {
 
         // const companyInfoEntity = await this.processCompanyInfo(companyInfo, userId, manager);
 
-        const userInfoEntity = await this.processUserInfo(userInfo, manager);
+        const userInfoEntity = await this.processUserInfo(userInfo);
 
-        const brancheEntities = this.processBranches(branches, manager);
+        const brancheEntities = await this.processBranches(branches);
 
-        const payementEntity = this.processPayement(payment, manager);
+        const payementEntity = await this.processPayement(payment);
 
-        const complianceEntity = this.processCompliance(compliance, manager);
+        const complianceEntity = await this.processCompliance(compliance);
 
-        const subscriptionEntity = this.processSubscription(subscription, manager)
-
-
+        const subscriptionEntity = await this.processSubscription(subscription)
 
 
 
-        const providerProfileEnity = this.processProviderProfile
-            (companyInfo, userInfoEntity, brancheEntities, payementEntity, complianceEntity, subscriptionEntity, services, userId, manager);
+        const providerProfileEnity = await this.processProviderProfile
+            (companyInfo, userInfoEntity, brancheEntities, payementEntity, complianceEntity, subscriptionEntity, services, userId);
 
-        return await this.profileSaver.saveProviderProfile(providerProfileEnity, manager)
+        return await this.profileSaver.saveProviderProfile(providerProfileEnity)
 
     }
 
@@ -163,54 +93,42 @@ export class ProfileService {
         // return this.profileSaver.createCompanyEntity(companyInfo, userId, manager)
     }
 
-    processUserInfo(userInfo: CreateUserInfoDto, manager: EntityManager) {
+    async processUserInfo(userInfo: CreateUserInfoDto) {
 
-        return this.profileSaver.createUserInfoEntity(userInfo, manager)
+        return await this.profileSaver.createUserInfoEntity(userInfo)
     }
 
     // processServices(services: CreateServicesDto, manager: EntityManager) { }
 
 
-    processBranches(branches: CreateBranchesDto, manager: EntityManager) {
-        return this.profileSaver.createBranchEntities(branches, manager)
+    async processBranches(branches: CreateBranchesDto) {
+        return this.profileSaver.createBranchEntities(branches)
     }
 
 
-    processPayement(payment: CreatePaymentDto, manager: EntityManager) {
-        return this.profileSaver.createPayementEntity(payment, manager)
+    async processPayement(payment: CreatePaymentDto) {
+        return await this.profileSaver.createPayementEntity(payment)
     }
 
-    processCompliance(compliance: CreateComplianceDto, manager: EntityManager) {
-        return this.profileSaver.createComplianceEntity(compliance, manager)
+    async processCompliance(compliance: CreateComplianceDto) {
+        return this.profileSaver.createComplianceEntity(compliance)
     }
 
-    processSubscription(subscription: CreateSubscriptionDto, manager: EntityManager) {
-        return this.profileSaver.createSubscriptionEntity(subscription, manager)
+    async processSubscription(subscription: CreateSubscriptionDto) {
+        return this.profileSaver.createSubscriptionEntity(subscription)
     }
 
 
-    processProviderProfile(
+    async processProviderProfile(
+        // profileDto: CreateFullProfileDto,
+        // manager: EntityManager,
         companyInfo: CreateCompanyInfoDto, userInfo: ProviderUserInfoEntity,
         branches: BranchEntity[], payment: ProviderPaymentEntity,
-        ProviderCompliance: ProviderComplianceEntity,
+        compliance: ProviderComplianceEntity,
         subscription: ProviderSubscriptionEntity,
-        services: CreateServicesDto, userId: string, manager: EntityManager) {
-        return this.profileSaver.createProviderProfile(companyInfo, userInfo, branches, payment, ProviderCompliance, subscription, services, userId, manager)
+        services: CreateServicesDto, userId: string) {
+        return this.profileSaver.createProviderProfile(companyInfo, userInfo, branches, payment, compliance, subscription, services, userId)
     }
-
-    // async getProgress(userId: string) {
-    //     const profile = await this.profileRepo.findProfileByUserId(userId);
-
-    //     if (!profile) {
-    //         return new NotFoundException('Profile not found. Please start the setup process.');
-
-    //     }
-
-    //     return {
-    //         statusId: profile.status.id,
-    //         data: profile,
-    //     };
-    // }
 
 
 

@@ -28,11 +28,7 @@ export class ProfileRepository {
         private readonly subscriptionRepo: Repository<ProviderSubscriptionEntity>,
     ) { }
 
-    /**
-     *
-     * @param userId
-     * @returns provider profile if it exists | null if not
-     */
+
     async findProfileByUserId(userId: string): Promise<ProviderProfileEntity> {
 
         const profile = await this.profileRepo.findOne({
@@ -55,22 +51,13 @@ export class ProfileRepository {
         }
         return profile;
     }
-    /**
-     *
-     * @param data
-     * @returns provider profile
-     */
+
     async createProfile(data: Partial<ProviderProfileEntity>): Promise<ProviderProfileEntity> {
         const profile = this.profileRepo.create(data);
         return await this.profileRepo.save(profile);
     }
 
-    /**
-     *
-     * @param id
-     * @param data
-     * @returns updated provider profile
-     */
+
     async updateProfile(
         id: string,
         data: Partial<ProviderProfileEntity>,
@@ -79,20 +66,10 @@ export class ProfileRepository {
         return await this.profileRepo.findOneOrFail({ where: { id } });
     }
 
-    /**
-     *
-     * @param profileId
-     * @returns provider user info
-     */
     async findUserInfoByProfileId(profileId: string): Promise<ProviderUserInfoEntity | null> {
         return await this.userInfoRepo.findOne({ where: { providerProfile: { id: profileId } } });
     }
 
-    /**
-     *
-     * @param data
-     * @returns proivder user info
-     */
     async saveUserInfo(data: Partial<ProviderUserInfoEntity>): Promise<ProviderUserInfoEntity> {
         const existing = await this.findUserInfoByProfileId(data.providerProfile?.id!);
         if (existing) {
