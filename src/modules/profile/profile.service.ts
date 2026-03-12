@@ -4,7 +4,7 @@ import {
     HttpException,
     HttpStatus,
 } from '@nestjs/common';
-import { DataSource, EntityManager } from 'typeorm';
+import { DataSource } from 'typeorm';
 import { ProfileRepository } from './profile.repository';
 import { CreateBranchDto, CreateBranchesDto } from './dto/step-3-branches.dto';
 import { CreateFullProfileDto } from './dto/create-full-profile.dto';
@@ -40,7 +40,7 @@ export class ProfileService {
         profileDto: CreateFullProfileDto,
     ) {
 
-        const manager: EntityManager = this.dataSource.manager;
+        // const manager: EntityManager = this.dataSource.manager;
 
 
         const isUserHaveProfile = await this.profileRepo.isUserHaveProfile(userId);
@@ -73,18 +73,18 @@ export class ProfileService {
 
     }
 
-    async processCompanyInfo(companyInfo: CreateCompanyInfoDto, userId: string, manager: EntityManager) {
+    async processCompanyInfo(companyInfo: CreateCompanyInfoDto, userId: string) {
         const { providerTypeId, companyTypeId } = companyInfo;
 
         const isValidProvider =
-            await this.lookupService.isProviderTypeExist(providerTypeId, manager);
+            await this.lookupService.isProviderTypeExist(providerTypeId);
 
         if (!isValidProvider) throw new HttpException('Invalid provider type id', HttpStatus.BAD_REQUEST);
 
 
         if (companyTypeId) {
             const isValidCompany =
-                await this.lookupService.isCompanyTypeExist(companyTypeId, manager);
+                await this.lookupService.isCompanyTypeExist(companyTypeId);
 
             if (!isValidCompany)
                 throw new HttpException('Invalid company type id', HttpStatus.BAD_REQUEST);
