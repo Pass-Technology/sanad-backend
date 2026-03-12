@@ -14,5 +14,10 @@ export const LOOKUP_IDS = {
         THREE_MONTHS: '4d5e6f7a-b8c9-4d4e-1f2a-3b4c5d6e7f8a',
         SIX_MONTHS: '5e6f7a8b-c9d0-4e5f-2a3b-4c5d6e7f8a9b',
         YEARLY: '6f7a8b9c-d0e1-4f6a-3b4c-5d6e7f8a9b0c',
+    },
+    COMPANY_TYPE: {
+        PRIVATE: 'ce1dd6b9-608f-4e83-8a12-a211cab9b02c',
+        GOVERNMENT: '4c78596f-f3c2-4777-96d1-75431b759889',
+        SEMI_GOVERNMENT: 'ead78cdd-26a7-405c-9557-0d7ce9e67638'
     }
 };

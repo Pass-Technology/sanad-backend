@@ -15,6 +15,13 @@ import { LookUpProviderTypeEntity } from "./lookup-tables/entities/lookup-provid
 import { LookUpCompanyTypeEntity } from "./lookup-tables/entities/lookup-company-type.entity";
 import { SubscriptionPlanEntity } from "../subscription/entity/subscription-plan.entity";
 import { LookUpBillingCycleEntity } from "./lookup-tables/entities/lookup-biling-cycle.entity";
+import { CreateCompanyInfoDto } from "./dto/step-1-company-info.dto";
+import { CreateUserInfoDto } from "./dto/step-2-user-info.dto";
+import { CreateServicesDto } from "./dto/step-4-services.dto";
+import { CreateBranchesDto } from "./dto/step-3-branches.dto";
+import { CreatePaymentDto } from "./dto/step-6-payment.dto";
+import { CreateComplianceDto } from "./dto/step-5-compliance.dto";
+import { CreateSubscriptionDto } from "./dto/step-7-subscription.dto";
 
 @Injectable()
 export class ProfileSaverService {
@@ -199,4 +206,132 @@ export class ProfileSaverService {
 
 
     }
+
+
+
+    // createCompanyEntity(companyInfo: CreateCompanyInfoDto, userId: string, manager: EntityManager) {
+    //     // if (manager)
+    //     return manager.create(ProviderProfileEntity, {
+    //         user: { id: userId } as UserEntity,
+    //         status: { id: LOOKUP_IDS.PROFILE_STATUS.DRAFT } as LookUpProfileStatusEntity,
+    //         currentStep: 1,
+    //     });
+
+
+    // }
+
+    async createUserInfoEntity(userInfo: CreateUserInfoDto, manager: EntityManager) {
+        return manager.create(ProviderUserInfoEntity, {
+            ...userInfo
+        });
+    }
+
+    createBranchEntities(branches: CreateBranchesDto, manager: EntityManager) {
+        const { branches: allBranches } = branches;
+
+        const branchEntities: BranchEntity[] = [];
+        for (const branchDto of allBranches) {
+
+            const { servingAreas } = branchDto;
+            const branchServingAreaEntities: ServingAreaEntity[] = [];
+            if (servingAreas?.length) {
+                for (const area of servingAreas) {
+                    branchServingAreaEntities.push(
+                        manager.create(ServingAreaEntity, {
+                            radiusKm: area.radiusKm,
+                            phone: area.phone ?? null,
+                            mapLink: area.mapLink ?? null,
+                            lat: area.lat ?? null,
+                            lng: area.lng ?? null,
+                        }),)
+                }
+
+            }
+
+
+            branchEntities.push(manager.create(BranchEntity, {
+                // providerProfile: { id: profile.id } as ProviderProfileEntity,
+                branchName: branchDto.branchName,
+                branchManagerName: branchDto.branchManagerName,
+                branchAddress: branchDto.branchAddress,
+                city: branchDto.city,
+                branchPhone: branchDto.branchPhone ?? null,
+                managerPhone: branchDto.managerPhone ?? null,
+                googleMapsLink: branchDto.googleMapsLink ?? null,
+                socialMediaLink: branchDto.socialMediaLink ?? null,
+                servingAreas: branchServingAreaEntities
+            }))
+            // const savedBranch = await manager.save(BranchEntity, branch);
+
+
+        }
+
+        return branchEntities;
+    }
+
+    createServicesEntities(services: CreateServicesDto, manager: EntityManager) {
+    }
+
+    createPayementEntity(payment: CreatePaymentDto, manager: EntityManager) {
+        return manager.create(ProviderPaymentEntity, {
+            ...payment
+        });
+    }
+
+    createComplianceEntity(compliance: CreateComplianceDto, manager: EntityManager) {
+        return manager.create(ProviderComplianceEntity, {
+
+            ...compliance
+        });
+    }
+
+
+    createSubscriptionEntity(subscription: CreateSubscriptionDto, manager: EntityManager) {
+        const { selectedPlanId, billingCycleId } = subscription;
+        return manager.create(ProviderSubscriptionEntity, {
+            selectedPlan: { id: selectedPlanId },
+            billingCycle: { id: billingCycleId },
+            startDate: new Date(),
+        });
+    }
+
+
+    createProviderProfile(companyInfo: CreateCompanyInfoDto, userInfo: ProviderUserInfoEntity,
+        branches: BranchEntity[], payment: ProviderPaymentEntity,
+        ProviderCompliance: ProviderComplianceEntity,
+        subscription: ProviderSubscriptionEntity,
+        services: CreateServicesDto, userId: string, manager: EntityManager) {
+
+
+        // const { providerTypeId } = companyInfo;
+
+        return manager.create(ProviderProfileEntity, {
+            user: { id: userId } as UserEntity,
+            status: { id: LOOKUP_IDS.PROFILE_STATUS.DRAFT },
+            // statusId
+            selectedServiceIds: services.selectedServiceIds,
+            providerType: { id: companyInfo.providerTypeId },
+            companyType: companyInfo.companyTypeId
+                ? { id: companyInfo.companyTypeId } as LookUpCompanyTypeEntity
+                : null,
+            tradeName: companyInfo.tradeName,
+            companyRepresentativeName: companyInfo.companyRepresentativeName ?? null,
+            companyDescription: companyInfo.companyDescription ?? null,
+            socialMediaLink: companyInfo.socialMediaLink ?? null,
+            websiteLink: companyInfo.websiteLink ?? null,
+            languagesSpoken: companyInfo.languagesSpoken ?? null,
+            userInfo: userInfo,
+            branches: branches,
+            payment: payment,
+            ProviderCompliance: ProviderCompliance,
+            subscription: subscription
+        });
+
+    }
+
+
+    saveProviderProfile(providerProfileEntity: ProviderProfileEntity, manager: EntityManager) {
+        return manager.save(ProviderProfileEntity, providerProfileEntity)
+    }
+
 }

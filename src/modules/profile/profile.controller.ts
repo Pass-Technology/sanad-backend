@@ -34,7 +34,7 @@ export class ProfileController {
     async submitFullProfile(
         @Request() req: { user: UserInfoResponseDto },
         @Body() dto: CreateFullProfileDto,
-    ): Promise<StepResponseDto> {
+    ) {
         return await this.profileService.submitFullProfile(req.user.userId, dto);
     }
 

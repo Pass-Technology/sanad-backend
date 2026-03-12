@@ -185,4 +185,10 @@ export class ProfileRepository {
         const subscription = this.subscriptionRepo.create(data);
         return await this.subscriptionRepo.save(subscription);
     }
+
+    async isUserHaveProfile(userId: string) {
+
+        return await this.profileRepo.exists({ where: { user: { id: userId } } })
+
+    }
 }

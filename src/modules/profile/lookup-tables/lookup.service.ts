@@ -1,6 +1,6 @@
 import { Injectable } from "@nestjs/common";
 import { InjectRepository } from "@nestjs/typeorm";
-import { Repository } from "typeorm";
+import { EntityManager, Repository } from "typeorm";
 import { LookUpProfileStatusEntity } from "./entities/lookup-profile-status.entity";
 import { LookUpProviderTypeEntity } from "./entities/lookup-provider-type.entity";
 import { LookUpCompanyTypeEntity } from "./entities/lookup-company-type.entity";
@@ -91,9 +91,26 @@ export class LookUpService {
         return data.some(t => t.id === id);
     }
 
+
+    async isProviderTypeExist(id: string, manager?: EntityManager): Promise<boolean> {
+        if (manager) {
+            return manager.exists(LookUpProviderTypeEntity, { where: { id } })
+        }
+
+        return this.providerTypeRepo.exists({ where: { id } })
+    }
+
     async validateCompanyTypeId(id: string): Promise<boolean> {
         const data = await this.getCompanyTypes('en');
         return data.some(t => t.id === id);
+    }
+
+    async isCompanyTypeExist(id: string, manager?: EntityManager): Promise<boolean> {
+        if (manager) {
+            return manager.exists(LookUpCompanyTypeEntity, { where: { id } })
+        }
+
+        return this.companyTypeRepo.exists({ where: { id } })
     }
 
 

@@ -6,10 +6,9 @@ import {
     HttpException,
     HttpStatus,
 } from '@nestjs/common';
-import { LOOKUP_IDS } from 'src/shared/constants/lookup-ids';
-import { DataSource } from 'typeorm';
+import { DataSource, EntityManager } from 'typeorm';
 import { ProfileRepository } from './profile.repository';
-import { CreateBranchDto } from './dto/step-3-branches.dto';
+import { CreateBranchDto, CreateBranchesDto } from './dto/step-3-branches.dto';
 import { CreateFullProfileDto } from './dto/create-full-profile.dto';
 
 import { ProviderProfileEntity } from './entities/provider-profile.entity';
@@ -23,6 +22,12 @@ import { StepResponseDto, ProgressResponseDto } from './dto/profile-response.dto
 import { UserEntity } from 'src/modules/user/entities/user.entity';
 import { LookUpService } from './lookup-tables/lookup.service';
 import { ProfileSaverService } from './profile-saver.service';
+import { CreateCompanyInfoDto } from './dto/step-1-company-info.dto';
+import { CreateUserInfoDto } from './dto/step-2-user-info.dto';
+import { CreateServicesDto } from './dto/step-4-services.dto';
+import { CreatePaymentDto } from './dto/step-6-payment.dto';
+import { CreateComplianceDto } from './dto/step-5-compliance.dto';
+import { CreateSubscriptionDto } from './dto/step-7-subscription.dto';
 
 
 @Injectable()
@@ -52,7 +57,6 @@ export class ProfileService {
         }
 
         return this.profileRepo.createProfile({
-            user: { id: userId } as UserEntity,
             status: draftRecord,
             currentStep: 1,
         });
@@ -73,7 +77,7 @@ export class ProfileService {
         return {
             message: `${stepLabel} saved successfully`,
             currentStep: profile.currentStep,
-            statusId: profile.status?.id,
+            statusId: profile.status.id,
             data,
         };
     }
@@ -103,38 +107,102 @@ export class ProfileService {
 
     async submitFullProfile(
         userId: string,
-        dto: CreateFullProfileDto,
-    ): Promise<StepResponseDto> {
+        profileDto: CreateFullProfileDto,
+    ) {
 
-        const isValidProvider =
-            await this.lookupService.validateProviderTypeId(dto.companyInfo.providerTypeId);
+        const manager: EntityManager = this.dataSource.manager;
 
-        if (!isValidProvider)
-            throw new BadRequestException('Invalid provider type id');
 
-        if (dto.companyInfo.companyTypeId) {
-            const isValidCompany =
-                await this.lookupService.validateCompanyTypeId(dto.companyInfo.companyTypeId);
+        const isUserHaveProfile = await this.profileRepo.isUserHaveProfile(userId);
 
-            if (!isValidCompany)
-                throw new BadRequestException('Invalid company type id');
+        if (isUserHaveProfile) {
+            throw new HttpException(`User Already Have An Profile`, HttpStatus.BAD_REQUEST)
         }
 
-        return this.dataSource.transaction(async (manager) => {
+        const { companyInfo, userInfo, services, branches, subscription, payment, compliance } = profileDto;
 
-            const profile = await this.profileSaver.saveFullProfile(
-                manager,
-                userId,
-                dto,
-            );
 
-            return this.buildStepResponse(
-                'Profile submitted for review',
-                profile,
-                profile,
-            );
-        });
+        // const companyInfoEntity = await this.processCompanyInfo(companyInfo, userId, manager);
+
+        const userInfoEntity = await this.processUserInfo(userInfo, manager);
+
+        const brancheEntities = this.processBranches(branches, manager);
+
+        const payementEntity = this.processPayement(payment, manager);
+
+        const complianceEntity = this.processCompliance(compliance, manager);
+
+        const subscriptionEntity = this.processSubscription(subscription, manager)
+
+
+
+
+
+        const providerProfileEnity = this.processProviderProfile
+            (companyInfo, userInfoEntity, brancheEntities, payementEntity, complianceEntity, subscriptionEntity, services, userId, manager);
+
+        return await this.profileSaver.saveProviderProfile(providerProfileEnity, manager)
+
     }
+
+    async processCompanyInfo(companyInfo: CreateCompanyInfoDto, userId: string, manager: EntityManager) {
+        const { providerTypeId, companyTypeId } = companyInfo;
+
+        const isValidProvider =
+            await this.lookupService.isProviderTypeExist(providerTypeId, manager);
+
+        if (!isValidProvider) throw new HttpException('Invalid provider type id', HttpStatus.BAD_REQUEST);
+
+
+        if (companyTypeId) {
+            const isValidCompany =
+                await this.lookupService.isCompanyTypeExist(companyTypeId, manager);
+
+            if (!isValidCompany)
+                throw new HttpException('Invalid company type id', HttpStatus.BAD_REQUEST);
+        }
+
+        // return this.profileSaver.createCompanyEntity(companyInfo, userId, manager)
+    }
+
+    processUserInfo(userInfo: CreateUserInfoDto, manager: EntityManager) {
+
+        return this.profileSaver.createUserInfoEntity(userInfo, manager)
+    }
+
+    // processServices(services: CreateServicesDto, manager: EntityManager) { }
+
+
+    processBranches(branches: CreateBranchesDto, manager: EntityManager) {
+        return this.profileSaver.createBranchEntities(branches, manager)
+    }
+
+
+    processPayement(payment: CreatePaymentDto, manager: EntityManager) {
+        return this.profileSaver.createPayementEntity(payment, manager)
+    }
+
+    processCompliance(compliance: CreateComplianceDto, manager: EntityManager) {
+        return this.profileSaver.createComplianceEntity(compliance, manager)
+    }
+
+    processSubscription(subscription: CreateSubscriptionDto, manager: EntityManager) {
+        return this.profileSaver.createSubscriptionEntity(subscription, manager)
+    }
+
+
+    processProviderProfile(
+        companyInfo: CreateCompanyInfoDto, userInfo: ProviderUserInfoEntity,
+        branches: BranchEntity[], payment: ProviderPaymentEntity,
+        ProviderCompliance: ProviderComplianceEntity,
+        subscription: ProviderSubscriptionEntity,
+        services: CreateServicesDto, userId: string, manager: EntityManager) {
+        return this.profileSaver.createProviderProfile(companyInfo, userInfo, branches, payment, ProviderCompliance, subscription, services, userId, manager)
+    }
+
+
+
+
 
 
 
@@ -144,14 +212,14 @@ export class ProfileService {
         if (!profile) {
             return {
                 currentStep: 1,
-                statusId: LOOKUP_IDS.PROFILE_STATUS.DRAFT,
+                statusId: 'draft',
                 data: null,
             };
         }
 
         return {
             currentStep: profile.currentStep,
-            statusId: profile.status?.id,
+            statusId: profile.status.id,
             data: profile,
         };
     }
@@ -176,7 +244,7 @@ export class ProfileService {
         const profile = await this.getOrCreateProfile(userId);
         const branch = await this.profileRepo.findBranchById(branchId);
 
-        if (!branch || branch.providerProfile?.id !== profile.id) {
+        if (!branch) {
             throw new NotFoundException('Branch not found');
         }
 
@@ -197,7 +265,7 @@ export class ProfileService {
         if (dto.servingAreas?.length) {
             await this.profileRepo.saveServingAreas(
                 dto.servingAreas.map((area) => ({
-                    branch: { id: branchId } as BranchEntity,
+                    branchId,
                     radiusKm: area.radiusKm,
                     phone: area.phone ?? null,
                     mapLink: area.mapLink ?? null,
@@ -218,7 +286,7 @@ export class ProfileService {
         const profile = await this.getOrCreateProfile(userId);
         const branch = await this.profileRepo.findBranchById(branchId);
 
-        if (!branch || branch.providerProfile?.id !== profile.id) {
+        if (!branch) {
             throw new NotFoundException('Branch not found');
         }
 

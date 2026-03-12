@@ -1,12 +1,13 @@
 import { Entity, Column, OneToMany, PrimaryGeneratedColumn, CreateDateColumn, UpdateDateColumn, DeleteDateColumn } from "typeorm";
 import { SubscriptionPlanFeatureEntity } from "./subscription-plan-feature.entity";
 import { ProviderSubscriptionEntity } from "../../profile/entities/provider-subscription.entity";
+import { BaseEntity } from "../../../database/base-entity";
 
 @Entity('subscription_plans')
-export class SubscriptionPlanEntity {
+export class SubscriptionPlanEntity extends BaseEntity {
 
-    @PrimaryGeneratedColumn('uuid')
-    id: string;
+    // @PrimaryGeneratedColumn('uuid')
+    // id: string;
 
     @Column()
     name: string;
@@ -26,14 +27,6 @@ export class SubscriptionPlanEntity {
     @Column({ default: true })
     isActive: boolean;
 
-    @CreateDateColumn()
-    createdAt: Date;
-
-    @UpdateDateColumn()
-    updatedAt: Date;
-
-    @DeleteDateColumn()
-    deletedAt: Date;
 
     @OneToMany(() => SubscriptionPlanFeatureEntity, feature => feature.plan)
     features: SubscriptionPlanFeatureEntity[];
