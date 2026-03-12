@@ -2,11 +2,11 @@ import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 
 
 export class StepResponseDto {
-    @ApiProperty({ example: 'step-1' })
-    message: string;
+    // @ApiProperty({ example: 'step-1' })
+    // message: string;
 
-    @ApiProperty({ example: 2 })
-    currentStep: number;
+    // @ApiProperty({ example: 2 })
+    // currentStep: number;
 
     @ApiProperty({ example: "Draft" })
     statusId: string;

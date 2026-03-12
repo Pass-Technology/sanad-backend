@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { ProviderProfileEntity } from './entities/provider-profile.entity';
@@ -33,8 +33,9 @@ export class ProfileRepository {
      * @param userId
      * @returns provider profile if it exists | null if not
      */
-    async findProfileByUserId(userId: string): Promise<ProviderProfileEntity | null> {
-        return await this.profileRepo.findOne({
+    async findProfileByUserId(userId: string): Promise<ProviderProfileEntity> {
+
+        const profile = await this.profileRepo.findOne({
             where: { user: { id: userId } },
             relations: [
                 'status',
@@ -49,6 +50,10 @@ export class ProfileRepository {
                 'subscription',
             ],
         });
+        if (!profile) {
+            throw new NotFoundException('Profile not found. Please start the setup process.');
+        }
+        return profile;
     }
     /**
      *

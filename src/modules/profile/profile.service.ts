@@ -41,67 +41,65 @@ export class ProfileService {
 
 
 
-    /**
-     * 
-     * @param userId 
-     * @returns get the profile or create a new one if it doesn't exist
-     */
-    private async getOrCreateProfile(userId: string): Promise<ProviderProfileEntity> {
-        const existing = await this.profileRepo.findProfileByUserId(userId);
-        if (existing) return existing;
+    // /**
+    //  * 
+    //  * @param userId 
+    //  * @returns get the profile or create a new one if it doesn't exist
+    //  */
+    // private async getOrCreateProfile(userId: string): Promise<ProviderProfileEntity> {
+    //     const existing = await this.profileRepo.findProfileByUserId(userId);
+    //     if (existing) return existing;
 
-        const draftRecord = await this.lookupService.getDraftStatus();
+    //     const draftRecord = await this.lookupService.getDraftStatus();
 
-        if (!draftRecord) {
-            throw new HttpException(`Draft status not found`, HttpStatus.CONFLICT)
-        }
+    //     if (!draftRecord) {
+    //         throw new HttpException(`Draft status not found`, HttpStatus.CONFLICT)
+    //     }
 
-        return this.profileRepo.createProfile({
-            status: draftRecord,
-            currentStep: 1,
-        });
-    }
-
-    /**
-     * 
-     * @param stepLabel 
-     * @param profile 
-     * @param data 
-     * @returns a message response of the step
-     */
-    private buildStepResponse(
-        stepLabel: string,
-        profile: ProviderProfileEntity,
-        data: unknown,
-    ): StepResponseDto {
-        return {
-            message: `${stepLabel} saved successfully`,
-            currentStep: profile.currentStep,
-            statusId: profile.status.id,
-            data,
-        };
-    }
+    //     return this.profileRepo.createProfile({
+    //         status: draftRecord,
+    //         currentStep: 1,
+    //     });
+    // }
 
     /**
-     * 
-     * @param profileId 
-     * @param completedStep 
-     * @param currentStep 
-     * @returns Advance currentStep only if the user hasn't already passed this step.
+    //  * 
+    //  * @param stepLabel 
+    //  * @param profile 
+    //  * @param data 
+    //  * @returns a message response of the step
      */
-    private async advanceStep(
-        profileId: string,
-        completedStep: number,
-        currentStep: number,
-    ): Promise<ProviderProfileEntity> {
-        const nextStep = completedStep + 1;
-        if (currentStep <= completedStep) {
-            return await this.profileRepo.updateProfile(profileId, {
-                currentStep: Math.min(nextStep, 8),
-            });
-        }
-        return await this.profileRepo.updateProfile(profileId, {});
-    }
+    // private buildStepResponse(
+    //     profile: ProviderProfileEntity,
+    //     data: unknown,
+    // ){
+    //     return {
+
+    //         statusId: profile.status.id,
+    //         data,
+    //     };
+    // }
+
+    // /**
+    //  * 
+    //  * @param profileId 
+    //  * @param completedStep 
+    //  * @param currentStep 
+    //  * @returns Advance currentStep only if the user hasn't already passed this step.
+    //  */
+    // private async advanceStep(
+    //     profileId: string,
+    //     completedStep: number,
+    //     currentStep: number,
+    // ): Promise<ProviderProfileEntity> {
+    //     const nextStep = completedStep + 1;
+    //     if (currentStep <= completedStep) {
+    //         return await this.profileRepo.updateProfile(profileId, {
+    //             currentStep: Math.min(nextStep, 8),
+    //         });
+    //     }
+    //     return await this.profileRepo.updateProfile(profileId, {});
+    // }
 
 
 
@@ -200,38 +198,24 @@ export class ProfileService {
         return this.profileSaver.createProviderProfile(companyInfo, userInfo, branches, payment, ProviderCompliance, subscription, services, userId, manager)
     }
 
+    // async getProgress(userId: string) {
+    //     const profile = await this.profileRepo.findProfileByUserId(userId);
 
+    //     if (!profile) {
+    //         return new NotFoundException('Profile not found. Please start the setup process.');
 
+    //     }
 
-
-
-
-    async getProgress(userId: string): Promise<ProgressResponseDto> {
-        const profile = await this.profileRepo.findProfileByUserId(userId);
-
-        if (!profile) {
-            return {
-                currentStep: 1,
-                statusId: 'draft',
-                data: null,
-            };
-        }
-
-        return {
-            currentStep: profile.currentStep,
-            statusId: profile.status.id,
-            data: profile,
-        };
-    }
+    //     return {
+    //         statusId: profile.status.id,
+    //         data: profile,
+    //     };
+    // }
 
 
 
     async getMyProfile(userId: string): Promise<ProviderProfileEntity> {
-        const profile = await this.profileRepo.findProfileByUserId(userId);
-        if (!profile) {
-            throw new NotFoundException('Profile not found. Please start the setup process.');
-        }
-        return profile;
+        return await this.profileRepo.findProfileByUserId(userId);
     }
 
 
@@ -240,8 +224,8 @@ export class ProfileService {
         userId: string,
         branchId: string,
         dto: CreateBranchDto,
-    ): Promise<StepResponseDto> {
-        const profile = await this.getOrCreateProfile(userId);
+    ) {
+        const profile = await this.profileRepo.findProfileByUserId(userId);
         const branch = await this.profileRepo.findBranchById(branchId);
 
         if (!branch) {
@@ -271,19 +255,22 @@ export class ProfileService {
                     mapLink: area.mapLink ?? null,
                     lat: area.lat ?? null,
                     lng: area.lng ?? null,
-                })),
-            );
+                })),);
         }
 
         const updatedBranch = await this.profileRepo.findBranchById(branchId);
-        return this.buildStepResponse('Branch updated', profile, updatedBranch);
+        // return this.buildStepResponse('Branch updated', profile, updatedBranch);
+        return {
+            statusId: profile.status.id,
+            data: updatedBranch,
+        };
     }
 
     async deleteBranch(
         userId: string,
         branchId: string,
     ): Promise<{ message: string }> {
-        const profile = await this.getOrCreateProfile(userId);
+        const profile = await this.profileRepo.findProfileByUserId(userId);
         const branch = await this.profileRepo.findBranchById(branchId);
 
         if (!branch) {

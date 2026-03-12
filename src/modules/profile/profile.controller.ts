@@ -39,13 +39,13 @@ export class ProfileController {
     }
 
 
-    @Get('setup/progress')
-    @ApiOperation({ summary: 'Get current setup progress and saved data' })
-    async getProgress(
-        @Request() req: { user: UserInfoResponseDto },
-    ): Promise<ProgressResponseDto> {
-        return await this.profileService.getProgress(req.user.userId);
-    }
+    // @Get('setup/progress')
+    // @ApiOperation({ summary: 'Get current setup progress and saved data' })
+    // async getProgress(
+    //     @Request() req: { user: UserInfoResponseDto },
+    // ) {
+    //     return await this.profileService.getProgress(req.user.userId);
+    // }
 
     @Get('me')
     @ApiOperation({ summary: 'Get full completed profile' })
@@ -62,7 +62,7 @@ export class ProfileController {
         @Request() req: { user: UserInfoResponseDto },
         @Param('id') branchId: string,
         @Body() dto: CreateBranchDto,
-    ): Promise<StepResponseDto> {
+    ) {
         return await this.profileService.updateBranch(req.user.userId, branchId, dto);
     }
 
