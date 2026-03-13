@@ -6,8 +6,9 @@ import {
   Length,
   Matches,
   ValidateIf,
+  IsEnum,
 } from 'class-validator';
-import { IsValidOtp } from '../validators/valid-otp.validator';
+import { OtpPurposeEnum } from '../enum/otp-purpose.enum';
 import { IsEmailOrMobile } from '../../../shared/validators/email-or-mobile.validator';
 
 export class ValidateOtpDto {
@@ -23,6 +24,10 @@ export class ValidateOtpDto {
   @IsString()
   @Length(4, 5, { message: 'OTP must be between 4 and 5 characters' })
   @Matches(/^\d+$/, { message: 'OTP must contain only digits' })
-  @IsValidOtp()
   otp: string;
+
+  // @ApiProperty({ enum: OtpPurposeEnum, description: 'Purpose of the OTP' })
+  // @IsEnum(OtpPurposeEnum)
+  // @IsNotEmpty()
+  // otpPurpose: OtpPurposeEnum;
 }

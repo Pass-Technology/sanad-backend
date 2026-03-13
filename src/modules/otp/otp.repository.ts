@@ -22,6 +22,7 @@ export class OtpRepository extends BaseRepository<OtpEntity> {
     identifier: string;
     otp: string;
     expiresAt: Date;
+    user?: { id: string };
   }): Promise<OtpEntity> {
     const otp = this.repository.create(data);
     return await this.repository.save(otp);
@@ -32,10 +33,15 @@ export class OtpRepository extends BaseRepository<OtpEntity> {
       where: {
         identifier,
         otp,
+        // otpPurpose,
         expiresAt: MoreThan(new Date()),
       },
       order: { createdAt: 'DESC' },
     });
+  }
+
+  async markAsVerified(id: string): Promise<void> {
+    await this.repository.update(id, { isVerified: true });
   }
 
   async deleteById(id: string): Promise<void> {

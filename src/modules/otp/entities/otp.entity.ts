@@ -16,8 +16,8 @@ export class OtpEntity extends BaseEntity {
     isVerified: boolean;
 
 
-    @Column({ type: 'enum', enum: OtpPurposeEnum })
-    otpPurpose: OtpPurposeEnum;
+    // @Column({ type: 'enum', enum: OtpPurposeEnum })
+    // otpPurpose: OtpPurposeEnum;
 
     @Column()
     expiresAt: Date;

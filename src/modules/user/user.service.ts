@@ -33,7 +33,7 @@ export class UserService {
 
   async register(dto: RegisterDto) {
     const { identifier, password, identifierType } = dto;
-    console.log(identifier);
+    // console.log(identifier);
 
     const hashedPassword = await bcrypt.hash(password, 10);
 

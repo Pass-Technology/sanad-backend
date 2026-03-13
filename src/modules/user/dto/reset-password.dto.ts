@@ -2,7 +2,6 @@ import { ApiProperty } from '@nestjs/swagger';
 import { IsNotEmpty, IsString, MinLength, Length, Matches } from 'class-validator';
 import { IsEmailOrMobile } from '../../../shared/validators/email-or-mobile.validator';
 import { IsUserExisting } from '../validators/existing-user-for-auth.validator';
-import { IsValidOtp } from '../../otp/validators/valid-otp.validator';
 
 export class ResetPasswordDto {
     @ApiProperty({
@@ -18,7 +17,6 @@ export class ResetPasswordDto {
     @IsString()
     @Length(4, 5, { message: 'OTP must be between 4 and 5 characters' })
     @Matches(/^\d+$/, { message: 'OTP must contain only digits' })
-    @IsValidOtp()
     otp: string;
 
     @ApiProperty({ example: 'newpassword123', minLength: 6 })

@@ -1,0 +1,9 @@
+﻿src/modules/otp/otp.service.ts(22,25): error TS2339: Property 'otpPurpose' does not exist on type 'SendOtpDto'.
+src/modules/user/dto/reset-password.dto.ts(5,28): error TS2307: Cannot find module '../../otp/validators/valid-otp.validator' or its corresponding type declarations.
+test/otp/otp-default.e2e-spec.ts(5,10): error TS2305: Module '"../config/e2e-context"' has no exported member 'getE2ePrisma'.
+test/otp/otp-send.e2e-spec.ts(5,10): error TS2305: Module '"../config/e2e-context"' has no exported member 'getE2ePrisma'.
+test/user/user-auth.e2e-spec.ts(5,10): error TS2305: Module '"../config/e2e-context"' has no exported member 'getE2ePrisma'.
+test/user/user-change-password.e2e-spec.ts(5,10): error TS2305: Module '"../config/e2e-context"' has no exported member 'getE2ePrisma'.
+test/user/user-info.e2e-spec.ts(5,10): error TS2305: Module '"../config/e2e-context"' has no exported member 'getE2ePrisma'.
+test/user/user-register.e2e-spec.ts(5,10): error TS2305: Module '"../config/e2e-context"' has no exported member 'getE2ePrisma'.
+test/user/user-validate-otp.e2e-spec.ts(5,10): error TS2305: Module '"../config/e2e-context"' has no exported member 'getE2ePrisma'.

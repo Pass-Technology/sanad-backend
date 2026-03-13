@@ -1,9 +1,8 @@
-import { Body, Controller, Post } from '@nestjs/common';
+import { Body, Controller, Post, Request } from '@nestjs/common';
 import { ApiOperation, ApiTags } from '@nestjs/swagger';
 import { OtpService } from './otp.service';
 import { ValidateOtpDto } from './dto/validate-otp.dto';
 import { SendOtpDto } from './dto/send-otp.dto';
-import { AuthTokenResponseDto } from '../user/dto/auth-token-response.dto';
 
 @ApiTags('otp')
 @Controller('otp')
@@ -17,10 +16,10 @@ export class OtpController {
   }
 
   @Post('validate-otp')
-  @ApiOperation({ summary: 'Validate OTP and get auth token' })
+  @ApiOperation({ summary: 'Validate OTP' })
   async validateOtp(
-    @Body() dto: ValidateOtpDto,
+    @Body() validateOtpDto: ValidateOtpDto,
   ) {
-    return await this.otpService.validateOtp(dto);
+    return await this.otpService.validateOtp(validateOtpDto);
   }
 }
