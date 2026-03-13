@@ -20,7 +20,7 @@ export class OtpController {
   @ApiOperation({ summary: 'Validate OTP and get auth token' })
   async validateOtp(
     @Body() dto: ValidateOtpDto,
-  ): Promise<AuthTokenResponseDto> {
-    return this.otpService.validateOtp(dto);
+  ) {
+    return await this.otpService.validateOtp(dto);
   }
 }

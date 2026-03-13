@@ -1,14 +1,14 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository, MoreThan } from 'typeorm';
-import { Otp } from './entities/otp.entity';
+import { OtpEntity } from './entities/otp.entity';
 import { BaseRepository } from '../../shared/generics/repository.abstract';
 
 @Injectable()
-export class OtpRepository extends BaseRepository<Otp> {
+export class OtpRepository extends BaseRepository<OtpEntity> {
   constructor(
-    @InjectRepository(Otp)
-    private readonly repository: Repository<Otp>,
+    @InjectRepository(OtpEntity)
+    private readonly repository: Repository<OtpEntity>,
   ) {
     super();
   }
@@ -22,13 +22,13 @@ export class OtpRepository extends BaseRepository<Otp> {
     identifier: string;
     otp: string;
     expiresAt: Date;
-  }): Promise<Otp> {
+  }): Promise<OtpEntity> {
     const otp = this.repository.create(data);
-    return this.repository.save(otp);
+    return await this.repository.save(otp);
   }
 
-  async findValidOtp(identifier: string, otp: string): Promise<Otp | null> {
-    return this.repository.findOne({
+  async findValidOtp(identifier: string, otp: string): Promise<OtpEntity | null> {
+    return await this.repository.findOne({
       where: {
         identifier,
         otp,
@@ -39,10 +39,10 @@ export class OtpRepository extends BaseRepository<Otp> {
   }
 
   async deleteById(id: string): Promise<void> {
-    await this.repository.delete(id);
+    await this.repository.softDelete(id);
   }
 
   async deleteByIdentifier(identifier: string): Promise<void> {
-    await this.repository.delete({ identifier });
+    await this.repository.softDelete({ identifier });
   }
 }

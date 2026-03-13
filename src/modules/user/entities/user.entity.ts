@@ -1,7 +1,8 @@
-import { Entity, Column, OneToOne } from 'typeorm';
+import { Entity, Column, OneToOne, OneToMany } from 'typeorm';
 import { UserIdentifierType } from '../enums/user-identifier-type.enum';
 import { BaseEntity } from '../../../database/base-entity';
 import { ProviderProfileEntity } from '../../profile/entities/provider-profile.entity';
+import { OtpEntity } from '../../otp/entities/otp.entity';
 
 
 @Entity('users')
@@ -33,5 +34,8 @@ export class UserEntity extends BaseEntity {
 
     @Column({ default: false })
     isProfileCompleted: boolean;
+
+    @OneToMany(() => OtpEntity, (otp) => otp.user)
+    otps: OtpEntity[];
 
 }

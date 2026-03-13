@@ -20,7 +20,6 @@ import { UserInfoResponseDto } from '../user/dto/user-info-response.dto';
 import { ProfileService } from './profile.service';
 import { CreateBranchDto } from './dto/step-3-branches.dto';
 import { CreateFullProfileDto } from './dto/create-full-profile.dto';
-import { StepResponseDto, ProgressResponseDto } from './dto/profile-response.dto';
 
 @ApiTags('profile')
 @ApiBearerAuth()
@@ -39,13 +38,6 @@ export class ProfileController {
     }
 
 
-    // @Get('setup/progress')
-    // @ApiOperation({ summary: 'Get current setup progress and saved data' })
-    // async getProgress(
-    //     @Request() req: { user: UserInfoResponseDto },
-    // ) {
-    //     return await this.profileService.getProgress(req.user.userId);
-    // }
 
     @Get('me')
     @ApiOperation({ summary: 'Get full completed profile' })

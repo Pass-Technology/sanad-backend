@@ -1,13 +1,8 @@
-import { Injectable } from '@nestjs/common';
+import { BadRequestException, Injectable } from '@nestjs/common';
 import { EventEmitter2 } from '@nestjs/event-emitter';
-import { USER_VERIFICATION_REQUESTED_EVENT } from '../user/constants/events.constants';
-import { UserVerificationRequestedEvent } from '../user/events/user-verification-requested.event';
 import { OtpRepository } from './otp.repository';
 import { ValidateOtpDto } from './dto/validate-otp.dto';
 import { SendOtpDto } from './dto/send-otp.dto';
-import { AuthTokenResponseDto } from '../user/dto/auth-token-response.dto';
-
-
 import { AppConfigService } from '../../config/config.service';
 
 @Injectable()
@@ -18,12 +13,12 @@ export class OtpService {
     private readonly appConfig: AppConfigService,
   ) { }
 
-  private getDefaultOtp(): string | undefined {
-    return this.appConfig.auth.defaultOtp?.toString();
+  private getDefaultOtp(): string {
+    return this.appConfig.auth.defaultOtp.toString();
   }
 
-  async sendOtp(dto: SendOtpDto): Promise<{ message: string }> {
-    const { identifier } = dto;
+  async sendOtp(sendOtpDto: SendOtpDto): Promise<{ message: string }> {
+    const { identifier } = sendOtpDto;
     await this.otpRepository.deleteByIdentifier(identifier);
     await this.createOtpRecord(identifier);
     return { message: 'OTP sent successfully' };
@@ -49,34 +44,38 @@ export class OtpService {
     return { otp };
   }
 
-  async validateOtp(dto: ValidateOtpDto): Promise<AuthTokenResponseDto> {
+  async validateOtp(validateOtpDto: ValidateOtpDto) {
 
-    const { identifier, otp } = dto;
+    const { identifier, otp } = validateOtpDto;
     const defaultOtp = this.getDefaultOtp();
 
     if (defaultOtp && otp === defaultOtp) {
-      await this.otpRepository.deleteByIdentifier(identifier);
-      const event = new UserVerificationRequestedEvent();
-      event.identifier = identifier;
-      await this.eventEmitter.emitAsync(
-        USER_VERIFICATION_REQUESTED_EVENT,
-        event,
-      );
-      return event.tokens!;
+      return "you have been verified";
+      // await this.otpRepository.deleteByIdentifier(identifier);
+      // const event = new UserVerificationRequestedEvent();
+      // event.identifier = identifier;
+      // await this.eventEmitter.emitAsync(
+      //   USER_VERIFICATION_REQUESTED_EVENT,
+      //   event,
+      // );
+      // return event.tokens!;
     }
 
-    const otpRecord = (await this.otpRepository.findValidOtp(
+    const otpRecord = await this.otpRepository.findValidOtp(
       identifier,
-      dto.otp,
-    ))!;
+      validateOtpDto.otp,
+    );
 
-    const event = new UserVerificationRequestedEvent();
-    event.identifier = identifier;
-    await this.eventEmitter.emitAsync(USER_VERIFICATION_REQUESTED_EVENT, event);
+    if (!otpRecord) {
+      throw new BadRequestException('Invalid OTP');
+    }
 
-    await this.otpRepository.deleteById(otpRecord.id);
+    // const event = new UserVerificationRequestedEvent();
+    // event.identifier = identifier;
+    // await this.eventEmitter.emitAsync(USER_VERIFICATION_REQUESTED_EVENT, event);
 
-    return event.tokens!;
+    // await this.otpRepository.deleteById(otpRecord.id);
+
   }
 
   private generateOtp(length = 5): string {

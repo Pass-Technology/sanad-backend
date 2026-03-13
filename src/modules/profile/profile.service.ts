@@ -40,9 +40,6 @@ export class ProfileService {
         profileDto: CreateFullProfileDto,
     ) {
 
-        // const manager: EntityManager = this.dataSource.manager;
-
-
         const isUserHaveProfile = await this.profileRepo.isUserHaveProfile(userId);
 
         if (isUserHaveProfile) {
@@ -50,9 +47,6 @@ export class ProfileService {
         }
 
         const { companyInfo, userInfo, services, branches, subscription, payment, compliance } = profileDto;
-
-
-        // const companyInfoEntity = await this.processCompanyInfo(companyInfo, userId, manager);
 
         const userInfoEntity = await this.processUserInfo(userInfo);
 
@@ -63,8 +57,6 @@ export class ProfileService {
         const complianceEntity = await this.processCompliance(compliance);
 
         const subscriptionEntity = await this.processSubscription(subscription)
-
-
 
         const providerProfileEnity = await this.processProviderProfile
             (companyInfo, userInfoEntity, brancheEntities, payementEntity, complianceEntity, subscriptionEntity, services, userId);
@@ -90,7 +82,6 @@ export class ProfileService {
                 throw new HttpException('Invalid company type id', HttpStatus.BAD_REQUEST);
         }
 
-        // return this.profileSaver.createCompanyEntity(companyInfo, userId, manager)
     }
 
     async processUserInfo(userInfo: CreateUserInfoDto) {
@@ -98,7 +89,6 @@ export class ProfileService {
         return await this.profileSaver.createUserInfoEntity(userInfo)
     }
 
-    // processServices(services: CreateServicesDto, manager: EntityManager) { }
 
 
     async processBranches(branches: CreateBranchesDto) {
@@ -120,8 +110,6 @@ export class ProfileService {
 
 
     async processProviderProfile(
-        // profileDto: CreateFullProfileDto,
-        // manager: EntityManager,
         companyInfo: CreateCompanyInfoDto, userInfo: ProviderUserInfoEntity,
         branches: BranchEntity[], payment: ProviderPaymentEntity,
         compliance: ProviderComplianceEntity,

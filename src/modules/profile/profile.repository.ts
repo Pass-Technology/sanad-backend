@@ -168,7 +168,7 @@ export class ProfileRepository {
         return await this.subscriptionRepo.save(subscription);
     }
 
-    async isUserHaveProfile(userId: string) {
+    async isUserHaveProfile(userId: string): Promise<boolean> {
 
         return await this.profileRepo.exists({ where: { user: { id: userId } } })
 

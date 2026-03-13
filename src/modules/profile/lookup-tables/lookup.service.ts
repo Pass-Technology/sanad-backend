@@ -92,11 +92,7 @@ export class LookUpService {
     }
 
 
-    async isProviderTypeExist(id: string, manager?: EntityManager): Promise<boolean> {
-        if (manager) {
-            return manager.exists(LookUpProviderTypeEntity, { where: { id } })
-        }
-
+    async isProviderTypeExist(id: string): Promise<boolean> {
         return this.providerTypeRepo.exists({ where: { id } })
     }
 
@@ -105,11 +101,7 @@ export class LookUpService {
         return data.some(t => t.id === id);
     }
 
-    async isCompanyTypeExist(id: string, manager?: EntityManager): Promise<boolean> {
-        if (manager) {
-            return manager.exists(LookUpCompanyTypeEntity, { where: { id } })
-        }
-
+    async isCompanyTypeExist(id: string): Promise<boolean> {
         return this.companyTypeRepo.exists({ where: { id } })
     }
 
