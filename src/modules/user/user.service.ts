@@ -73,7 +73,7 @@ export class UserService {
     return this.generateTokens({ ...user, isVerified: true });
   }
 
-  async auth(dto: AuthDto): Promise<AuthTokenResponseDto> {
+  async auth(dto: AuthDto) {
     const { identifier } = dto;
 
     const user = (await this.userRepository.findByIdentifier(identifier))!;
@@ -89,7 +89,8 @@ export class UserService {
       throw new ForbiddenException('Please verify your account first');
     }
 
-    return this.generateTokens(user);
+    const token = await this.generateTokens(user);
+    return { accessToken: token.accessToken, refreshToken: token.refreshToken, userId: user.id, isProfileCompleted: user.isProfileCompleted }
 
   }
 

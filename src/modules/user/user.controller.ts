@@ -37,15 +37,15 @@ export class UserController {
   @Post('register')
   @ApiOperation({ summary: 'Register a new user' })
   // @Version('2')
-  async register(@Body() dto: RegisterDto): Promise<RegisterResponseDto> {
-    return await this.userService.register(dto);
+  register(@Body() dto: RegisterDto): Promise<RegisterResponseDto> {
+    return this.userService.register(dto);
   }
 
   @Post('auth')
   @ApiOperation({ summary: 'Authenticate with email/mobile and password' })
   @ApiUnauthorizedResponse({ description: 'Invalid credentials or user not found' })
   @ApiForbiddenResponse({ description: 'Please verify your account first' })
-  async auth(@Body() dto: AuthDto): Promise<AuthTokenResponseDto> {
+  async auth(@Body() dto: AuthDto) {
     return await this.userService.auth(dto);
   }
 
