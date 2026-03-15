@@ -100,4 +100,26 @@ export class OtpService {
     }
     return otp;
   }
+
+
+  async validateUserOtp(otp: number, userId: string) {
+
+    const lastOtpOfUser = await this.otpRepository.getLastOtpOfUser(userId);
+
+    if (!lastOtpOfUser) {
+      throw new BadRequestException('Invalid OTP');
+    }
+
+    if (lastOtpOfUser.otp !== otp) {
+      throw new BadRequestException('Invalid OTP');
+    }
+
+    if (lastOtpOfUser.expiresAt < new Date()) {
+      throw new BadRequestException('OTP has expired');
+    }
+
+    await this.otpRepository.markAsVerified(lastOtpOfUser.id);
+
+    return true;
+  }
 }

@@ -51,4 +51,14 @@ export class OtpRepository extends BaseRepository<OtpEntity> {
   async deleteByIdentifier(identifier: string): Promise<void> {
     await this.repository.softDelete({ identifier });
   }
+
+
+  async getLastOtpOfUser(userId: string): Promise<OtpEntity | null> {
+    return await this.repository.findOne({
+      where: {
+        user: { id: userId },
+      },
+      order: { createdAt: 'DESC' },
+    });
+  }
 }

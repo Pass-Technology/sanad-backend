@@ -10,7 +10,7 @@ export class OtpEntity extends BaseEntity {
     identifier: string; // email or mobile
 
     @Column()
-    otp: string;
+    otp: number;
 
     @Column({ default: false })
     isVerified: boolean;

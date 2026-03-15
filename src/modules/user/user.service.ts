@@ -17,6 +17,7 @@ import { SendOtpDto } from '../otp/dto/send-otp.dto';
 import { OtpService } from '../otp/otp.service';
 import { OtpRepository } from '../otp/otp.repository';
 import { UserInfoResponseWithTokensDto } from './dto/user-info-response.dto';
+import { OtpAuthDto } from './dto/auth-otp.dto';
 
 
 @Injectable()
@@ -264,5 +265,18 @@ export class UserService {
 
     // }
     return user;
+  }
+
+
+  async validateAuthOtp(dto: OtpAuthDto) {
+    const { identifier, otp } = dto;
+    const user = await this.userRepository.findByIdentifier(identifier);
+
+    if (!user) {
+      throw new UnauthorizedException('User not found');
+    }
+
+    return this.otpService.validateUserOtp(otp, user.id);
+
   }
 }

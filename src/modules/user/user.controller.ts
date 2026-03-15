@@ -26,6 +26,7 @@ import { AuthTokenResponseDto } from './dto/auth-token-response.dto';
 import { UserInfoResponseWithTokensDto } from './dto/user-info-response.dto';
 import { RefreshDto } from './dto/refresh.dto';
 import { JwtAuthGuard } from './guards/jwt-auth.guard';
+import { OtpAuthDto } from './dto/auth-otp.dto';
 
 
 @ApiTags('user')
@@ -39,6 +40,14 @@ export class UserController {
   // @Version('2')
   register(@Body() dto: RegisterDto): Promise<RegisterResponseDto> {
     return this.userService.register(dto);
+  }
+
+  @Post('validate-auth-otp')
+  @ApiOperation({ summary: 'Validate OTP' })
+  async validateOtp(
+    @Body() validateOtpDto: OtpAuthDto,
+  ) {
+    return await this.userService.validateAuthOtp(validateOtpDto);
   }
 
   @Post('auth')

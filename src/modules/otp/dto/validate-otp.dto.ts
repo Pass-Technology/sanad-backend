@@ -25,9 +25,4 @@ export class ValidateOtpDto {
   @Length(4, 5, { message: 'OTP must be between 4 and 5 characters' })
   @Matches(/^\d+$/, { message: 'OTP must contain only digits' })
   otp: string;
-
-  // @ApiProperty({ enum: OtpPurposeEnum, description: 'Purpose of the OTP' })
-  // @IsEnum(OtpPurposeEnum)
-  // @IsNotEmpty()
-  // otpPurpose: OtpPurposeEnum;
 }
