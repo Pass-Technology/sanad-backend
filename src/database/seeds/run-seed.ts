@@ -21,7 +21,7 @@ async function runSeed() {
     await providerTypeSeed(dataSource);
     await companyTypeSeed(dataSource);
 
-    console.log('Subscription plans starting to seed');
+    console.log('Plans starting to seed');
     await planSeed(dataSource);
 
     console.log('Lookup tables seeded successfully');

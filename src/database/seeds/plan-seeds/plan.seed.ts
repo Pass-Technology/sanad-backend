@@ -1,12 +1,12 @@
 import { DataSource, In } from 'typeorm';
-import { PlanEntity } from '../../../modules/plan/entities/plan.entity';
+import { PlanCycleEntity } from '../../../modules/plan/entities/plan-cycle.entity';
 import { FeatureEntity } from '../../../modules/plan/entities/feature.entity';
 import { PlanFeatureEntity } from '../../../modules/plan/entities/plan-feature.entity';
 import { PlanPriceEntity } from '../../../modules/plan/entities/plan-price.entity';
 import { plansObjects, featuresObjects, planFeaturesObjects, planPricesObjects } from './plan.objects';
 
 export async function planSeed(dataSource: DataSource) {
-  const planRepo = dataSource.getRepository(PlanEntity);
+  const planRepo = dataSource.getRepository(PlanCycleEntity);
   const featureRepo = dataSource.getRepository(FeatureEntity);
   const planFeatureRepo = dataSource.getRepository(PlanFeatureEntity);
   const planPriceRepo = dataSource.getRepository(PlanPriceEntity);

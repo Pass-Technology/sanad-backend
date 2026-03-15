@@ -7,7 +7,6 @@ import { BranchEntity } from './entities/branch.entity';
 import { ServingAreaEntity } from './entities/serving-area.entity';
 import { ProviderComplianceEntity } from './entities/provider-compliance.entity';
 import { ProviderPaymentEntity } from './entities/provider-payment.entity';
-import { ProviderSubscriptionEntity } from './entities/provider-subscription.entity';
 
 @Injectable()
 export class ProfileRepository {
@@ -24,8 +23,6 @@ export class ProfileRepository {
         private readonly complianceRepo: Repository<ProviderComplianceEntity>,
         @InjectRepository(ProviderPaymentEntity)
         private readonly paymentRepo: Repository<ProviderPaymentEntity>,
-        @InjectRepository(ProviderSubscriptionEntity)
-        private readonly subscriptionRepo: Repository<ProviderSubscriptionEntity>,
     ) { }
 
 
@@ -43,7 +40,6 @@ export class ProfileRepository {
                 'branches.servingAreas',
                 'compliance',
                 'payment',
-                'subscription',
             ],
         });
         if (!profile) {
@@ -156,17 +152,7 @@ export class ProfileRepository {
     }
 
 
-    async saveSubscription(data: Partial<ProviderSubscriptionEntity>): Promise<ProviderSubscriptionEntity> {
-        const existing = await this.subscriptionRepo.findOne({
-            where: { providerProfile: { id: data.providerProfile?.id! } },
-        });
-        if (existing) {
-            await this.subscriptionRepo.update(existing.id, data);
-            return await this.subscriptionRepo.findOneOrFail({ where: { id: existing.id } });
-        }
-        const subscription = this.subscriptionRepo.create(data);
-        return await this.subscriptionRepo.save(subscription);
-    }
+
 
     async isUserHaveProfile(userId: string): Promise<boolean> {
 

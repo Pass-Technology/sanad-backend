@@ -11,7 +11,6 @@ import { BranchEntity } from './entities/branch.entity';
 import { ServingAreaEntity } from './entities/serving-area.entity';
 import { ProviderComplianceEntity } from './entities/provider-compliance.entity';
 import { ProviderPaymentEntity } from './entities/provider-payment.entity';
-import { ProviderSubscriptionEntity } from './entities/provider-subscription.entity';
 
 
 import { UserModule } from '../user/user.module';
@@ -34,7 +33,6 @@ import { ProfileSaverService } from './profile-saver.service';
         ServingAreaEntity,
         ProviderComplianceEntity,
         ProviderPaymentEntity,
-        ProviderSubscriptionEntity,
         LookUpProfileStatusEntity,
         LookUpProviderTypeEntity,
         LookUpCompanyTypeEntity,

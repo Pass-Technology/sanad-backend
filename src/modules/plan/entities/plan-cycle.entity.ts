@@ -2,10 +2,9 @@ import { Column, Entity, OneToMany } from 'typeorm';
 import { BaseEntity } from '../../../database/base-entity';
 import { PlanFeatureEntity } from './plan-feature.entity';
 import { PlanPriceEntity } from './plan-price.entity';
-import { SubscriptionEntity } from '../../subscription/entities/subscription.entity';
 
-@Entity('plan')
-export class PlanEntity extends BaseEntity {
+@Entity('plan_cycle')
+export class PlanCycleEntity extends BaseEntity {
   @Column({ type: 'varchar' })
   name: string;
 
@@ -26,7 +25,4 @@ export class PlanEntity extends BaseEntity {
 
   @OneToMany(() => PlanPriceEntity, (planPrice) => planPrice.plan)
   prices: PlanPriceEntity[];
-
-  @OneToMany(() => SubscriptionEntity, (subscription) => subscription.plan)
-  subscriptions: SubscriptionEntity[];
 }

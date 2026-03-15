@@ -85,12 +85,6 @@ export class ProviderProfileEntity extends BaseEntity {
     })
     payment: ProviderPaymentEntity;
 
-    // @OneToOne(() => ProviderSubscriptionEntity, (s) => s.providerProfile, {
-    //     onDelete: 'CASCADE',
-    //     cascade: true
-    // })
-    // subscription: ProviderSubscriptionEntity;
-
     @ManyToOne(() => UserEntity, (user) => user.profile, { onDelete: 'CASCADE' })
     @JoinColumn()
     user: UserEntity;

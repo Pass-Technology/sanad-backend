@@ -14,7 +14,6 @@ import { ProviderUserInfoEntity } from './entities/provider-user-info.entity';
 import { BranchEntity } from './entities/branch.entity';
 import { ProviderComplianceEntity } from './entities/provider-compliance.entity';
 import { ProviderPaymentEntity } from './entities/provider-payment.entity';
-import { ProviderSubscriptionEntity } from './entities/provider-subscription.entity';
 import { LookUpService } from './lookup-tables/lookup.service';
 import { ProfileSaverService } from './profile-saver.service';
 import { CreateCompanyInfoDto } from './dto/step-1-company-info.dto';
@@ -22,7 +21,6 @@ import { CreateUserInfoDto } from './dto/step-2-user-info.dto';
 import { CreateServicesDto } from './dto/step-4-services.dto';
 import { CreatePaymentDto } from './dto/step-6-payment.dto';
 import { CreateComplianceDto } from './dto/step-5-compliance.dto';
-import { CreateSubscriptionDto } from './dto/step-7-subscription.dto';
 
 
 @Injectable()
@@ -46,7 +44,7 @@ export class ProfileService {
             throw new HttpException(`User Already Have An Profile`, HttpStatus.BAD_REQUEST)
         }
 
-        const { companyInfo, userInfo, services, branches, subscription, payment, compliance } = profileDto;
+        const { companyInfo, userInfo, services, branches, payment, compliance } = profileDto;
 
         const userInfoEntity = await this.processUserInfo(userInfo);
 
@@ -56,10 +54,8 @@ export class ProfileService {
 
         const complianceEntity = await this.processCompliance(compliance);
 
-        const subscriptionEntity = await this.processSubscription(subscription)
-
         const providerProfileEnity = await this.processProviderProfile
-            (companyInfo, userInfoEntity, brancheEntities, payementEntity, complianceEntity, subscriptionEntity, services, userId);
+            (companyInfo, userInfoEntity, brancheEntities, payementEntity, complianceEntity, services, userId);
 
         return await this.profileSaver.saveProviderProfile(providerProfileEnity)
 
@@ -104,18 +100,15 @@ export class ProfileService {
         return this.profileSaver.createComplianceEntity(compliance)
     }
 
-    async processSubscription(subscription: CreateSubscriptionDto) {
-        return this.profileSaver.createSubscriptionEntity(subscription)
-    }
+
 
 
     async processProviderProfile(
         companyInfo: CreateCompanyInfoDto, userInfo: ProviderUserInfoEntity,
         branches: BranchEntity[], payment: ProviderPaymentEntity,
         compliance: ProviderComplianceEntity,
-        subscription: ProviderSubscriptionEntity,
         services: CreateServicesDto, userId: string) {
-        return this.profileSaver.createProviderProfile(companyInfo, userInfo, branches, payment, compliance, subscription, services, userId)
+        return this.profileSaver.createProviderProfile(companyInfo, userInfo, branches, payment, compliance, services, userId)
     }
 
 

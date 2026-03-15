@@ -4,7 +4,6 @@ import { BranchEntity } from "./entities/branch.entity";
 import { ProviderComplianceEntity } from "./entities/provider-compliance.entity";
 import { ProviderPaymentEntity } from "./entities/provider-payment.entity";
 import { ProviderProfileEntity } from "./entities/provider-profile.entity";
-import { ProviderSubscriptionEntity } from "./entities/provider-subscription.entity";
 import { ProviderUserInfoEntity } from "./entities/provider-user-info.entity";
 import { ServingAreaEntity } from "./entities/serving-area.entity";
 import { LOOKUP_IDS } from "../../shared/constants/lookup-ids";
@@ -14,7 +13,6 @@ import { CreateServicesDto } from "./dto/step-4-services.dto";
 import { CreateBranchesDto } from "./dto/step-3-branches.dto";
 import { CreatePaymentDto } from "./dto/step-6-payment.dto";
 import { CreateComplianceDto } from "./dto/step-5-compliance.dto";
-import { CreateSubscriptionDto } from "./dto/step-7-subscription.dto";
 import { InjectRepository } from "@nestjs/typeorm";
 
 @Injectable()
@@ -32,8 +30,6 @@ export class ProfileSaverService {
         private readonly complianceRepo: Repository<ProviderComplianceEntity>,
         @InjectRepository(ProviderPaymentEntity)
         private readonly paymentRepo: Repository<ProviderPaymentEntity>,
-        @InjectRepository(ProviderSubscriptionEntity)
-        private readonly subscriptionRepo: Repository<ProviderSubscriptionEntity>,
     ) { }
 
 
@@ -83,20 +79,12 @@ export class ProfileSaverService {
     }
 
 
-    async createSubscriptionEntity(subscription: CreateSubscriptionDto) {
-        const { selectedPlanId, billingCycleId } = subscription;
-        return this.subscriptionRepo.create({
-            selectedPlanId: { id: selectedPlanId },
-            billingCycleId: { id: billingCycleId },
-            startDate: new Date(),
-        });
-    }
+
 
 
     async createProviderProfile(companyInfo: CreateCompanyInfoDto, userInfo: ProviderUserInfoEntity,
         branches: BranchEntity[], payment: ProviderPaymentEntity,
         compliance: ProviderComplianceEntity,
-        subscription: ProviderSubscriptionEntity,
         services: CreateServicesDto, userId: string) {
         const newProfile = this.profileRepo.create({
             user: { id: userId },
@@ -114,9 +102,6 @@ export class ProfileSaverService {
             branches,
             payment,
             compliance,
-            subscription: subscription ?? null
-
-
         })
 
         return await this.profileRepo.save(newProfile);

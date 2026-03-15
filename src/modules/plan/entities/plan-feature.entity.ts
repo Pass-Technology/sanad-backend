@@ -1,6 +1,6 @@
 import { Column, Entity, JoinColumn, ManyToOne } from 'typeorm';
 import { BaseEntity } from '../../../database/base-entity';
-import { PlanEntity } from './plan.entity';
+import { PlanCycleEntity } from './plan-cycle.entity';
 import { FeatureEntity } from './feature.entity';
 
 @Entity('plan_feature')
@@ -17,9 +17,9 @@ export class PlanFeatureEntity extends BaseEntity {
   @Column({ type: 'boolean', default: true })
   isIncluded: boolean;
 
-  @ManyToOne(() => PlanEntity, (plan) => plan.features)
+  @ManyToOne(() => PlanCycleEntity, (plan) => plan.features)
   @JoinColumn({ name: 'plan_id' })
-  plan: PlanEntity;
+  plan: PlanCycleEntity;
 
   @ManyToOne(() => FeatureEntity, (feature) => feature.planFeatures)
   @JoinColumn({ name: 'feature_id' })

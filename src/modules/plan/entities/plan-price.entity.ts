@@ -1,6 +1,6 @@
 import { Column, Entity, JoinColumn, ManyToOne } from 'typeorm';
 import { BaseEntity } from '../../../database/base-entity';
-import { PlanEntity } from './plan.entity';
+import { PlanCycleEntity } from './plan-cycle.entity';
 import { LookUpBillingCycleEntity } from '../../profile/lookup-tables/entities/lookup-biling-cycle.entity';
 
 @Entity('plan_price')
@@ -17,9 +17,9 @@ export class PlanPriceEntity extends BaseEntity {
   @Column({ type: 'varchar', default: 'AED' })
   currency: string;
 
-  @ManyToOne(() => PlanEntity, (plan) => plan.prices)
+  @ManyToOne(() => PlanCycleEntity, (plan) => plan.prices)
   @JoinColumn({ name: 'plan_id' })
-  plan: PlanEntity;
+  plan: PlanCycleEntity;
 
   @ManyToOne(() => LookUpBillingCycleEntity)
   @JoinColumn({ name: 'billing_cycle_id' })

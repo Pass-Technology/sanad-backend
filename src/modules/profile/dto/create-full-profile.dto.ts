@@ -7,7 +7,6 @@ import { CreateBranchesDto } from './step-3-branches.dto';
 import { CreateServicesDto } from './step-4-services.dto';
 import { CreateComplianceDto } from './step-5-compliance.dto';
 import { CreatePaymentDto } from './step-6-payment.dto';
-import { CreateSubscriptionDto } from './step-7-subscription.dto';
 
 export class CreateFullProfileDto {
     @ApiProperty({ type: CreateCompanyInfoDto })
@@ -39,9 +38,4 @@ export class CreateFullProfileDto {
     @ValidateNested()
     @Type(() => CreatePaymentDto)
     payment: CreatePaymentDto;
-
-    @ApiProperty({ type: CreateSubscriptionDto })
-    @ValidateNested()
-    @Type(() => CreateSubscriptionDto)
-    subscription: CreateSubscriptionDto;
 }
