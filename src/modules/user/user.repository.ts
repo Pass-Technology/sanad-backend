@@ -54,6 +54,20 @@ export class UserRepository extends BaseRepository<UserEntity> {
     });
   }
 
+  async findUserWithPassword(identifier: string) {
+    return await this.repository.findOne({
+      select: { id: true, identifier: true, isVerified: true, password: true },
+      where: { identifier }
+    })
+  }
+
+  async findUserRefreshTokenByUserId(userId: string) {
+    return await this.repository.findOne({
+      select: { id: true, identifier: true, isVerified: true, password: true, refreshToken: true },
+      where: { id: userId }
+    })
+  }
+
   async markUserVerified(userId: string): Promise<UserEntity> {
     await this.repository.update(userId, { isVerified: true });
     return (await this.findById(userId))!;

@@ -80,10 +80,11 @@ export class UserService {
   async auth(dto: AuthDto): Promise<UserInfoResponseWithTokensDto> {
     const { identifier } = dto;
 
-    const user = (await this.userRepository.findByIdentifier(identifier))!;
+    const user = (await this.userRepository.findUserWithPassword(identifier))!;
     if (!user) {
       throw new UnauthorizedException('User not found');
     }
+    console.log(user.password)
     const isPasswordValid = await bcrypt.compare(dto.password, user.password);
     if (!isPasswordValid) {
       throw new UnauthorizedException('Invalid credentials');
@@ -116,7 +117,7 @@ export class UserService {
         throw new UnauthorizedException('Invalid refresh token');
       }
 
-      const user = await this.userRepository.findById(decoded.sub);
+      const user = await this.userRepository.findUserRefreshTokenByUserId(decoded.sub);
       if (!user || !user.refreshToken) {
         throw new UnauthorizedException('Invalid refresh token');
       }
