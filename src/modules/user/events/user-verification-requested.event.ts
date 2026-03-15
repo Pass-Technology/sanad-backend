@@ -1,7 +1,7 @@
-import { AuthTokenResponseDto } from '../dto/auth-token-response.dto';
+import { AuthTokensResponse } from '../types/user-token.type';
 
 export class UserVerificationRequestedEvent {
   identifier!: string;
-  tokens?: AuthTokenResponseDto;
+  tokens?: AuthTokensResponse;
 }
 

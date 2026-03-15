@@ -22,7 +22,7 @@ import { ChangePasswordDto } from './dto/change-password.dto';
 import { ResetPasswordDto } from './dto/reset-password.dto';
 import { SendOtpDto } from '../otp/dto/send-otp.dto';
 import { RegisterResponseDto } from './dto/register-response.dto';
-import { AuthTokenResponseDto } from './dto/auth-token-response.dto';
+import { AuthTokensResponse } from './types/user-token.type';
 import { UserInfoResponseWithTokensDto } from './dto/user-info-response.dto';
 import { RefreshDto } from './dto/refresh.dto';
 import { JwtAuthGuard } from './guards/jwt-auth.guard';
@@ -62,7 +62,7 @@ export class UserController {
   @ApiOperation({ summary: 'Refresh access token using refresh token' })
   @ApiUnauthorizedResponse({ description: 'Invalid refresh token' })
   @ApiForbiddenResponse({ description: 'Please verify your account first' })
-  async refresh(@Body() dto: RefreshDto): Promise<AuthTokenResponseDto> {
+  async refresh(@Body() dto: RefreshDto): Promise<AuthTokensResponse> {
     return await this.userService.refreshTokens(dto);
   }
 

@@ -16,11 +16,11 @@ export class OtpController {
     return await this.otpService.sendOtp(dto);
   }
 
-  @Post('validate-otp')
-  @ApiOperation({ summary: 'Validate OTP' })
-  async validateOtp(
-    @Body() validateOtpDto: ValidateOtpDto,
-  ): Promise<UserInfoResponseWithTokensDto> {
-    return await this.otpService.validateOtp(validateOtpDto);
-  }
+  // @Post('validate-otp')
+  // @ApiOperation({ summary: 'Validate OTP' })
+  // async validateOtp(
+  //   @Body() validateOtpDto: ValidateOtpDto,
+  // ): Promise<UserInfoResponseWithTokensDto> {
+  //   return await this.otpService.validateOtp(validateOtpDto);
+  // }
 }

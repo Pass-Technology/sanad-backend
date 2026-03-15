@@ -16,6 +16,6 @@ export class UserRegisteredListener {
       event.identifier,
       // OtpPurposeEnum.REGISTER,
     );
-    event.otp = otp;
+    event.otp = otp.toString();
   }
 }

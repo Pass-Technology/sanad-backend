@@ -38,14 +38,14 @@ export class OtpService {
   async createOtpForUser(
     userId: string,
     identifier: string,
-  ): Promise<{ otp: string }> {
+  ): Promise<{ otp: number }> {
     const { otp } = await this.createOtpRecord(identifier, userId);
     return { otp };
   }
 
-  private async createOtpRecord(identifier: string, userId?: string): Promise<{ otp: string }> {
+  private async createOtpRecord(identifier: string, userId?: string): Promise<{ otp: number }> {
     const defaultOtp = this.getDefaultOtp();
-    const otp = defaultOtp ?? this.generateOtp();
+    const otp = Number(defaultOtp) ?? this.generateOtp();
     const expiresAt = new Date(Date.now() + 10 * 60 * 1000); // 10 minutes
     await this.otpRepository.create({
       identifier,
@@ -61,7 +61,7 @@ export class OtpService {
     const { identifier, otp } = validateOtpDto;
     const defaultOtp = this.getDefaultOtp();
 
-    if (defaultOtp && otp === defaultOtp) {
+    if (defaultOtp && Number(otp) === Number(defaultOtp)) {
       await this.otpRepository.deleteByIdentifier(identifier);
 
       const user = await this.userRepository.findOne({ where: { identifier } });
@@ -74,7 +74,7 @@ export class OtpService {
 
     const otpRecord = await this.otpRepository.findValidOtp(
       identifier,
-      otp,
+      otp
     );
 
     if (!otpRecord) {
@@ -92,13 +92,13 @@ export class OtpService {
     return await this.userService.getUserInfoWithTokensByIdentifier(identifier);
   }
 
-  private generateOtp(length = 5): string {
+  private generateOtp(length = 5): number {
     const digits = '0123456789';
     let otp = '';
     for (let i = 0; i < length; i++) {
       otp += digits[Math.floor(Math.random() * 10)];
     }
-    return otp;
+    return Number(otp);
   }
 
 

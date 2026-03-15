@@ -1,4 +1,5 @@
 import { Entity, Column, OneToOne, OneToMany } from 'typeorm';
+import { Exclude } from 'class-transformer';
 import { UserIdentifierType } from '../enums/user-identifier-type.enum';
 import { BaseEntity } from '../../../database/base-entity';
 import { ProviderProfileEntity } from '../../profile/entities/provider-profile.entity';
@@ -17,13 +18,16 @@ export class UserEntity extends BaseEntity {
     })
     identifierType: UserIdentifierType;
 
-    @Column()
-    password: string;
 
     @Column({ default: false })
     isVerified: boolean;
 
-    @Column({ type: 'varchar', nullable: true })
+    @Exclude()
+    @Column({ select: false })
+    password: string;
+
+    @Exclude()
+    @Column({ type: 'varchar', nullable: true, select: false })
     refreshToken: string | null;
 
     @OneToOne(() => ProviderProfileEntity, (profile) => profile.user, {

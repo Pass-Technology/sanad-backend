@@ -10,7 +10,7 @@ import { RefreshDto } from './dto/refresh.dto';
 import { USER_REGISTERED_EVENT } from './constants/events.constants';
 import { UserRegisteredEvent } from './events/user-registered.event';
 import { AppConfigService } from '../../config/config.service';
-import { AuthTokenResponseDto } from './dto/auth-token-response.dto';
+
 import { UserIdentifierType } from './enums/user-identifier-type.enum';
 import { ResetPasswordDto } from './dto/reset-password.dto';
 import { SendOtpDto } from '../otp/dto/send-otp.dto';
@@ -18,6 +18,8 @@ import { OtpService } from '../otp/otp.service';
 import { OtpRepository } from '../otp/otp.repository';
 import { UserInfoResponseWithTokensDto } from './dto/user-info-response.dto';
 import { OtpAuthDto } from './dto/auth-otp.dto';
+import { UserPayloadType } from './types/user-payload.type';
+import { AuthTokensResponse } from './types/user-token.type';
 
 
 @Injectable()
@@ -61,7 +63,7 @@ export class UserService {
     };
   }
 
-  async markVerifiedAndGenerateToken(userId: string): Promise<AuthTokenResponseDto> {
+  async markVerifiedAndGenerateToken(userId: string): Promise<AuthTokensResponse> {
     await this.userRepository.markUserVerified(userId);
     const user = (await this.userRepository.findById(userId))!;
     return this.generateTokens(user);
@@ -69,7 +71,7 @@ export class UserService {
 
   async markVerifiedAndGenerateTokenByIdentifier(
     identifier: string,
-  ): Promise<AuthTokenResponseDto> {
+  ): Promise<AuthTokensResponse> {
     const user = (await this.userRepository.findByIdentifier(identifier))!;
     await this.userRepository.markUserVerified(user.id);
     return this.generateTokens({ ...user, isVerified: true });
@@ -104,7 +106,7 @@ export class UserService {
 
   }
 
-  async refreshTokens(dto: RefreshDto): Promise<AuthTokenResponseDto> {
+  async refreshTokens(dto: RefreshDto): Promise<AuthTokensResponse> {
     const { refreshToken } = dto;
 
     try {
@@ -141,19 +143,14 @@ export class UserService {
     }
   }
 
-  private async generateTokens(user: {
-    id: string;
-    identifier: string;
-    identifierType: UserIdentifierType;
-    isVerified: boolean;
-    isProfileCompleted: boolean;
-  }): Promise<AuthTokenResponseDto> {
+  private async generateTokens(userPaylpad: UserPayloadType): Promise<AuthTokensResponse> {
+    const { id, identifier, identifierType, isVerified, isProfileCompleted } = userPaylpad;
     const payload = {
-      sub: user.id,
-      identifier: user.identifier,
-      identifierType: user.identifierType,
-      isVerified: user.isVerified,
-      isProfileCompleted: user.isProfileCompleted,
+      sub: id,
+      identifier: identifier,
+      identifierType: identifierType,
+      isVerified: isVerified,
+      isProfileCompleted: isProfileCompleted,
     };
 
     const accessToken = await this.jwtService.signAsync(payload, {
@@ -169,11 +166,12 @@ export class UserService {
 
     // Hash refresh token before saving
     const hashedRefreshToken = await bcrypt.hash(refreshToken, 10);
-    await this.userRepository.updateRefreshToken(user.id, hashedRefreshToken);
+    await this.userRepository.updateRefreshToken(id, hashedRefreshToken);
 
     return {
       accessToken,
       refreshToken,
+      user: payload
     };
   }
 
@@ -276,7 +274,13 @@ export class UserService {
       throw new UnauthorizedException('User not found');
     }
 
-    return this.otpService.validateUserOtp(otp, user.id);
+    const isValidOtp = await this.otpService.validateUserOtp(otp, user.id);
+
+    if (!isValidOtp) {
+      throw new UnauthorizedException('Invalid OTP');
+    }
+
+    return this.generateTokens({ ...user, isVerified: true });
 
   }
 }

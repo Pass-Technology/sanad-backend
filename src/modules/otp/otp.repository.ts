@@ -20,7 +20,7 @@ export class OtpRepository extends BaseRepository<OtpEntity> {
 
   async create(data: {
     identifier: string;
-    otp: string;
+    otp: number;
     expiresAt: Date;
     user?: { id: string };
   }): Promise<OtpEntity> {
@@ -28,7 +28,7 @@ export class OtpRepository extends BaseRepository<OtpEntity> {
     return await this.repository.save(otp);
   }
 
-  async findValidOtp(identifier: string, otp: string): Promise<OtpEntity | null> {
+  async findValidOtp(identifier: string, otp: number): Promise<OtpEntity | null> {
     return await this.repository.findOne({
       where: {
         identifier,
