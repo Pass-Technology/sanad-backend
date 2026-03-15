@@ -8,7 +8,6 @@ import { billingCycleSeed } from './lookup-seeds/billing-cycle/billing-cycle.see
 import { profileStatusSeed } from './lookup-seeds/profile-status/profile-status.seed';
 import { providerTypeSeed } from './lookup-seeds/provider-type/provider-type.seed';
 import { companyTypeSeed } from './lookup-seeds/company-type/company-type.seed';
-import { planSeed } from './plan-seeds/plan.seed';
 
 async function runSeed() {
     const dataSource = await AppDataSource.initialize();
@@ -22,7 +21,6 @@ async function runSeed() {
     await companyTypeSeed(dataSource);
 
     console.log('Plans starting to seed');
-    await planSeed(dataSource);
 
     console.log('Lookup tables seeded successfully');
 

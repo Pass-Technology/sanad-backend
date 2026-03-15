@@ -6,7 +6,9 @@ import { OtpModule } from './modules/otp/otp.module';
 import { HealthController } from './health.controller';
 import { AppConfigModule } from './config/config.module';
 import { ProfileModule } from './modules/profile/profile.module';
-import { PlanModule } from './modules/plan/plan.module';
+import { BillingCycleModule } from './billing-cycle/billing-cycle.module';
+import { PlanModule } from './plan/plan.module';
+import { SubscriptionModule } from './subscription/subscription.module';
 
 @Module({
   imports: [
@@ -16,7 +18,9 @@ import { PlanModule } from './modules/plan/plan.module';
     UserModule,
     OtpModule,
     ProfileModule,
-    PlanModule
+    BillingCycleModule,
+    PlanModule,
+    SubscriptionModule,
 
   ],
   controllers: [HealthController],
