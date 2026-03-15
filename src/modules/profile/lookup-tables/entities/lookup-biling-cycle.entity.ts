@@ -1,6 +1,6 @@
 import { Column, Entity, OneToMany } from "typeorm";
 import { LookupBaseEntity } from "./lookup-base.entity";
-import { ProviderSubscriptionEntity } from "../../entities/provider-subscription.entity";
+// import { ProviderSubscriptionEntity } from "../../entities/provider-subscription.entity";
 
 @Entity('lookup_billing_cycle')
 export class LookUpBillingCycleEntity extends LookupBaseEntity {
@@ -16,6 +16,9 @@ export class LookUpBillingCycleEntity extends LookupBaseEntity {
     @Column({ type: 'varchar', nullable: true })
     badgeAr: string | null;
 
-    @OneToMany(() => ProviderSubscriptionEntity, (sub) => sub.billingCycleId)
-    subscriptions: ProviderSubscriptionEntity[];
+    // @OneToMany(() => ProviderSubscriptionEntity, (sub) => sub.billingCycleId)
+    // subscriptions: ProviderSubscriptionEntity[];
+
+
+    subscriptions: string[];
 }

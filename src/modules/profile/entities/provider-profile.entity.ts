@@ -10,7 +10,6 @@ import { ProviderUserInfoEntity } from './provider-user-info.entity';
 import { BranchEntity } from './branch.entity';
 import { ProviderComplianceEntity } from './provider-compliance.entity';
 import { ProviderPaymentEntity } from './provider-payment.entity';
-import { ProviderSubscriptionEntity } from './provider-subscription.entity';
 import { LookUpProfileStatusEntity } from '../lookup-tables/entities/lookup-profile-status.entity';
 import { LookUpProviderTypeEntity } from '../lookup-tables/entities/lookup-provider-type.entity';
 import { LookUpCompanyTypeEntity } from '../lookup-tables/entities/lookup-company-type.entity';
@@ -86,11 +85,11 @@ export class ProviderProfileEntity extends BaseEntity {
     })
     payment: ProviderPaymentEntity;
 
-    @OneToOne(() => ProviderSubscriptionEntity, (s) => s.providerProfile, {
-        onDelete: 'CASCADE',
-        cascade: true
-    })
-    subscription: ProviderSubscriptionEntity;
+    // @OneToOne(() => ProviderSubscriptionEntity, (s) => s.providerProfile, {
+    //     onDelete: 'CASCADE',
+    //     cascade: true
+    // })
+    // subscription: ProviderSubscriptionEntity;
 
     @ManyToOne(() => UserEntity, (user) => user.profile, { onDelete: 'CASCADE' })
     @JoinColumn()
