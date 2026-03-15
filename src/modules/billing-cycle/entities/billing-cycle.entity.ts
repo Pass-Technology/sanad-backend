@@ -1,15 +1,29 @@
-import { BaseEntity } from "src/database/base-entity";
-import { Column, Entity } from "typeorm";
+import { BaseEntity } from "../../../database/base-entity";
+import { Column, Entity, OneToMany } from "typeorm";
+import { PlanPriceEntity } from "../../plan/entities/plan-price.entity";
 
 @Entity('billing_cycles')
 export class BillingCycleEntity extends BaseEntity {
 
     @Column()
-    label: string;
+    labelEn: string;
+
+    @Column({ nullable: true })
+    labelAr: string;
 
     @Column()
-    mounths: string;
+    months: number;
 
     @Column()
     discountPercentage: number;
+
+    @Column({ type: 'varchar', nullable: true })
+    badgeEn: string | null;
+
+    @Column({ type: 'varchar', nullable: true })
+    badgeAr: string | null;
+
+
+    @OneToMany(() => PlanPriceEntity, (planPrice) => planPrice.billingCycle)
+    prices: PlanPriceEntity[];
 }

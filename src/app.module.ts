@@ -6,9 +6,10 @@ import { OtpModule } from './modules/otp/otp.module';
 import { HealthController } from './health.controller';
 import { AppConfigModule } from './config/config.module';
 import { ProfileModule } from './modules/profile/profile.module';
-import { BillingCycleModule } from './billing-cycle/billing-cycle.module';
-import { PlanModule } from './plan/plan.module';
+import { BillingCycleModule } from './modules/billing-cycle/billing-cycle.module';
+import { PlanModule } from './modules/plan/plan.module';
 import { SubscriptionModule } from './subscription/subscription.module';
+
 
 @Module({
   imports: [

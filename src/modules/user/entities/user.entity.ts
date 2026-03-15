@@ -4,6 +4,8 @@ import { UserIdentifierType } from '../enums/user-identifier-type.enum';
 import { BaseEntity } from '../../../database/base-entity';
 import { ProviderProfileEntity } from '../../profile/entities/provider-profile.entity';
 import { OtpEntity } from '../../otp/entities/otp.entity';
+import { SubscriptionEntity } from '../../../subscription/entities/subscription.entity';
+
 
 
 @Entity('users')
@@ -42,4 +44,7 @@ export class UserEntity extends BaseEntity {
     @OneToMany(() => OtpEntity, (otp) => otp.user)
     otps: OtpEntity[];
 
+    @OneToMany(() => SubscriptionEntity, (subscription) => subscription.user)
+    subscriptions: SubscriptionEntity[];
 }
+
