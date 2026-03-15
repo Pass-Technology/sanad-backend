@@ -8,12 +8,15 @@ export async function billingCycleSeed(dataSource: DataSource) {
 
     const billingCycleKeys = billingCycleObjects.map(cycle => cycle.labelEn);
 
-    // find all cycles
-    const dbcycles = await billingCycleRepo.find({ where: { labelEn: In(billingCycleKeys) } });
-
-    // filter objects that are not in db
-    const objectsToInsert = billingCycleObjects.filter(cycle => !dbcycles.some(dbcycle => dbcycle.labelEn === cycle.labelEn));
-
-    // insert objects
-    await billingCycleRepo.insert(objectsToInsert);
+    for (const object of billingCycleObjects) {
+        let cycle = await billingCycleRepo.findOne({ where: { labelEn: object.labelEn } });
+        if (cycle) {
+            // Update existing record with the standard UUID
+            Object.assign(cycle, object);
+            await billingCycleRepo.save(cycle);
+        } else {
+            // Create new record
+            await billingCycleRepo.save(billingCycleRepo.create(object));
+        }
+    }
 }

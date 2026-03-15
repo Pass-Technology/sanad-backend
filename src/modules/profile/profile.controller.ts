@@ -16,7 +16,7 @@ import {
     ApiTags,
 } from '@nestjs/swagger';
 import { JwtAuthGuard } from '../user/guards/jwt-auth.guard';
-import { UserInfoResponseDto } from '../user/dto/user-info-response.dto';
+import { UserInfoResponseWithTokensDto } from '../user/dto/user-info-response.dto';
 import { ProfileService } from './profile.service';
 import { CreateBranchDto } from './dto/step-3-branches.dto';
 import { CreateFullProfileDto } from './dto/create-full-profile.dto';
@@ -31,7 +31,7 @@ export class ProfileController {
     @Post('setup')
     @ApiOperation({ summary: 'Submit full profile in one request' })
     async submitFullProfile(
-        @Request() req: { user: UserInfoResponseDto },
+        @Request() req: { user: UserInfoResponseWithTokensDto },
         @Body() dto: CreateFullProfileDto,
     ) {
         return await this.profileService.submitFullProfile(req.user.userId, dto);
@@ -41,7 +41,7 @@ export class ProfileController {
 
     @Get('me')
     @ApiOperation({ summary: 'Get full completed profile' })
-    async getMyProfile(@Request() req: { user: UserInfoResponseDto }) {
+    async getMyProfile(@Request() req: { user: UserInfoResponseWithTokensDto }) {
         return await this.profileService.getMyProfile(req.user.userId);
     }
 
@@ -51,7 +51,7 @@ export class ProfileController {
     @ApiOperation({ summary: 'Update an existing branch' })
     @ApiParam({ name: 'id', description: 'Branch UUID' })
     async updateBranch(
-        @Request() req: { user: UserInfoResponseDto },
+        @Request() req: { user: UserInfoResponseWithTokensDto },
         @Param('id') branchId: string,
         @Body() dto: CreateBranchDto,
     ) {
@@ -62,7 +62,7 @@ export class ProfileController {
     @ApiOperation({ summary: 'Delete a branch' })
     @ApiParam({ name: 'id', description: 'Branch UUID' })
     async deleteBranch(
-        @Request() req: { user: UserInfoResponseDto },
+        @Request() req: { user: UserInfoResponseWithTokensDto },
         @Param('id') branchId: string,
     ): Promise<{ message: string }> {
         return await this.profileService.deleteBranch(req.user.userId, branchId);

@@ -1,4 +1,4 @@
-import { Module } from '@nestjs/common';
+import { Module, forwardRef } from '@nestjs/common';
 import { JwtModule } from '@nestjs/jwt';
 import { PassportModule } from '@nestjs/passport';
 import { TypeOrmModule } from '@nestjs/typeorm';
@@ -19,7 +19,7 @@ import { OtpModule } from '../otp/otp.module';
   imports: [
     PassportModule,
     TypeOrmModule.forFeature([UserEntity]),
-    OtpModule,
+    forwardRef(() => OtpModule),
     JwtModule.registerAsync({
       imports: [AppConfigModule],
       inject: [AppConfigService],

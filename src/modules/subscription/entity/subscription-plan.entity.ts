@@ -31,6 +31,7 @@ export class SubscriptionPlanEntity extends BaseEntity {
     @OneToMany(() => SubscriptionPlanFeatureEntity, feature => feature.plan)
     features: SubscriptionPlanFeatureEntity[];
 
-    @OneToMany(() => ProviderSubscriptionEntity, sub => sub.selectedPlan)
+    //commented out until we figure what to do with subscription
+    @OneToMany(() => ProviderSubscriptionEntity, sub => sub.selectedPlanId)
     subscriptions: ProviderSubscriptionEntity[];
 }

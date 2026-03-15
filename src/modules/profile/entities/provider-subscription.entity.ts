@@ -19,13 +19,15 @@ export class ProviderSubscriptionEntity extends BaseEntity {
     @JoinColumn()
     providerProfile: ProviderProfileEntity;
 
+    // commented out until we figure out what to do with subscription
     @ManyToOne(() => SubscriptionPlanEntity, { onDelete: 'CASCADE' })
     @JoinColumn()
-    selectedPlan: SubscriptionPlanEntity;
+    selectedPlanId: SubscriptionPlanEntity;
+    // selectedPlanId: string;
 
     @ManyToOne(() => LookUpBillingCycleEntity, { onDelete: 'CASCADE' })
     @JoinColumn()
-    billingCycle: LookUpBillingCycleEntity;
+    billingCycleId: LookUpBillingCycleEntity;
 
     @Column({ type: 'timestamp', nullable: true })
     startDate: Date;

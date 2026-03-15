@@ -86,8 +86,8 @@ export class ProfileSaverService {
     async createSubscriptionEntity(subscription: CreateSubscriptionDto) {
         const { selectedPlanId, billingCycleId } = subscription;
         return this.subscriptionRepo.create({
-            selectedPlan: { id: selectedPlanId },
-            billingCycle: { id: billingCycleId },
+            selectedPlanId: { id: selectedPlanId },
+            billingCycleId: { id: billingCycleId },
             startDate: new Date(),
         });
     }

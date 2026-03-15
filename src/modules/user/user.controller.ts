@@ -23,7 +23,7 @@ import { ResetPasswordDto } from './dto/reset-password.dto';
 import { SendOtpDto } from '../otp/dto/send-otp.dto';
 import { RegisterResponseDto } from './dto/register-response.dto';
 import { AuthTokenResponseDto } from './dto/auth-token-response.dto';
-import { UserInfoResponseDto } from './dto/user-info-response.dto';
+import { UserInfoResponseWithTokensDto } from './dto/user-info-response.dto';
 import { RefreshDto } from './dto/refresh.dto';
 import { JwtAuthGuard } from './guards/jwt-auth.guard';
 
@@ -62,7 +62,7 @@ export class UserController {
   @UseGuards(JwtAuthGuard)
   @ApiBearerAuth()
   @ApiOperation({ summary: 'Get current user info from token' })
-  getInfo(@CurrentUser() user: UserInfoResponseDto) {
+  getInfo(@CurrentUser() user: UserInfoResponseWithTokensDto) {
     return this.userService.getMe(user)
 
 
@@ -73,7 +73,7 @@ export class UserController {
   @ApiBearerAuth()
   @ApiOperation({ summary: 'Change user password (requires authentication)' })
   async changePassword(
-    @CurrentUser() user: UserInfoResponseDto,
+    @CurrentUser() user: UserInfoResponseWithTokensDto,
     @Body() dto: ChangePasswordDto,
   ): Promise<{ message: string }> {
     return await this.userService.changePassword(user.userId, dto);

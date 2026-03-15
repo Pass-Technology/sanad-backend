@@ -16,6 +16,6 @@ export class LookUpBillingCycleEntity extends LookupBaseEntity {
     @Column({ type: 'varchar', nullable: true })
     badgeAr: string | null;
 
-    @OneToMany(() => ProviderSubscriptionEntity, (sub) => sub.billingCycle)
+    @OneToMany(() => ProviderSubscriptionEntity, (sub) => sub.billingCycleId)
     subscriptions: ProviderSubscriptionEntity[];
 }

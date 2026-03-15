@@ -3,6 +3,7 @@ import { ApiOperation, ApiTags } from '@nestjs/swagger';
 import { OtpService } from './otp.service';
 import { ValidateOtpDto } from './dto/validate-otp.dto';
 import { SendOtpDto } from './dto/send-otp.dto';
+import { UserInfoResponseWithTokensDto } from '../user/dto/user-info-response.dto';
 
 @ApiTags('otp')
 @Controller('otp')
@@ -19,7 +20,7 @@ export class OtpController {
   @ApiOperation({ summary: 'Validate OTP' })
   async validateOtp(
     @Body() validateOtpDto: ValidateOtpDto,
-  ) {
+  ): Promise<UserInfoResponseWithTokensDto> {
     return await this.otpService.validateOtp(validateOtpDto);
   }
 }

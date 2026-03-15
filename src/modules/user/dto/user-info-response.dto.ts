@@ -1,7 +1,7 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { UserIdentifierType } from '../enums/user-identifier-type.enum';
 
-export class UserInfoResponseDto {
+export class UserInfoResponseWithTokensDto {
   @ApiProperty({
     example: '550e8400-e29b-41d4-a716-446655440000',
     description: 'User ID',
@@ -25,4 +25,10 @@ export class UserInfoResponseDto {
 
   @ApiProperty({ example: false, description: 'Whether the profile is completed' })
   isProfileCompleted: boolean;
+
+  @ApiProperty({ example: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...' })
+  accessToken: string;
+
+  @ApiProperty({ example: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...' })
+  refreshToken: string;
 }

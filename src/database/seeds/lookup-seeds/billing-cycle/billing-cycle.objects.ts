@@ -1,6 +1,6 @@
 export const billingCycleObjects = [
     {
-        id: '3c4d5e6f-a7b8-4c3d-0e1f-2a3b4c5d6e7f',
+        id: '2e7e891c-8b2c-4b6e-827c-36b5674c9351',
         labelEn: 'Monthly',
         labelAr: 'شهري',
         months: 1,
@@ -9,7 +9,7 @@ export const billingCycleObjects = [
         badgeAr: null
     },
     {
-        id: '4d5e6f7a-b8c9-4d4e-1f2a-3b4c5d6e7f8a',
+        id: '8cbf916c-4821-4f7b-951c-4b3d872c65fe',
         labelEn: '3 Months',
         labelAr: '3 أشهر',
         months: 3,
@@ -18,7 +18,7 @@ export const billingCycleObjects = [
         badgeAr: 'وفر 10%'
     },
     {
-        id: '5e6f7a8b-c9d0-4e5f-2a3b-4c5d6e7f8a9b',
+        id: 'bf2e896c-d2c6-4b8a-81a2-5c9b74d6821e',
         labelEn: '6 Months',
         labelAr: '6 أشهر',
         months: 6,
@@ -27,7 +27,7 @@ export const billingCycleObjects = [
         badgeAr: 'وفر 25%'
     },
     {
-        id: '6f7a8b9c-d0e1-4f6a-3b4c-5d6e7f8a9b0c',
+        id: 'df5e8c1b-e2a4-4f9e-bc16-d3b5c742819a',
         labelEn: 'Yearly',
         labelAr: 'سنوي',
         months: 12,

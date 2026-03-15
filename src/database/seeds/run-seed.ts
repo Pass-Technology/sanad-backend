@@ -8,6 +8,8 @@ import { billingCycleSeed } from './lookup-seeds/billing-cycle/billing-cycle.see
 import { profileStatusSeed } from './lookup-seeds/profile-status/profile-status.seed';
 import { providerTypeSeed } from './lookup-seeds/provider-type/provider-type.seed';
 import { companyTypeSeed } from './lookup-seeds/company-type/company-type.seed';
+import { subscriptionPlanSeed } from './subscriptions-seeds/subscription-plan/subscription-plan.seed';
+import { subscriptionPlanFeatureSeed } from './subscriptions-seeds/subscription-plan-feature/subscription-plan-feature.seed';
 
 
 
@@ -24,6 +26,10 @@ async function runSeed() {
     await profileStatusSeed(dataSource);
     await providerTypeSeed(dataSource);
     await companyTypeSeed(dataSource);
+
+    console.log('Subscription plans starting to seed');
+    await subscriptionPlanSeed(dataSource);
+    await subscriptionPlanFeatureSeed(dataSource);
 
 
     console.log('Lookup tables seeded successfully');

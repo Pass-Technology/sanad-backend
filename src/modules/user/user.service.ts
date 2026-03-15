@@ -1,4 +1,4 @@
-import { Injectable, UnauthorizedException, ForbiddenException } from '@nestjs/common';
+import { Injectable, UnauthorizedException, ForbiddenException, Inject, forwardRef } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { EventEmitter2 } from '@nestjs/event-emitter';
 import * as bcrypt from 'bcrypt';
@@ -16,7 +16,7 @@ import { ResetPasswordDto } from './dto/reset-password.dto';
 import { SendOtpDto } from '../otp/dto/send-otp.dto';
 import { OtpService } from '../otp/otp.service';
 import { OtpRepository } from '../otp/otp.repository';
-import { UserInfoResponseDto } from './dto/user-info-response.dto';
+import { UserInfoResponseWithTokensDto } from './dto/user-info-response.dto';
 
 
 @Injectable()
@@ -26,6 +26,7 @@ export class UserService {
     private readonly jwtService: JwtService,
     private readonly eventEmitter: EventEmitter2,
     private readonly config: AppConfigService,
+    @Inject(forwardRef(() => OtpService))
     private readonly otpService: OtpService,
     private readonly otpRepository: OtpRepository,
   ) { }
@@ -73,7 +74,7 @@ export class UserService {
     return this.generateTokens({ ...user, isVerified: true });
   }
 
-  async auth(dto: AuthDto) {
+  async auth(dto: AuthDto): Promise<UserInfoResponseWithTokensDto> {
     const { identifier } = dto;
 
     const user = (await this.userRepository.findByIdentifier(identifier))!;
@@ -90,7 +91,15 @@ export class UserService {
     }
 
     const token = await this.generateTokens(user);
-    return { accessToken: token.accessToken, refreshToken: token.refreshToken, userId: user.id, isProfileCompleted: user.isProfileCompleted }
+    return {
+      accessToken: token.accessToken,
+      refreshToken: token.refreshToken,
+      userId: user.id,
+      isProfileCompleted: user.isProfileCompleted,
+      isVerified: user.isVerified,
+      identifier: user.identifier,
+      identifierType: user.identifierType,
+    }
 
   }
 
@@ -232,7 +241,24 @@ export class UserService {
   }
 
 
-  getMe(user: UserInfoResponseDto) {
+  async getUserInfoWithTokensByIdentifier(identifier: string): Promise<UserInfoResponseWithTokensDto> {
+    const user = (await this.userRepository.findByIdentifier(identifier))!;
+    if (!user) {
+      throw new UnauthorizedException('User not found');
+    }
+    const token = await this.generateTokens({ ...user, isVerified: true });
+    return {
+      accessToken: token.accessToken,
+      refreshToken: token.refreshToken,
+      userId: user.id,
+      isProfileCompleted: user.isProfileCompleted,
+      isVerified: true,
+      identifier: user.identifier,
+      identifierType: user.identifierType,
+    };
+  }
+
+  getMe(user: UserInfoResponseWithTokensDto) {
     // const { userId, identifier, identifierType, isVerified, isProfileCompleted } = user;
     // if (!isVerified || !isProfileCompleted) {
 

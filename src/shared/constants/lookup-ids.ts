@@ -10,14 +10,19 @@ export const LOOKUP_IDS = {
         COMPANY: 'b2c3d4e5-f6a7-4b2c-9d0e-1f2a3b4c5d6e',
     },
     BILLING_CYCLE: {
-        MONTHLY: '3c4d5e6f-a7b8-4c3d-0e1f-2a3b4c5d6e7f',
-        THREE_MONTHS: '4d5e6f7a-b8c9-4d4e-1f2a-3b4c5d6e7f8a',
-        SIX_MONTHS: '5e6f7a8b-c9d0-4e5f-2a3b-4c5d6e7f8a9b',
-        YEARLY: '6f7a8b9c-d0e1-4f6a-3b4c-5d6e7f8a9b0c',
+        MONTHLY: '2e7e891c-8b2c-4b6e-827c-36b5674c9351',
+        THREE_MONTHS: '8cbf916c-4821-4f7b-951c-4b3d872c65fe',
+        SIX_MONTHS: 'bf2e896c-d2c6-4b8a-81a2-5c9b74d6821e',
+        YEARLY: 'df5e8c1b-e2a4-4f9e-bc16-d3b5c742819a',
     },
     COMPANY_TYPE: {
         PRIVATE: 'ce1dd6b9-608f-4e83-8a12-a211cab9b02c',
         GOVERNMENT: '4c78596f-f3c2-4777-96d1-75431b759889',
         SEMI_GOVERNMENT: 'ead78cdd-26a7-405c-9557-0d7ce9e67638'
+    },
+    SUBSCRIPTION_PLAN: {
+        STARTER: '38e08d6c-6799-4670-8772-520f92b0c160',
+        PROFESSIONAL: '73e89547-063a-4ef8-867e-3298a08d60e7',
+        ENTERPRISE: 'f477038e-976c-4861-bf72-35804561845e',
     }
 };
