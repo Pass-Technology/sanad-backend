@@ -6,17 +6,6 @@ import { billingCycleObjects } from "./billing-cycle.objects";
 export async function billingCycleSeed(dataSource: DataSource) {
     const billingCycleRepo = dataSource.getRepository(LookUpBillingCycleEntity);
 
-    const billingCycleKeys = billingCycleObjects.map(cycle => cycle.labelEn);
-
-    for (const object of billingCycleObjects) {
-        let cycle = await billingCycleRepo.findOne({ where: { labelEn: object.labelEn } });
-        if (cycle) {
-            // Update existing record with the standard UUID
-            Object.assign(cycle, object);
-            await billingCycleRepo.save(cycle);
-        } else {
-            // Create new record
-            await billingCycleRepo.save(billingCycleRepo.create(object));
-        }
-    }
+    // save objects (will update if exists by ID or insert if not)
+    await billingCycleRepo.save(billingCycleObjects);
 }

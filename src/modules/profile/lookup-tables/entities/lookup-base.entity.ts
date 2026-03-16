@@ -8,4 +8,7 @@ export abstract class LookupBaseEntity extends BaseEntity {
 
     @Column({ type: 'varchar' })
     labelAr: string;
+
+    @Column({ type: 'varchar', nullable: true })
+    staticCode: string;
 }
