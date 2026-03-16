@@ -17,6 +17,12 @@ export class FeatureEntity extends BaseEntity {
     @Column({ nullable: true })
     descriptionAr: string;
 
+    @Column({ default: 0 })
+    displayOrder: number;
+
+    @Column({ default: true })
+    isActive: boolean;
+
 
     @OneToMany(() => PlanFeatureEntity, (planFeature) => planFeature.feature)
     planFeatures: PlanFeatureEntity[];

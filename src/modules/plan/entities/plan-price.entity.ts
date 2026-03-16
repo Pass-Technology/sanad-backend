@@ -1,7 +1,7 @@
 import { BaseEntity } from "../../../database/base-entity";
 import { Column, Entity, JoinColumn, ManyToOne } from "typeorm";
 import { PlanEntity } from "./plan.entity";
-import { BillingCycleEntity } from "../../billing-cycle/entities/billing-cycle.entity";
+import { BillingCycleEntity } from "./billing-cycle.entity";
 
 @Entity('plan_prices')
 export class PlanPriceEntity extends BaseEntity {

@@ -2,7 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { PlanEntity } from './entities/plan.entity';
-import { BillingCycleEntity } from '../billing-cycle/entities/billing-cycle.entity';
+import { BillingCycleEntity } from './entities/billing-cycle.entity';
 
 @Injectable()
 export class PlanService {
@@ -15,6 +15,7 @@ export class PlanService {
 
     async getPlanViews() {
         const cycles = await this.billingCycleRepo.find({
+            where: { isActive: true },
             relations: {
                 prices: {
                     plan: {
@@ -25,6 +26,7 @@ export class PlanService {
                 },
             },
             order: {
+                displayOrder: 'ASC',
                 months: 'ASC',
             },
         });
@@ -37,22 +39,30 @@ export class PlanService {
             discountPercentage: cycle.discountPercentage,
             badgeEn: cycle.badgeEn,
             badgeAr: cycle.badgeAr,
-            plans: cycle.prices.map(priceEntry => ({
-                id: priceEntry.plan.id,
-                nameEn: priceEntry.plan.nameEn,
-                nameAr: priceEntry.plan.nameAr,
-                descriptionEn: priceEntry.plan.descriptionEn,
-                descriptionAr: priceEntry.plan.descriptionAr,
-                tagEn: priceEntry.plan.tagEn,
-                tagAr: priceEntry.plan.tagAr,
-                price: priceEntry.price,
-                features: priceEntry.plan.features.map(pf => ({
-                    id: pf.feature?.id,
-                    nameEn: pf.feature.nameEn,
-                    nameAr: pf.feature.nameAr,
-                    value: pf.value,
-                })),
-            })).sort((a, b) => Number(a.price) - Number(b.price)),
+            plans: cycle.prices
+                .filter(priceEntry => priceEntry.plan.isActive)
+                .map(priceEntry => ({
+                    id: priceEntry.plan.id,
+                    nameEn: priceEntry.plan.nameEn,
+                    nameAr: priceEntry.plan.nameAr,
+                    descriptionEn: priceEntry.plan.descriptionEn,
+                    descriptionAr: priceEntry.plan.descriptionAr,
+                    tagEn: priceEntry.plan.tagEn,
+                    tagAr: priceEntry.plan.tagAr,
+                    price: priceEntry.price,
+                    displayOrder: priceEntry.plan.displayOrder,
+                    features: priceEntry.plan.features
+                        .filter(pf => pf.feature?.isActive)
+                        .map(pf => ({
+                            id: pf.feature?.id,
+                            nameEn: pf.feature.nameEn,
+                            nameAr: pf.feature.nameAr,
+                            value: pf.value,
+                            displayOrder: pf.feature.displayOrder,
+                        }))
+                        .sort((a, b) => a.displayOrder - b.displayOrder),
+                }))
+                .sort((a, b) => (a.displayOrder - b.displayOrder) || (Number(a.price) - Number(b.price))),
         }));
     }
 
