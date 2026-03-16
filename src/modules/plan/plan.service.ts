@@ -13,7 +13,8 @@ export class PlanService {
         private readonly billingCycleRepo: Repository<BillingCycleEntity>,
     ) { }
 
-    async getPlanViews() {
+    async getPlanViews(lang: string = 'en') {
+        const isAr = lang === 'ar';
         const cycles = await this.billingCycleRepo.find({
             where: { isActive: true },
             relations: {
@@ -33,30 +34,24 @@ export class PlanService {
 
         return cycles.map(cycle => ({
             id: cycle.id,
-            labelEn: cycle.labelEn,
-            labelAr: cycle.labelAr,
+            label: isAr ? cycle.labelAr : cycle.labelEn,
             months: cycle.months,
             discountPercentage: cycle.discountPercentage,
-            badgeEn: cycle.badgeEn,
-            badgeAr: cycle.badgeAr,
+            badge: isAr ? cycle.badgeAr : cycle.badgeEn,
             plans: cycle.prices
                 .filter(priceEntry => priceEntry.plan.isActive)
                 .map(priceEntry => ({
                     id: priceEntry.plan.id,
-                    nameEn: priceEntry.plan.nameEn,
-                    nameAr: priceEntry.plan.nameAr,
-                    descriptionEn: priceEntry.plan.descriptionEn,
-                    descriptionAr: priceEntry.plan.descriptionAr,
-                    tagEn: priceEntry.plan.tagEn,
-                    tagAr: priceEntry.plan.tagAr,
+                    name: isAr ? priceEntry.plan.nameAr : priceEntry.plan.nameEn,
+                    description: isAr ? priceEntry.plan.descriptionAr : priceEntry.plan.descriptionEn,
+                    tag: isAr ? priceEntry.plan.tagAr : priceEntry.plan.tagEn,
                     price: priceEntry.price,
                     displayOrder: priceEntry.plan.displayOrder,
                     features: priceEntry.plan.features
                         .filter(pf => pf.feature?.isActive)
                         .map(pf => ({
                             id: pf.feature?.id,
-                            nameEn: pf.feature.nameEn,
-                            nameAr: pf.feature.nameAr,
+                            name: isAr ? pf.feature.nameAr : pf.feature.nameEn,
                             value: pf.value,
                             displayOrder: pf.feature.displayOrder,
                         }))
