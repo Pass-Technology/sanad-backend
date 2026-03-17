@@ -281,6 +281,8 @@ export class UserService {
       throw new UnauthorizedException('Invalid OTP');
     }
 
+    await this.userRepository.markUserVerified(user.id);
+
     return this.generateTokens({ ...user, isVerified: true });
 
   }
