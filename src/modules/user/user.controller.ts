@@ -36,7 +36,8 @@ export class UserController {
   @ApiBearerAuth()
   @ApiOperation({ summary: 'Get current user info from token' })
   getInfo(@CurrentUser() user: UserInfoResponseWithTokensDto) {
-    return this.userService.getMe(user);
+
+    return user;
   }
 
   @Delete('delete/:id')

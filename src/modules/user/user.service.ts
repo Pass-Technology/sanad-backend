@@ -53,8 +53,8 @@ export class UserService {
     return { message: 'User deleted successfully' };
   }
 
-  getMe(user: UserInfoResponseWithTokensDto) {
-    console.log(user)
-    return user;
-  }
+  // getMe(user: UserInfoResponseWithTokensDto) {
+  //   console.log(user)
+  //   return user;
+  // }
 }
