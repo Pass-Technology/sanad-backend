@@ -6,10 +6,10 @@ import { UserRegisteredListener } from './listeners/user-registered.listener';
 import { OtpRepository } from './otp.repository';
 import { OtpEntity } from './entities/otp.entity';
 import { UserEntity } from '../user/entities/user.entity';
-import { UserModule } from '../user/user.module';
+import { AuthModule } from '../auth/auth.module';
 
 @Module({
-  imports: [TypeOrmModule.forFeature([OtpEntity, UserEntity]), forwardRef(() => UserModule)],
+  imports: [TypeOrmModule.forFeature([OtpEntity, UserEntity]), forwardRef(() => AuthModule)],
   controllers: [OtpController],
   providers: [
     OtpService,

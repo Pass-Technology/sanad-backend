@@ -1,14 +1,18 @@
-import { Body, Controller, Post, Request } from '@nestjs/common';
+import { Body, Controller, Post } from '@nestjs/common';
 import { ApiOperation, ApiTags } from '@nestjs/swagger';
 import { OtpService } from './otp.service';
 import { ValidateOtpDto } from './dto/validate-otp.dto';
 import { SendOtpDto } from './dto/send-otp.dto';
-import { UserInfoResponseWithTokensDto } from '../user/dto/user-info-response.dto';
+import { UserInfoResponseWithTokensDto } from '../auth/dto/user-info-response-with-Tokens.dto';
+import { AuthService } from '../auth/auth.service';
 
 @ApiTags('otp')
 @Controller('otp')
 export class OtpController {
-  constructor(private readonly otpService: OtpService) { }
+  constructor(
+    private readonly otpService: OtpService,
+    private readonly authService: AuthService,
+  ) { }
 
   @Post('send')
   @ApiOperation({ summary: 'Send OTP to existing user by email or mobile' })
@@ -21,6 +25,6 @@ export class OtpController {
   async validateOtp(
     @Body() validateOtpDto: ValidateOtpDto,
   ): Promise<UserInfoResponseWithTokensDto> {
-    return await this.otpService.validateOtp(validateOtpDto);
+    return await this.authService.verifyOtpAndLogin(validateOtpDto);
   }
 }

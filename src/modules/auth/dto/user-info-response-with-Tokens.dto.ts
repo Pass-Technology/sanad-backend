@@ -1,5 +1,5 @@
-import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
-import { UserIdentifierType } from '../enums/user-identifier-type.enum';
+import { ApiProperty } from '@nestjs/swagger';
+import { UserIdentifierType } from '../../user/enums/user-identifier-type.enum';
 
 export class UserInfoResponseWithTokensDto {
   @ApiProperty({

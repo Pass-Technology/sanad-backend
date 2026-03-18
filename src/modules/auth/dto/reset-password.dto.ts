@@ -1,7 +1,7 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { IsNotEmpty, IsString, MinLength, Length, Matches } from 'class-validator';
 import { IsEmailOrMobile } from '../../../shared/validators/email-or-mobile.validator';
-import { IsUserExisting } from '../validators/existing-user-for-auth.validator';
+import { IsUserExisting } from '../../user/validators/existing-user-for-auth.validator';
 
 export class ResetPasswordDto {
     @ApiProperty({

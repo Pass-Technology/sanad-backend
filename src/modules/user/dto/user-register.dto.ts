@@ -10,7 +10,7 @@ import { IsUserNotExisting } from '../validators/existing-user.validator';
 import { IsEmailOrMobile } from '../../../shared/validators/email-or-mobile.validator';
 import { UserIdentifierType } from '../enums/user-identifier-type.enum';
 
-export class RegisterDto {
+export class UserRegisterDto {
   @ApiProperty({
     example: 'user@example.com or +1234567890',
     description: 'User email or mobile',

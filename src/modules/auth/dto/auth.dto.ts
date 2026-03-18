@@ -1,12 +1,10 @@
-import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
+import { ApiProperty } from '@nestjs/swagger';
 import {
-  IsEmail,
   IsNotEmpty,
   IsString,
   MinLength,
-  ValidateIf,
 } from 'class-validator';
-import { IsUserExisting } from '../validators/existing-user-for-auth.validator';
+import { IsUserExisting } from '../../user/validators/existing-user-for-auth.validator';
 import { IsEmailOrMobile } from '../../../shared/validators/email-or-mobile.validator';
 
 export class AuthDto {

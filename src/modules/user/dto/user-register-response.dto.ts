@@ -1,6 +1,6 @@
 import { ApiProperty } from '@nestjs/swagger';
 
-export class RegisterResponseDto {
+export class UserRegisterResponseDto {
   @ApiProperty({ example: 'Registration successful. Please verify your OTP.' })
   message: string;
 

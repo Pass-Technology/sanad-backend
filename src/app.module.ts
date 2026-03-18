@@ -3,6 +3,7 @@ import { EventEmitterModule } from '@nestjs/event-emitter';
 import { DatabaseModule } from './database/database.module';
 import { UserModule } from './modules/user/user.module';
 import { OtpModule } from './modules/otp/otp.module';
+import { AuthModule } from './modules/auth/auth.module';
 import { HealthController } from './health.controller';
 import { AppConfigModule } from './config/config.module';
 import { ProfileModule } from './modules/profile/profile.module';
@@ -15,6 +16,7 @@ import { SubscriptionModule } from './modules/subscription/subscription.module';
     DatabaseModule,
     UserModule,
     OtpModule,
+    AuthModule,
     ProfileModule,
     SubscriptionModule
 

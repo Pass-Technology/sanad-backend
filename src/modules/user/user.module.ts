@@ -6,7 +6,6 @@ import { UserController } from './user.controller';
 import { UserService } from './user.service';
 import { UserRepository } from './user.repository';
 import { UserEntity } from './entities/user.entity';
-import { UserVerificationRequestedListener } from './listeners/user-verification-requested.listener';
 import { ExistingUserValidator } from './validators/existing-user.validator';
 import { ExistingUserForAuthValidator } from './validators/existing-user-for-auth.validator';
 import { JwtAuthGuard } from './guards/jwt-auth.guard';
@@ -17,9 +16,9 @@ import { OtpModule } from '../otp/otp.module';
 
 @Module({
   imports: [
+    forwardRef(() => OtpModule),
     PassportModule,
     TypeOrmModule.forFeature([UserEntity]),
-    forwardRef(() => OtpModule),
     JwtModule.registerAsync({
       imports: [AppConfigModule],
       inject: [AppConfigService],
@@ -27,15 +26,12 @@ import { OtpModule } from '../otp/otp.module';
         secret: config.auth.jwtSecret,
         signOptions: { expiresIn: config.auth.accessExpiration as any },
       }),
-
-
     }),
   ],
   controllers: [UserController],
   providers: [
     UserService,
     UserRepository,
-    UserVerificationRequestedListener,
     ExistingUserValidator,
     ExistingUserForAuthValidator,
     JwtAuthGuard,
