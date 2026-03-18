@@ -21,6 +21,6 @@ export class AuthDto {
 
   @ApiProperty({ example: 'password123' })
   @IsString()
-  @MinLength(1, { message: 'Password is required' })
+  @MinLength(6, { message: 'Password should be at least 6 characters' })
   password: string;
 }

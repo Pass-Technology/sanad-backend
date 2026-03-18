@@ -20,10 +20,9 @@ export class RegisterDto {
   @IsUserNotExisting({ field: 'identifier' })
   identifier: string;
 
+  // decide if the identifier is email or mobile
   get identifierType(): UserIdentifierType {
-    return this.identifier.includes('@')
-      ? UserIdentifierType.EMAIL
-      : UserIdentifierType.MOBILE;
+    return this.identifier.includes('@') ? UserIdentifierType.EMAIL : UserIdentifierType.MOBILE;
   }
 
   @ApiProperty({ example: 'password123', minLength: 6 })

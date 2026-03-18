@@ -77,6 +77,7 @@ export class LookUpService {
         return data.map(item => this.localize(item, lang));
     }
 
+    // to return the data with the right language else default -ie: English-
     private localize(entity: any, lang: string) {
         const { labelEn, labelAr, badgeEn, badgeAr, ...rest } = entity;
         return {
@@ -86,27 +87,27 @@ export class LookUpService {
         };
     }
 
-    async validateProviderTypeId(id: string): Promise<boolean> {
-        const data = await this.getProviderTypes('en');
-        return data.some(t => t.id === id);
-    }
+    // async validateProviderTypeId(id: string): Promise<boolean> {
+    //     const data = await this.getProviderTypes('en');
+    //     return data.some(t => t.id === id);
+    // }
 
 
     async isProviderTypeExist(id: string): Promise<boolean> {
         return this.providerTypeRepo.exists({ where: { id } })
     }
 
-    async validateCompanyTypeId(id: string): Promise<boolean> {
-        const data = await this.getCompanyTypes('en');
-        return data.some(t => t.id === id);
-    }
+    // async validateCompanyTypeId(id: string): Promise<boolean> {
+    //     const data = await this.getCompanyTypes('en');
+    //     return data.some(t => t.id === id);
+    // }
 
     async isCompanyTypeExist(id: string): Promise<boolean> {
         return this.companyTypeRepo.exists({ where: { id } })
     }
 
 
-    async getDraftStatus() {
-        return await this.profileStatusrRepo.findOne({ where: { labelEn: 'Draft' } });
-    }
+    // async getDraftStatus() {
+    //     return await this.profileStatusrRepo.findOne({ where: { labelEn: 'Draft' } });
+    // }
 }

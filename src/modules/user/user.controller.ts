@@ -37,8 +37,8 @@ export class UserController {
   @Post('register')
   @ApiOperation({ summary: 'Register a new user' })
   // @Version('2')
-  register(@Body() dto: RegisterDto): Promise<RegisterResponseDto> {
-    return this.userService.register(dto);
+  register(@Body() registerDto: RegisterDto): Promise<RegisterResponseDto> {
+    return this.userService.register(registerDto);
   }
 
   @Post('auth')

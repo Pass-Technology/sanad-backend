@@ -8,6 +8,7 @@ import { CreatePlanDto } from "./dtos/create-plan.dto";
 import { UpdatePlanDto } from "./dtos/update-plan.dto";
 import { AddFeatureDto } from "./dtos/create-feature.dto";
 
+
 @Injectable()
 export class SubscriptionService {
     constructor(
@@ -38,6 +39,7 @@ export class SubscriptionService {
             order: { months: 'ASC' }
         });
 
+        // reformat the results before returning for readability
         const formattedPlans = plans.map(plan => ({
             id: plan.id,
             name: plan.name,
@@ -55,32 +57,37 @@ export class SubscriptionService {
     }
     async createPlan(dto: CreatePlanDto) {
         const plan = this.planRepo.create(dto);
-        return this.planRepo.save(plan);
+        return await this.planRepo.save(plan);
     }
 
     async updatePlan(id: string, dto: UpdatePlanDto) {
-        const plan = await this.planRepo.findOneBy({ id });
-        if (!plan) {
-            throw new NotFoundException(`Subscription plan with ID ${id} not found`);
-        }
+        // const plan = await this.planRepo.findOneBy({ id });
+        // if (!plan) {
+        //     throw new NotFoundException(`Subscription plan with ID ${id} not found`);
+        // }
+        await this.findPlanById(id);
         await this.planRepo.update(id, dto);
-        return this.planRepo.findOneBy({ id });
+        // const updated = await this.planRepo.findOneBy({ id });
+        const updated = await this.findPlanById(id);
+        return `updated plan: ${updated}`;
     }
 
     async deactivatePlan(id: string) {
-        const plan = await this.planRepo.findOneBy({ id });
-        if (!plan) {
-            throw new NotFoundException(`Subscription plan with ID ${id} not found`);
-        }
+        // const plan = await this.planRepo.findOneBy({ id });
+        // if (!plan) {
+        //     throw new NotFoundException(`Subscription plan with ID ${id} not found`);
+        // }
+        await this.findPlanById(id);
         await this.planRepo.update(id, { isActive: false });
     }
 
     async calculatePrice(planId: string, billingCycleId: string) {
 
-        const plan = await this.planRepo.findOneBy({ id: planId });
-        if (!plan) {
-            throw new NotFoundException(`Subscription plan with ID ${planId} not found`);
-        }
+        // const plan = await this.planRepo.findOneBy({ id: planId });
+        // if (!plan) {
+        //     throw new NotFoundException(`Subscription plan with ID ${planId} not found`);
+        // }
+        const plan = await this.findPlanById(planId);
 
         const cycle = await this.billingRepo.findOneBy({ id: billingCycleId });
         if (!cycle) {
@@ -108,18 +115,19 @@ export class SubscriptionService {
     }
 
     async addFeature(planId: string, dto: AddFeatureDto) {
-        const plan = await this.planRepo.findOneBy({ id: planId });
-        if (!plan) {
-            throw new NotFoundException(`Subscription plan with ID ${planId} not found`);
-        }
+        // const plan = await this.planRepo.findOneBy({ id: planId });
+        // if (!plan) {
+        //     throw new NotFoundException(`Subscription plan with ID ${planId} not found`);
+        // }
 
+        const plan = await this.findPlanById(planId);
         const feature = this.featureRepo.create({
             plan: plan,
             featureText: dto.featureText,
             displayOrder: dto.displayOrder,
         });
 
-        return this.featureRepo.save(feature);
+        return await this.featureRepo.save(feature);
     }
 
     async getPlan(id: string) {
@@ -132,6 +140,12 @@ export class SubscriptionService {
             throw new NotFoundException(`Subscription plan with ID ${id} not found`);
         }
 
+        return plan;
+    }
+
+    private async findPlanById(id: string) {
+        const plan = await this.planRepo.findOne({ where: { id } })
+        if (!plan) throw new NotFoundException('no plan with this id');
         return plan;
     }
 }
