@@ -4,7 +4,6 @@ import { SubscriptionService } from './subscription.service';
 import { AddFeatureDto } from './dtos/create-feature.dto';
 import { CreatePlanDto } from './dtos/create-plan.dto';
 import { UpdatePlanDto } from './dtos/update-plan.dto';
-import { AuthGuard } from '@nestjs/passport/dist/auth.guard';
 import { JwtAuthGuard } from '../user/guards/jwt-auth.guard';
 
 @ApiTags('Subscriptions')
@@ -32,7 +31,7 @@ export class SubscriptionController {
     @UseGuards(JwtAuthGuard)
     @ApiBearerAuth()
     @ApiOperation({ summary: 'Update an existing subscription plan' })
-    @ApiParam({ name: 'id', description: 'Plan ID', example: 'professional' })
+    @ApiParam({ name: 'id', description: 'Plan ID', example: '38e08d6c-6799-4670-8772-520f92b0c160' })
     @ApiResponse({ status: 200, description: 'Plan updated successfully.' })
     updatePlan(@Param('id') id: string, @Body() dto: UpdatePlanDto) {
         return this.subscriptionService.updatePlan(id, dto);
@@ -42,7 +41,7 @@ export class SubscriptionController {
     @UseGuards(JwtAuthGuard)
     @ApiBearerAuth()
     @ApiOperation({ summary: 'Deactivate a subscription plan' })
-    @ApiParam({ name: 'id', description: 'Plan ID', example: 'professional' })
+    @ApiParam({ name: 'id', description: 'Plan ID', example: '38e08d6c-6799-4670-8772-520f92b0c160' })
     @ApiResponse({ status: 200, description: 'Plan deactivated successfully.' })
     deactivatePlan(@Param('id') id: string) {
         return this.subscriptionService.deactivatePlan(id);
@@ -52,7 +51,7 @@ export class SubscriptionController {
     @UseGuards(JwtAuthGuard)
     @ApiBearerAuth()
     @ApiOperation({ summary: 'Add a feature to a subscription plan' })
-    @ApiParam({ name: 'planId', description: 'Plan ID', example: 'professional' })
+    @ApiParam({ name: 'planId', description: 'Plan ID', example: '38e08d6c-6799-4670-8772-520f92b0c160' })
     @ApiResponse({ status: 201, description: 'Feature added successfully.' })
     addFeature(
         @Param('planId') planId: string,
@@ -65,8 +64,8 @@ export class SubscriptionController {
     @UseGuards(JwtAuthGuard)
     @ApiBearerAuth()
     @ApiOperation({ summary: 'Preview price for a plan and billing cycle' })
-    @ApiQuery({ name: 'planId', description: 'Plan ID', example: 'starter' })
-    @ApiQuery({ name: 'billingCycleId', description: 'Billing Cycle ID', example: '3months' })
+    @ApiQuery({ name: 'planId', description: 'Plan ID', example: '38e08d6c-6799-4670-8772-520f92b0c160' })
+    @ApiQuery({ name: 'billingCycleId', description: 'Billing Cycle ID', example: '8cbf916c-4821-4f7b-951c-4b3d872c65fe' })
     @ApiResponse({ status: 200, description: 'Price breakdown calculated.' })
     previewPrice(
         @Query('planId') planId: string,
@@ -79,7 +78,7 @@ export class SubscriptionController {
     @UseGuards(JwtAuthGuard)
     @ApiBearerAuth()
     @ApiOperation({ summary: 'Get details of a specific internal subscription plan' })
-    @ApiParam({ name: 'id', description: 'Plan ID', example: 'starter' })
+    @ApiParam({ name: 'id', description: 'Plan ID', example: '38e08d6c-6799-4670-8772-520f92b0c160' })
     @ApiResponse({ status: 200, description: 'Plan details returned.' })
     getPlan(@Param('id') id: string) {
         return this.subscriptionService.getPlan(id);
