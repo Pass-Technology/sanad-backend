@@ -1,4 +1,4 @@
-import { Entity, Column, OneToMany, ManyToOne, JoinColumn } from 'typeorm';
+import { Entity, Column, OneToMany } from 'typeorm';
 import { BaseEntity } from '../../../database/base-entity';
 import { ServiceEntity } from './service.entity';
 
@@ -18,11 +18,4 @@ export class CategoryEntity extends BaseEntity {
 
     @OneToMany(() => ServiceEntity, (service) => service.category)
     services: ServiceEntity[];
-
-    @ManyToOne(() => CategoryEntity, (category) => category.children, { nullable: true })
-    @JoinColumn({ name: 'parentId' })
-    parent: CategoryEntity;
-
-    @OneToMany(() => CategoryEntity, (category) => category.parent)
-    children: CategoryEntity[];
 }

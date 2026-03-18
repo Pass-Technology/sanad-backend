@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { IsNull, Repository } from 'typeorm';
+import { Repository } from 'typeorm';
 import { CategoryEntity } from './entities/category.entity';
 import { ServiceEntity } from './entities/service.entity';
 
@@ -15,29 +15,14 @@ export class ServiceManagementService {
 
     async findAllCategories() {
         return await this.categoryRepo.find({
-            where: { parent: IsNull(), isActive: true },
-            relations: {
-                children: {
-                    services: {
-                        children: true,
-                    },
-                },
-                services: {
-                    children: true,
-                },
-            },
+            where: { isActive: true },
+            relations: { services: true },
             order: {
                 name: 'ASC',
-                children: {
-                    name: 'ASC',
-                    services: {
-                        sortOrder: 'ASC',
-                    },
-                },
                 services: {
-                    sortOrder: 'ASC',
-                },
-            },
+                    sortOrder: 'ASC'
+                }
+            }
         });
     }
 

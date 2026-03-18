@@ -6,48 +6,31 @@ export async function servicesSeed(dataSource: DataSource) {
     const categoryRepo = dataSource.getRepository(CategoryEntity);
     const serviceRepo = dataSource.getRepository(ServiceEntity);
 
-    // 1. Create the Main "All Categories" Root
-    const rootCategoryId = '111e8400-e29b-41d4-a716-446655440000';
-    let rootCategory = await categoryRepo.findOne({ where: { id: rootCategoryId } });
-    if (!rootCategory) {
-        rootCategory = categoryRepo.create({
-            id: rootCategoryId,
-            name: 'All Categories',
-            nameAr: 'جميع الفئات',
-            icon: 'apps',
-            isActive: true
-        });
-        await categoryRepo.save(rootCategory);
-    }
-
-    // 2. Define Sub-categories
+    // Categories
     const categories = [
-        { id: '111e8400-e29b-41d4-a716-446655440001', name: 'Home Services', nameAr: 'خدمات المنزل', icon: 'home', parentId: rootCategoryId },
-        { id: '111e8400-e29b-41d4-a716-446655440002', name: 'Car Services', nameAr: 'خدمات السيارات', icon: 'directions_car', parentId: rootCategoryId },
-        { id: '111e8400-e29b-41d4-a716-446655440003', name: 'Technical', nameAr: 'تقنية', icon: 'settings', parentId: rootCategoryId },
-        { id: '111e8400-e29b-41d4-a716-446655440004', name: 'Medical', nameAr: 'طبي', icon: 'medical_services', parentId: rootCategoryId },
-        { id: '111e8400-e29b-41d4-a716-446655440005', name: 'Personal', nameAr: 'بياناتي', icon: 'person', parentId: rootCategoryId },
+        { id: '111e8400-e29b-41d4-a716-446655440001', name: 'Home Services', nameAr: 'خدمات المنزل', icon: 'home' },
+        { id: '111e8400-e29b-41d4-a716-446655440002', name: 'Car Services', nameAr: 'خدمات السيارات', icon: 'directions_car' },
+        { id: '111e8400-e29b-41d4-a716-446655440003', name: 'Technical', nameAr: 'تقنية', icon: 'settings' },
+        { id: '111e8400-e29b-41d4-a716-446655440004', name: 'Medical', nameAr: 'طبي', icon: 'medical_services' },
+        { id: '111e8400-e29b-41d4-a716-446655440005', name: 'Personal', nameAr: 'بياناتي', icon: 'person' },
     ];
 
     console.log('Seeding Categories...');
     for (const cat of categories) {
         let category = await categoryRepo.findOne({ where: { id: cat.id } });
         if (!category) {
-            category = categoryRepo.create({
-                ...cat,
-                parent: { id: cat.parentId } as CategoryEntity
-            });
+            category = categoryRepo.create(cat);
             await categoryRepo.save(category);
         } else {
+            // Update existing if needed
             category.name = cat.name;
             category.nameAr = cat.nameAr;
             category.icon = cat.icon;
-            category.parent = { id: cat.parentId } as CategoryEntity;
             await categoryRepo.save(category);
         }
     }
 
-    // 3. Define Services
+    // Services
     const carCategoryId = '111e8400-e29b-41d4-a716-446655440002';
     const homeCategoryId = '111e8400-e29b-41d4-a716-446655440001';
 
