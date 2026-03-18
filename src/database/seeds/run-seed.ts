@@ -12,6 +12,7 @@ import { planPriceSeed } from './plan-management/plan-price.seed';
 import { profileStatusSeed } from './lookup-seeds/profile-status/profile-status.seed';
 import { providerTypeSeed } from './lookup-seeds/provider-type/provider-type.seed';
 import { companyTypeSeed } from './lookup-seeds/company-type/company-type.seed';
+import { servicesSeed } from './profile-management/services.seed';
 
 async function runSeed() {
     const dataSource = await AppDataSource.initialize();
@@ -29,6 +30,9 @@ async function runSeed() {
     await featureSeed(dataSource);
     await planFeatureSeed(dataSource);
     await planPriceSeed(dataSource);
+
+    console.log('Services starting to seed');
+    await servicesSeed(dataSource);
 
     console.log('All seeds finished successfully');
 

@@ -85,7 +85,7 @@ export class ProfileSaverService {
     async createProviderProfile(companyInfo: CreateCompanyInfoDto, userInfo: ProviderUserInfoEntity,
         branches: BranchEntity[], payment: ProviderPaymentEntity,
         compliance: ProviderComplianceEntity,
-        services: CreateServicesDto, userId: string) {
+        services: CreateServicesDto, userId: string): Promise<ProviderProfileEntity> {
         const newProfile = this.profileRepo.create({
             user: { id: userId },
             status: { id: LOOKUP_IDS.PROFILE_STATUS.DRAFT },
@@ -97,7 +97,7 @@ export class ProfileSaverService {
             socialMediaLink: companyInfo.socialMediaLink,
             websiteLink: companyInfo.websiteLink,
             languagesSpoken: companyInfo.languagesSpoken,
-            selectedServiceIds: services?.selectedServiceIds ?? [],
+            selectedServices: services?.selectedServiceIds?.map(id => ({ id })) ?? [],
             userInfo,
             branches,
             payment,

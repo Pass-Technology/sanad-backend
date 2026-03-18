@@ -15,6 +15,8 @@ import { LookUpProviderTypeEntity } from '../lookup-tables/entities/lookup-provi
 import { LookUpCompanyTypeEntity } from '../lookup-tables/entities/lookup-company-type.entity';
 import { BaseEntity } from '../../../database/base-entity';
 import { UserEntity } from '../../user/entities/user.entity';
+import { ServiceEntity } from '../../service-management/entities/service.entity';
+import { JoinTable, ManyToMany } from 'typeorm';
 
 @Entity('provider_profiles')
 export class ProviderProfileEntity extends BaseEntity {
@@ -55,8 +57,13 @@ export class ProviderProfileEntity extends BaseEntity {
     @Column('simple-array', { nullable: true })
     languagesSpoken: string[] | null;
 
-    @Column('simple-array', { nullable: true })
-    selectedServiceIds: string[];
+    @ManyToMany(() => ServiceEntity, (service) => service.profiles)
+    @JoinTable({
+        name: 'provider_profile_services',
+        joinColumn: { name: 'profile_id', referencedColumnName: 'id' },
+        inverseJoinColumn: { name: 'service_id', referencedColumnName: 'id' }
+    })
+    selectedServices: ServiceEntity[];
 
 
     @Column({ type: 'int', default: 1 })

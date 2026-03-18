@@ -11,6 +11,7 @@ import { BranchEntity } from './entities/branch.entity';
 import { ServingAreaEntity } from './entities/serving-area.entity';
 import { ProviderComplianceEntity } from './entities/provider-compliance.entity';
 import { ProviderPaymentEntity } from './entities/provider-payment.entity';
+import { ServiceManagementModule } from '../service-management/service-management.module';
 
 
 import { UserModule } from '../user/user.module';
@@ -39,6 +40,7 @@ import { ProfileSaverService } from './profile-saver.service';
         LookUpBillingCycleEntity,
     ]),
         UserModule,
+        ServiceManagementModule,
     ],
     controllers: [ProfileController, LookUpController],
     providers: [ProfileService, ProfileRepository, LookUpService, LookupCacheService, ProfileSaverService],

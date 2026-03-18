@@ -40,6 +40,8 @@ export class ProfileRepository {
                 'branches.servingAreas',
                 'compliance',
                 'payment',
+                'selectedServices',
+                'selectedServices.category',
             ],
         });
         if (!profile) {

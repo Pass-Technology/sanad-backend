@@ -8,6 +8,7 @@ import { AppConfigModule } from './config/config.module';
 import { ProfileModule } from './modules/profile/profile.module';
 import { PlanModule } from './modules/plan/plan.module';
 import { SubscriptionModule } from './subscription/subscription.module';
+import { ServiceManagementModule } from './modules/service-management/service-management.module';
 
 
 @Module({
@@ -20,7 +21,7 @@ import { SubscriptionModule } from './subscription/subscription.module';
     ProfileModule,
     PlanModule,
     SubscriptionModule,
-
+    ServiceManagementModule,
   ],
   controllers: [HealthController],
 })
