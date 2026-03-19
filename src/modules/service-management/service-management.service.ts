@@ -13,8 +13,8 @@ export class ServiceManagementService {
         private readonly serviceRepo: Repository<ServiceEntity>,
     ) { }
 
-    async findAllCategories() {
-        return await this.categoryRepo.find({
+    async findAllCategories(lang: string = 'en') {
+        const categories = await this.categoryRepo.find({
             where: { isActive: true },
             relations: { services: true },
             order: {
@@ -24,13 +24,50 @@ export class ServiceManagementService {
                 }
             }
         });
+
+        return categories.map(category => this.localize(category, lang));
     }
 
-    async getServicesByCategory(categoryId: string) {
-        return await this.serviceRepo.find({
+
+    async getServicesByCategory(categoryId: string, lang: string = 'en') {
+        const services = await this.serviceRepo.find({
             where: { category: { id: categoryId }, isActive: true },
             relations: { children: true },
             order: { sortOrder: 'ASC' }
         });
+
+        return services.map(service => this.localize(service, lang));
+    }
+
+    async findServiceById(serviceId: string, lang: string = 'en') {
+        const service = await this.serviceRepo.findOne({
+            where: { id: serviceId, isActive: true },
+            relations: { children: true }
+        });
+
+        return this.localize(service, lang);
+    }
+
+
+    private localize(entity: any, lang: string) {
+        if (!entity) return null;
+
+        const { name, nameAr, services, children, ...rest } = entity;
+        const localized: any = {
+            ...rest,
+            name: lang === 'ar' ? nameAr : name
+        };
+
+        if (services) {
+            localized.services = services.map(s => this.localize(s, lang));
+        }
+
+        if (children) {
+            localized.children = children.map(c => this.localize(c, lang));
+        }
+
+        return localized;
     }
 }
+
+
