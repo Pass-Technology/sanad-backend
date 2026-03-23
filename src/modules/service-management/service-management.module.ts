@@ -4,13 +4,14 @@ import { CategoryEntity } from './entities/category.entity';
 import { ServiceEntity } from './entities/service.entity';
 import { ServiceManagementController } from './service-management.controller';
 import { ServiceManagementService } from './service-management.service';
+import { ProviderProfileEntity } from '../profile/entities/provider-profile.entity';
 
 @Module({
     imports: [
-        TypeOrmModule.forFeature([CategoryEntity, ServiceEntity])
+        TypeOrmModule.forFeature([CategoryEntity, ServiceEntity, ProviderProfileEntity])
     ],
     controllers: [ServiceManagementController],
     providers: [ServiceManagementService],
-    exports: [ServiceManagementService, TypeOrmModule],
+    exports: [ServiceManagementService],
 })
 export class ServiceManagementModule { }

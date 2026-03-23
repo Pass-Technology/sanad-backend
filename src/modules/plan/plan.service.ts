@@ -39,15 +39,15 @@ export class PlanService {
             discountPercentage: cycle.discountPercentage,
             badge: isAr ? cycle.badgeAr : cycle.badgeEn,
             plans: cycle.prices
-                .filter(priceEntry => priceEntry.plan.isActive)
-                .map(priceEntry => ({
-                    id: priceEntry.plan.id,
-                    name: isAr ? priceEntry.plan.nameAr : priceEntry.plan.nameEn,
-                    description: isAr ? priceEntry.plan.descriptionAr : priceEntry.plan.descriptionEn,
-                    tag: isAr ? priceEntry.plan.tagAr : priceEntry.plan.tagEn,
-                    price: priceEntry.price,
-                    displayOrder: priceEntry.plan.displayOrder,
-                    features: priceEntry.plan.features
+                .filter(priceEntity => priceEntity.plan.isActive)
+                .map(priceEntity => ({
+                    id: priceEntity.plan.id,
+                    name: isAr ? priceEntity.plan.nameAr : priceEntity.plan.nameEn,
+                    description: isAr ? priceEntity.plan.descriptionAr : priceEntity.plan.descriptionEn,
+                    tag: isAr ? priceEntity.plan.tagAr : priceEntity.plan.tagEn,
+                    price: priceEntity.price,
+                    displayOrder: priceEntity.plan.displayOrder,
+                    features: priceEntity.plan.features
                         .filter(pf => pf.feature?.isActive)
                         .map(pf => ({
                             id: pf.feature?.id,

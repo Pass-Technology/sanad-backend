@@ -4,7 +4,7 @@ import { SubscriptionEntity } from './entities/subscription.entity';
 
 @Module({
     imports: [TypeOrmModule.forFeature([SubscriptionEntity])],
-    exports: [TypeOrmModule],
+    exports: [],
 })
-export class SubscriptionModule {}
+export class SubscriptionModule { }
 

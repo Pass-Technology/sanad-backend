@@ -14,7 +14,7 @@ export class BillingCycleEntity extends BaseEntity {
     @Column()
     months: number;
 
-    @Column()
+    @Column({ type: 'decimal', precision: 5, scale: 2, nullable: true })
     discountPercentage: number;
 
     @Column({ type: 'varchar', nullable: true })

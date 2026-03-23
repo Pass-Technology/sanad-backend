@@ -7,17 +7,20 @@ import { FeatureEntity } from './entities/features.entity';
 import { BillingCycleEntity } from './entities/billing-cycle.entity';
 import { PlanService } from './plan.service';
 import { PlanController } from './plan.controller';
+import { SubscriptionEntity } from 'src/subscription/entities/subscription.entity';
+import { JwtAuthGuard } from '../user/guards/jwt-auth.guard';
 // import { PlanService } from './plan.service';
 // import { PlanController } from './plan.controller';
 
 @Module({
-    imports: [
+    imports: [JwtAuthGuard,
         TypeOrmModule.forFeature([
-            PlanEntity,
-            PlanPriceEntity,
-            PlanFeatureEntity,
-            FeatureEntity,
-            BillingCycleEntity,
+            PlanEntity, // what the plan is with its prices and features
+            PlanPriceEntity, // the prices of each plan and billing cycles
+            PlanFeatureEntity, // the specific features of each plan
+            FeatureEntity, // what each feature is (name-discription- ...etc)
+            BillingCycleEntity, // what are the billing cycles
+            SubscriptionEntity, // what what is subscriptoin with its owner (user) and price 
         ]),
     ],
     providers: [PlanService],
