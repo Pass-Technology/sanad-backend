@@ -31,37 +31,21 @@ export class ProfileRepository {
 
         const profile = await this.profileRepo.findOne({
             where: { user: { id: userId } },
-            relations:
-            {
+            relations: {
                 status: true,
                 providerType: true,
                 user: true,
                 userInfo: true,
-                branches: true,
-                branches:
-                {
+                branches: {
                     servingAreas: true
                 },
                 compliance: true,
                 payment: true,
-                selectedServices: true,
                 selectedServices: {
-                    Category: true,
+                    category: true,
                     children: true
                 }
-                [
-            //     'status',
-            //     'providerType',
-            //     'companyType',
-            //     'user',
-            //     'userInfo',
-            //     'branches',
-            //     'branches.servingAreas',
-            //     'compliance',
-            //     'payment',
-            //     'selectedServices',
-            //     'selectedServices.category',
-            // ],
+            }
         });
         if (!profile) {
             throw new NotFoundException('Profile not found. Please start the setup process.');

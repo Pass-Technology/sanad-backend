@@ -8,12 +8,11 @@ import { BillingCycleEntity } from './entities/billing-cycle.entity';
 import { PlanService } from './plan.service';
 import { PlanController } from './plan.controller';
 import { SubscriptionEntity } from 'src/subscription/entities/subscription.entity';
-import { JwtAuthGuard } from '../user/guards/jwt-auth.guard';
 // import { PlanService } from './plan.service';
 // import { PlanController } from './plan.controller';
 
 @Module({
-    imports: [JwtAuthGuard,
+    imports: [
         TypeOrmModule.forFeature([
             PlanEntity, // what the plan is with its prices and features
             PlanPriceEntity, // the prices of each plan and billing cycles
