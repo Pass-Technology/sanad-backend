@@ -23,8 +23,8 @@ export class BillingCycleEntity extends BaseEntity {
     @Column({ type: 'varchar', nullable: true })
     badgeAr: string | null;
 
-    @Column({ type: 'varchar', nullable: true })
-    staticCode: string | null;
+    @Column({ type: 'varchar', nullable: false })
+    staticCode: string;
 
     @Column({ default: 0 })
     displayOrder: number;

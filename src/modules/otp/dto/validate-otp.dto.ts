@@ -1,12 +1,6 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import {
-  IsEmail,
   IsNotEmpty,
-  IsString,
-  Length,
-  Matches,
-  ValidateIf,
-  IsEnum,
   IsNumber,
 } from 'class-validator';
 import { OtpPurposeEnum } from '../enum/otp-purpose.enum';

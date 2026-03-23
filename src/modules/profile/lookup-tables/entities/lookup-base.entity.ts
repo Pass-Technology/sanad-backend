@@ -9,6 +9,6 @@ export abstract class LookupBaseEntity extends BaseEntity {
     @Column({ type: 'varchar' })
     labelAr: string;
 
-    @Column({ type: 'varchar', nullable: true })
+    @Column({ type: 'varchar', nullable: false })
     staticCode: string;
 }
