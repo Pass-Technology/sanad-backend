@@ -4,7 +4,7 @@ import { EntityManager, Repository } from "typeorm";
 import { LookUpProfileStatusEntity } from "./entities/lookup-profile-status.entity";
 import { LookUpProviderTypeEntity } from "./entities/lookup-provider-type.entity";
 import { LookUpCompanyTypeEntity } from "./entities/lookup-company-type.entity";
-import { LookUpBillingCycleEntity } from "./entities/lookup-biling-cycle.entity";
+// import { LookUpBillingCycleEntity } from "./entities/lookup-biling-cycle.entity";
 import { LookupCacheService } from "./lookup-cache.service";
 
 @Injectable()
@@ -16,8 +16,8 @@ export class LookUpService {
         private readonly providerTypeRepo: Repository<LookUpProviderTypeEntity>,
         @InjectRepository(LookUpCompanyTypeEntity)
         private readonly companyTypeRepo: Repository<LookUpCompanyTypeEntity>,
-        @InjectRepository(LookUpBillingCycleEntity)
-        private readonly billingCycleRepo: Repository<LookUpBillingCycleEntity>,
+        // @InjectRepository(LookUpBillingCycleEntity)
+        // private readonly billingCycleRepo: Repository<LookUpBillingCycleEntity>,
         private readonly lookupCacheService: LookupCacheService,
     ) { }
 
@@ -63,19 +63,7 @@ export class LookUpService {
         return data.map(item => this.localize(item, lang));
     }
 
-    async getBillingCycles(lang: string = 'en') {
-        const cached = await this.lookupCacheService.get<LookUpBillingCycleEntity[]>('lookup:billing-cycles');
-        let data: LookUpBillingCycleEntity[];
 
-        if (cached) {
-            data = cached;
-        } else {
-            data = await this.billingCycleRepo.find();
-            await this.lookupCacheService.set('lookup:billing-cycles', data);
-        }
-
-        return data.map(item => this.localize(item, lang));
-    }
 
     private localize(entity: any, lang: string) {
         const { labelEn, labelAr, badgeEn, badgeAr, ...rest } = entity;

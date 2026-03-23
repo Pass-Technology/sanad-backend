@@ -1,11 +1,5 @@
 import AppDataSource from '../data-source';
-import { LookUpProfileStatusEntity } from '../../modules/profile/lookup-tables/entities/lookup-profile-status.entity';
-import { LookUpProviderTypeEntity } from '../../modules/profile/lookup-tables/entities/lookup-provider-type.entity';
-import { LookUpCompanyTypeEntity } from '../../modules/profile/lookup-tables/entities/lookup-company-type.entity';
-import { LookUpBillingCycleEntity } from 'src/modules/profile/lookup-tables/entities/lookup-biling-cycle.entity';
-
 import { billingCycleSeed } from './plan-management/billing-cycle.seed';
-import { featureSeed } from './plan-management/feature.seed';
 import { planSeed } from './plan-management/plan.seed';
 import { planFeatureSeed } from './plan-management/plan-feature.seed';
 import { planPriceSeed } from './plan-management/plan-price.seed';
@@ -27,7 +21,6 @@ async function runSeed() {
     console.log('Plans starting to seed');
 
     await planSeed(dataSource);
-    await featureSeed(dataSource);
     await planFeatureSeed(dataSource);
     await planPriceSeed(dataSource);
 

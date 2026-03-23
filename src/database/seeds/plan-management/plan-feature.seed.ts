@@ -3,50 +3,77 @@ import { PlanFeatureEntity } from "src/modules/plan/entities/plan-feature.entity
 
 export async function planFeatureSeed(dataSource: DataSource) {
     const repo = dataSource.getRepository(PlanFeatureEntity);
-    
+
     const starterId = '11111111-0000-0000-0000-000000000001';
     const profId = '22222222-0000-0000-0000-000000000002';
     const entId = '33333333-0000-0000-0000-000000000003';
 
-    const planFeatures = [
+    const featureMetadata = {
+        'f1': { nameEn: 'Bookings', nameAr: 'حجوزات', descriptionEn: 'Number of bookings per month', displayOrder: 1 },
+        'f2': { nameEn: 'Basic analytics', nameAr: 'تحليلات أساسية', displayOrder: 2 },
+        'f3': { nameEn: 'Custom analytics & reporting', nameAr: 'تحليلات وتقارير مخصصة', displayOrder: 3 },
+        'f4': { nameEn: 'Advanced analytics & insights', nameAr: 'تحليلات ورؤى متقدمة', displayOrder: 4 },
+        'f5': { nameEn: 'Email support', nameAr: 'دعم عبر البريد الإلكتروني', displayOrder: 5 },
+        'f6': { nameEn: 'Priority support 24/7', nameAr: 'دعم ذو أولوية 24/7', displayOrder: 6 },
+        'f7': { nameEn: 'Mobile app access', nameAr: 'الوصول عبر التطبيق', displayOrder: 7 },
+        'f8': { nameEn: 'API access', nameAr: 'الوصول إلى API', displayOrder: 8 },
+        'f9': { nameEn: 'Commission', nameAr: 'عمولة', displayOrder: 9 },
+        'fa': { nameEn: 'White-label options', nameAr: 'خيار العلامة البيضاء', displayOrder: 10 },
+        'fb': { nameEn: 'Premium placement', nameAr: 'مكان مميز', displayOrder: 11 },
+        'fc': { nameEn: 'Featured listing', nameAr: 'قائمة مميزة', displayOrder: 12 },
+        'fd': { nameEn: 'Marketing tools', nameAr: 'أدوات التسويق', displayOrder: 13 },
+        'fe': { nameEn: 'Dedicated account manager', nameAr: 'مدير حساب مخصص', displayOrder: 14 },
+    };
+
+    const planFeaturesData = [
         // Starter
-        { plan: { id: starterId }, feature: { id: 'f1000000-0000-0000-0000-000000000001' }, value: 'Up to 50 bookings/month' },
-        { plan: { id: starterId }, feature: { id: 'f2000000-0000-0000-0000-000000000002' }, value: 'Basic analytics' },
-        { plan: { id: starterId }, feature: { id: 'f5000000-0000-0000-0000-000000000005' }, value: 'Email support' },
-        { plan: { id: starterId }, feature: { id: 'f7000000-0000-0000-0000-000000000007' }, value: 'Mobile app access' },
-        { plan: { id: starterId }, feature: { id: 'f9000000-0000-0000-0000-000000000009' }, value: 'Standard commission: 12%' },
+        { planId: starterId, fKey: 'f1', vEn: 'Up to 50 bookings/month', vAr: 'حتى 50 حجز شهرياً' },
+        { planId: starterId, fKey: 'f2', vEn: 'Basic analytics', vAr: 'تحليلات أساسية' },
+        { planId: starterId, fKey: 'f5', vEn: 'Email support', vAr: 'دعم عبر البريد الإلكتروني' },
+        { planId: starterId, fKey: 'f7', vEn: 'Mobile app access', vAr: 'الوصول عبر التطبيق' },
+        { planId: starterId, fKey: 'f9', vEn: 'Standard commission: 12%', vAr: 'عمولة أساسية: 12%' },
 
         // Professional
-        { plan: { id: profId }, feature: { id: 'f1000000-0000-0000-0000-000000000001' }, value: 'Up to 200 bookings/month' },
-        { plan: { id: profId }, feature: { id: 'f4000000-0000-0000-0000-000000000004' }, value: 'Advanced analytics & insights' },
-        { plan: { id: profId }, feature: { id: 'f6000000-0000-0000-0000-000000000006' }, value: 'Priority support 24/7' },
-        { plan: { id: profId }, feature: { id: 'fd000000-0000-0000-0000-000000000013' }, value: 'Marketing tools' },
-        { plan: { id: profId }, feature: { id: 'f9000000-0000-0000-0000-000000000009' }, value: 'Reduced commission: 8%' },
-        { plan: { id: profId }, feature: { id: 'fc000000-0000-0000-0000-000000000012' }, value: 'Featured listing' },
+        { planId: profId, fKey: 'f1', vEn: 'Up to 200 bookings/month', vAr: 'حتى 200 حجز شهرياً' },
+        { planId: profId, fKey: 'f4', vEn: 'Advanced analytics & insights', vAr: 'تحليلات ورؤى متقدمة' },
+        { planId: profId, fKey: 'f6', vEn: 'Priority support 24/7', vAr: 'دعم ذو أولوية 24/7' },
+        { planId: profId, fKey: 'fd', vEn: 'Marketing tools', vAr: 'أدوات التسويق' },
+        { planId: profId, fKey: 'f9', vEn: 'Reduced commission: 8%', vAr: 'عمولة مخفضة: 8%' },
+        { planId: profId, fKey: 'fc', vEn: 'Featured listing', vAr: 'قائمة مميزة' },
 
         // Enterprise
-        { plan: { id: entId }, feature: { id: 'f1000000-0000-0000-0000-000000000001' }, value: 'Unlimited bookings' },
-        { plan: { id: entId }, feature: { id: 'f3000000-0000-0000-0000-000000000003' }, value: 'Custom analytics & reporting' },
-        { plan: { id: entId }, feature: { id: 'fe000000-0000-0000-0000-000000000014' }, value: 'Dedicated account manager' },
-        { plan: { id: entId }, feature: { id: 'f8000000-0000-0000-0000-000000000008' }, value: 'API access' },
-        { plan: { id: entId }, feature: { id: 'f9000000-0000-0000-0000-000000000009' }, value: 'Lowest commission: 5%' },
-        { plan: { id: entId }, feature: { id: 'fb000000-0000-0000-0000-000000000011' }, value: 'Premium placement' },
-        { plan: { id: entId }, feature: { id: 'fa000000-0000-0000-0000-000000000010' }, value: 'White-label options' },
+        { planId: entId, fKey: 'f1', vEn: 'Unlimited bookings', vAr: 'حجز غير محدود' },
+        { planId: entId, fKey: 'f3', vEn: 'Custom analytics & reporting', vAr: 'تحليلات وتقارير مخصصة' },
+        { planId: entId, fKey: 'fe', vEn: 'Dedicated account manager', vAr: 'مدير حساب مخصص' },
+        { planId: entId, fKey: 'f8', vEn: 'API access', vAr: 'الوصول إلى API' },
+        { planId: entId, fKey: 'f9', vEn: 'Lowest commission: 5%', vAr: 'أقل عمولة: 5%' },
+        { planId: entId, fKey: 'fb', vEn: 'Premium placement', vAr: 'مكان مميز' },
+        { planId: entId, fKey: 'fa', vEn: 'White-label options', vAr: 'خيار العلامة البيضاء' },
     ];
 
-    for (const pf of planFeatures) {
+    for (const data of planFeaturesData) {
+        const meta = featureMetadata[data.fKey];
+        const planId = data.planId;
+
         let entry = await repo.findOne({ 
             where: { 
-                plan: { id: pf.plan.id }, 
-                feature: { id: pf.feature.id } 
+                plan: { id: planId }, 
+                nameEn: meta.nameEn 
             } 
         });
+
+        const entityData = {
+            ...meta,
+            valueEn: data.vEn,
+            valueAr: data.vAr,
+            plan: { id: planId }
+        };
+
         if (entry) {
-            entry.value = pf.value;
+            Object.assign(entry, entityData);
             await repo.save(entry);
         } else {
-            await repo.save(repo.create(pf));
+            await repo.save(repo.create(entityData));
         }
     }
-
 }

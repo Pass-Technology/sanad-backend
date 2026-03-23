@@ -20,9 +20,7 @@ export class PlanService {
             relations: {
                 prices: {
                     plan: {
-                        features: {
-                            feature: true,
-                        },
+                        features: true,
                     },
                 },
             },
@@ -48,12 +46,12 @@ export class PlanService {
                     price: priceEntry.price,
                     displayOrder: priceEntry.plan.displayOrder,
                     features: priceEntry.plan.features
-                        .filter(pf => pf.feature?.isActive)
+                        .filter(pf => pf.isActive)
                         .map(pf => ({
-                            id: pf.feature?.id,
-                            name: isAr ? pf.feature.nameAr : pf.feature.nameEn,
-                            value: pf.value,
-                            displayOrder: pf.feature.displayOrder,
+                            id: pf.id,
+                            name: isAr ? pf.nameAr : pf.nameEn,
+                            value: isAr ? pf.valueAr : pf.valueEn,
+                            displayOrder: pf.displayOrder,
                         }))
                         .sort((a, b) => a.displayOrder - b.displayOrder),
                 }))

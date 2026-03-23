@@ -19,7 +19,7 @@ import { CacheModule } from '@nestjs/cache-manager';
 import { LookUpProfileStatusEntity } from './lookup-tables/entities/lookup-profile-status.entity';
 import { LookUpProviderTypeEntity } from './lookup-tables/entities/lookup-provider-type.entity';
 import { LookUpCompanyTypeEntity } from './lookup-tables/entities/lookup-company-type.entity';
-import { LookUpBillingCycleEntity } from './lookup-tables/entities/lookup-biling-cycle.entity';
+// import { LookUpBillingCycleEntity } from './lookup-tables/entities/lookup-biling-cycle.entity';
 import { LookUpController } from './lookup-tables/lookup.controller';
 import { LookUpService } from './lookup-tables/lookup.service';
 import { LookupCacheService } from './lookup-tables/lookup-cache.service';
@@ -37,7 +37,7 @@ import { ProfileSaverService } from './profile-saver.service';
         LookUpProfileStatusEntity,
         LookUpProviderTypeEntity,
         LookUpCompanyTypeEntity,
-        LookUpBillingCycleEntity,
+        // LookUpBillingCycleEntity,
     ]),
         UserModule,
         ServiceManagementModule,
