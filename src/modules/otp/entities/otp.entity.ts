@@ -5,19 +5,11 @@ import { OtpPurposeEnum } from '../enum/otp-purpose.enum';
 
 @Entity('otps')
 export class OtpEntity extends BaseEntity {
-
-    @Column()
-    identifier: string; // email or mobile
-
     @Column()
     otp: number;
 
     @Column({ default: false })
     isVerified: boolean;
-
-
-    // @Column({ type: 'enum', enum: OtpPurposeEnum })
-    // otpPurpose: OtpPurposeEnum;
 
     @Column()
     expiresAt: Date;

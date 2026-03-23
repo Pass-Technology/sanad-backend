@@ -31,7 +31,7 @@ export class OtpRepository extends BaseRepository<OtpEntity> {
   async findValidOtp(identifier: string, otp: number): Promise<OtpEntity | null> {
     return await this.repository.findOne({
       where: {
-        identifier,
+        user: { identifier },
         otp,
         // otpPurpose,
         expiresAt: MoreThan(new Date()),
@@ -49,7 +49,7 @@ export class OtpRepository extends BaseRepository<OtpEntity> {
   }
 
   async deleteByIdentifier(identifier: string): Promise<void> {
-    await this.repository.softDelete({ identifier });
+    await this.repository.softDelete({ user: { identifier } });
   }
 
 
