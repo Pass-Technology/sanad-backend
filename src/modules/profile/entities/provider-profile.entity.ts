@@ -84,6 +84,12 @@ export class ProviderProfileEntity extends BaseEntity {
     })
     compliance: ProviderComplianceEntity;
 
+    // what is payment? 
+    // if its how the provider will pay for the subscription plan
+    // then it should be in the user entity
+    // if its how the provider will receive payments from customers
+    // then it should be in the provider profile entity and should be one to many relation as the provider will 
+    // provide payment channels to customers 
     @OneToOne(() => ProviderPaymentEntity, (p) => p.providerProfile, {
         onDelete: 'CASCADE',
         cascade: true
