@@ -28,6 +28,12 @@ export class ProviderPaymentEntity extends BaseEntity {
     @Column()
     iban: string;
 
+    // what is payment methods?
+    // if its how the provider will receive payments from customers
+    // then it should be in the provider profile entity and should be one to many relation as the provider will 
+    // provide payment channels to customers 
+    // should be a separate entity not just an array? 
+
     @Column('simple-array')
     paymentMethodIds: string[];
 

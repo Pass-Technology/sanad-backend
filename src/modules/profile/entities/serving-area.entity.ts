@@ -10,8 +10,8 @@ import { BaseEntity } from '../../../database/base-entity';
 @Entity('serving_areas')
 export class ServingAreaEntity extends BaseEntity {
 
-    @Column()
-    branchId: string;
+    // @Column()
+    // branchId: string;
 
     @ManyToOne(() => BranchEntity, (branch) => branch.servingAreas, {
         onDelete: 'CASCADE',
@@ -19,8 +19,8 @@ export class ServingAreaEntity extends BaseEntity {
     @JoinColumn({ name: 'branchId' })
     branch: BranchEntity;
 
-    @Column({ type: 'decimal' })
-    radiusKm: number;
+    @Column({ type: 'decimal', nullable: true })
+    radiusKm: number | null;
 
     @Column({ type: 'varchar', nullable: true })
     phone: string | null;
