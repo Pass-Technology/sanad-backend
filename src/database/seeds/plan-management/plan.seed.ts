@@ -1,5 +1,5 @@
 import { DataSource } from "typeorm";
-import { PlanEntity } from "src/modules/plan/entities/plan.entity";
+import { PlanEntity } from "../../../modules/plan/entities/plan.entity";
 
 export const plans = [
     {

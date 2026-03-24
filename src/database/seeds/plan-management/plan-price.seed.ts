@@ -1,5 +1,5 @@
 import { DataSource } from "typeorm";
-import { PlanPriceEntity } from "src/modules/plan/entities/plan-price.entity";
+import { PlanPriceEntity } from "../../../modules/plan/entities/plan-price.entity";
 import { billingCycles } from "./billing-cycle.seed";
 
 export async function planPriceSeed(dataSource: DataSource) {

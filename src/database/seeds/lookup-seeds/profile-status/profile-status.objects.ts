@@ -1,4 +1,4 @@
-import { ProfileStatusStaticCode } from "src/modules/profile/lookup-tables/enums/lookup-static-codes.enum";
+import { ProfileStatusStaticCode } from "../../../../modules/profile/lookup-tables/enums/lookup-static-codes.enum";
 
 export const profileStatusObjects = [
     { id: 'de305d54-75b4-431b-adb2-eb6b9e546013', labelEn: 'Draft', labelAr: 'مسودة', staticCode: ProfileStatusStaticCode.DRAFT },

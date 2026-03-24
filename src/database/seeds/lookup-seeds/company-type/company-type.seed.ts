@@ -1,4 +1,4 @@
-import { LookUpCompanyTypeEntity } from "src/modules/profile/lookup-tables/entities/lookup-company-type.entity";
+import { LookUpCompanyTypeEntity } from "../../../../modules/profile/lookup-tables/entities/lookup-company-type.entity";
 import { DataSource, In } from "typeorm";
 import { companyTypeObjects } from "./company-type.objects";
 

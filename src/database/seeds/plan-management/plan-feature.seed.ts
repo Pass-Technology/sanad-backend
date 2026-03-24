@@ -1,5 +1,5 @@
 import { DataSource } from "typeorm";
-import { PlanFeatureEntity } from "src/modules/plan/entities/plan-feature.entity";
+import { PlanFeatureEntity } from "../../../modules/plan/entities/plan-feature.entity";
 
 export async function planFeatureSeed(dataSource: DataSource) {
     const repo = dataSource.getRepository(PlanFeatureEntity);

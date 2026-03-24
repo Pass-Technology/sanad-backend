@@ -1,5 +1,5 @@
 import { DataSource } from "typeorm";
-import { BillingCycleEntity } from "src/modules/plan/entities/billing-cycle.entity";
+import { BillingCycleEntity } from "../../../modules/plan/entities/billing-cycle.entity";
 
 export const billingCycles = [
     {
