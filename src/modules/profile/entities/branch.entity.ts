@@ -11,10 +11,6 @@ import { BaseEntity } from '../../../database/base-entity';
 
 @Entity('branches')
 export class BranchEntity extends BaseEntity {
-
-    // @Column()
-    // providerProfileId: string;
-
     @ManyToOne(() => ProviderProfileEntity, (profile) => profile.branches, {
         onDelete: 'CASCADE',
     })
@@ -45,10 +41,7 @@ export class BranchEntity extends BaseEntity {
     @Column({ type: 'varchar', nullable: true })
     socialMediaLink: string | null;
 
-    @OneToMany(() => ServingAreaEntity, (area) => area.branch, {
-        // cascade: true,
-        // eager: true,
-    })
+    @OneToMany(() => ServingAreaEntity, (area) => area.branch)
     servingAreas: ServingAreaEntity[];
 
 }

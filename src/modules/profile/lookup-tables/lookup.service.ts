@@ -64,7 +64,6 @@ export class LookUpService {
     }
 
 
-
     private localize(entity: any, lang: string) {
         const { labelEn, labelAr, badgeEn, badgeAr, ...rest } = entity;
         return {
