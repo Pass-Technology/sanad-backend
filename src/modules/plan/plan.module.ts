@@ -6,6 +6,7 @@ import { PlanFeatureEntity } from './entities/plan-feature.entity';
 import { BillingCycleEntity } from './entities/billing-cycle.entity';
 import { PlanService } from './plan.service';
 import { PlanController } from './plan.controller';
+import { SubscriptionEntity } from 'src/subscription/entities/subscription.entity';
 // import { PlanService } from './plan.service';
 // import { PlanController } from './plan.controller';
 

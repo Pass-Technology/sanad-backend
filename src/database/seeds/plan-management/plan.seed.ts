@@ -5,7 +5,7 @@ export const plans = [
     {
         id: '11111111-0000-0000-0000-000000000001',
         nameEn: 'Starter',
-        nameAr: 'Starter',
+        nameAr: 'مبتدئ',
         descriptionEn: 'Perfect for new providers',
         descriptionAr: 'مثالي للمزودين الجدد',
         tagEn: null,
@@ -14,7 +14,7 @@ export const plans = [
     {
         id: '22222222-0000-0000-0000-000000000002',
         nameEn: 'Professional',
-        nameAr: 'Professional',
+        nameAr: 'محترف',
         descriptionEn: 'Popular for growing business',
         descriptionAr: 'شائع للأعمال المتنامية',
         tagEn: 'Most Popular',
@@ -23,7 +23,7 @@ export const plans = [
     {
         id: '33333333-0000-0000-0000-000000000003',
         nameEn: 'Enterprise',
-        nameAr: 'Enterprise',
+        nameAr: 'مؤسسة',
         descriptionEn: 'For large-scale operations',
         descriptionAr: 'للعمليات واسعة النطاق',
         tagEn: null,

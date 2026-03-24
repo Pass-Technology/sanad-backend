@@ -8,6 +8,7 @@ import { ServingAreaEntity } from './entities/serving-area.entity';
 import { ProviderComplianceEntity } from './entities/provider-compliance.entity';
 import { ProviderPaymentEntity } from './entities/provider-payment.entity';
 
+
 @Injectable()
 export class ProfileRepository {
     constructor(
@@ -30,19 +31,21 @@ export class ProfileRepository {
 
         const profile = await this.profileRepo.findOne({
             where: { user: { id: userId } },
-            relations: [
-                'status',
-                'providerType',
-                'companyType',
-                'user',
-                'userInfo',
-                'branches',
-                'branches.servingAreas',
-                'compliance',
-                'payment',
-                'selectedServices',
-                'selectedServices.category',
-            ],
+            relations: {
+                status: true,
+                providerType: true,
+                user: true,
+                userInfo: true,
+                branches: {
+                    servingAreas: true
+                },
+                compliance: true,
+                payment: true,
+                selectedServices: {
+                    category: true,
+                    children: true
+                }
+            }
         });
         if (!profile) {
             throw new NotFoundException('Profile not found. Please start the setup process.');

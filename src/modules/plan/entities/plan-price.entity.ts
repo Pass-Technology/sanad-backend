@@ -1,7 +1,8 @@
 import { BaseEntity } from "../../../database/base-entity";
-import { Column, Entity, JoinColumn, ManyToOne } from "typeorm";
+import { Column, Entity, JoinColumn, ManyToOne, OneToMany } from "typeorm";
 import { PlanEntity } from "./plan.entity";
 import { BillingCycleEntity } from "./billing-cycle.entity";
+import { SubscriptionEntity } from "src/subscription/entities/subscription.entity";
 
 @Entity('plan_prices')
 export class PlanPriceEntity extends BaseEntity {
@@ -16,4 +17,7 @@ export class PlanPriceEntity extends BaseEntity {
     @ManyToOne(() => BillingCycleEntity, (billingCycle) => billingCycle.prices)
     @JoinColumn({ name: 'billing_cycle_id' })
     billingCycle: BillingCycleEntity;
+
+    @OneToMany(() => SubscriptionEntity, (s) => s.planPrice)
+    subscription: SubscriptionEntity[];
 }
