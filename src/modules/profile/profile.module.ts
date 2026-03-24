@@ -23,7 +23,6 @@ import { LookUpCompanyTypeEntity } from './lookup-tables/entities/lookup-company
 import { LookUpController } from './lookup-tables/lookup.controller';
 import { LookUpService } from './lookup-tables/lookup.service';
 import { LookupCacheService } from './lookup-tables/lookup-cache.service';
-import { ProfileSaverService } from './profile-saver.service';
 
 @Module({
     imports: [CacheModule.register(),
@@ -37,13 +36,13 @@ import { ProfileSaverService } from './profile-saver.service';
         LookUpProfileStatusEntity,
         LookUpProviderTypeEntity,
         LookUpCompanyTypeEntity,
-        // LookUpBillingCycleEntity,
+
     ]),
         UserModule,
         ServiceManagementModule,
     ],
     controllers: [ProfileController, LookUpController],
-    providers: [ProfileService, ProfileRepository, LookUpService, LookupCacheService, ProfileSaverService],
+    providers: [ProfileService, ProfileRepository, LookUpService, LookupCacheService],
     exports: [ProfileService, LookUpService],
 })
 export class ProfileModule { }

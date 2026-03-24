@@ -1,12 +1,14 @@
 import {
     Injectable,
     NotFoundException,
+    BadRequestException,
     HttpException,
     HttpStatus,
 } from '@nestjs/common';
-import { DataSource } from 'typeorm';
+import { InjectRepository } from '@nestjs/typeorm';
+import { Repository } from 'typeorm';
 import { ProfileRepository } from './profile.repository';
-import { CreateBranchDto, CreateBranchesDto } from './dto/step-3-branches.dto';
+import { CreateBranchDto } from './dto/step-3-branches.dto';
 import { CreateFullProfileDto } from './dto/create-full-profile.dto';
 
 import { ProviderProfileEntity } from './entities/provider-profile.entity';
@@ -14,107 +16,81 @@ import { ProviderUserInfoEntity } from './entities/provider-user-info.entity';
 import { BranchEntity } from './entities/branch.entity';
 import { ProviderComplianceEntity } from './entities/provider-compliance.entity';
 import { ProviderPaymentEntity } from './entities/provider-payment.entity';
+import { ServingAreaEntity } from './entities/serving-area.entity';
+import { ServiceEntity } from '../service-management/entities/service.entity';
 import { LookUpService } from './lookup-tables/lookup.service';
-import { ProfileSaverService } from './profile-saver.service';
-import { CreateCompanyInfoDto } from './dto/step-1-company-info.dto';
-import { CreateUserInfoDto } from './dto/step-2-user-info.dto';
+import { ServiceManagementService } from '../service-management/service-management.service';
 import { CreateServicesDto } from './dto/step-4-services.dto';
-import { CreatePaymentDto } from './dto/step-6-payment.dto';
-import { CreateComplianceDto } from './dto/step-5-compliance.dto';
+import { LOOKUP_IDS } from '../../shared/constants/lookup-ids';
 
+// import { CreateCompanyInfoDto } from './dto/step-1-company-info.dto';
+// import { CreateBranchesDto } from './dto/step-3-branches.dto';
 
 @Injectable()
 export class ProfileService {
     constructor(
         private readonly profileRepo: ProfileRepository,
-        private readonly dataSource: DataSource,
         private readonly lookupService: LookUpService,
-        private readonly profileSaver: ProfileSaverService,
+        private readonly serviceManagement: ServiceManagementService,
+        @InjectRepository(ProviderUserInfoEntity)
+        private readonly userInfoRepo: Repository<ProviderUserInfoEntity>,
+        @InjectRepository(BranchEntity)
+        private readonly branchRepo: Repository<BranchEntity>,
+        @InjectRepository(ServingAreaEntity)
+        private readonly servingAreaRepo: Repository<ServingAreaEntity>,
+        @InjectRepository(ProviderComplianceEntity)
+        private readonly complianceRepo: Repository<ProviderComplianceEntity>,
+        @InjectRepository(ProviderPaymentEntity)
+        private readonly paymentRepo: Repository<ProviderPaymentEntity>,
     ) { }
 
 
-    async submitFullProfile(
-        userId: string,
-        profileDto: CreateFullProfileDto,
-    ) {
-
-        const isUserHaveProfile = await this.profileRepo.isUserHaveProfile(userId);
-
-        if (isUserHaveProfile) {
-            throw new HttpException(`User Already Have An Profile`, HttpStatus.BAD_REQUEST)
+    async submitFullProfile(userId: string, profileDto: CreateFullProfileDto) {
+        const hasProfile = await this.profileRepo.isUserHaveProfile(userId);
+        if (hasProfile) {
+            throw new BadRequestException('User already has a profile');
         }
 
         const { companyInfo, userInfo, services, branches, payment, compliance } = profileDto;
 
-        const userInfoEntity = await this.processUserInfo(userInfo);
+        // 1. validate lookup ids and service ids
+        await this.validateCompanyInfo(companyInfo);
+        await this.validateServiceIds(services.selectedServiceIds);
 
-        const brancheEntities = await this.processBranches(branches);
+        // 2. build and save the full profile in one step
+        return await this.profileRepo.createProfile({
+            user: { id: userId },
+            status: { id: LOOKUP_IDS.PROFILE_STATUS.DRAFT },
+            providerType: { id: companyInfo.providerTypeId },
+            companyType: companyInfo.companyTypeId ? { id: companyInfo.companyTypeId } : null,
+            tradeName: companyInfo.tradeName,
+            companyRepresentativeName: companyInfo.companyRepresentativeName,
+            companyDescription: companyInfo.companyDescription,
+            socialMediaLink: companyInfo.socialMediaLink,
+            websiteLink: companyInfo.websiteLink,
+            languagesSpoken: companyInfo.languagesSpoken,
 
-        const payementEntity = await this.processPayement(payment);
-
-        const complianceEntity = await this.processCompliance(compliance);
-
-        const providerProfileEnity = await this.processProviderProfile
-            (companyInfo, userInfoEntity, brancheEntities, payementEntity, complianceEntity, services, userId);
-
-        return await this.profileSaver.saveProviderProfile(providerProfileEnity)
-
+            selectedServices: services.selectedServiceIds.map(id => ({ id })),
+            userInfo: this.userInfoRepo.create(userInfo),
+            branches: this.buildBranchEntities(branches),
+            payment: this.paymentRepo.create(payment),
+            compliance: this.complianceRepo.create(compliance),
+        } as Partial<ProviderProfileEntity>);
     }
-
-    async processCompanyInfo(companyInfo: CreateCompanyInfoDto, userId: string) {
-        const { providerTypeId, companyTypeId } = companyInfo;
-
-        const isValidProvider =
-            await this.lookupService.isProviderTypeExist(providerTypeId);
-
-        if (!isValidProvider) throw new HttpException('Invalid provider type id', HttpStatus.BAD_REQUEST);
-
-
-        if (companyTypeId) {
-            const isValidCompany =
-                await this.lookupService.isCompanyTypeExist(companyTypeId);
-
-            if (!isValidCompany)
-                throw new HttpException('Invalid company type id', HttpStatus.BAD_REQUEST);
-        }
-
-    }
-
-    async processUserInfo(userInfo: CreateUserInfoDto) {
-
-        return await this.profileSaver.createUserInfoEntity(userInfo)
-    }
-
-
-
-    async processBranches(branches: CreateBranchesDto) {
-        return this.profileSaver.createBranchEntities(branches)
-    }
-
-
-    async processPayement(payment: CreatePaymentDto) {
-        return await this.profileSaver.createPayementEntity(payment)
-    }
-
-    async processCompliance(compliance: CreateComplianceDto) {
-        return this.profileSaver.createComplianceEntity(compliance)
-    }
-
-
-
-
-    async processProviderProfile(
-        companyInfo: CreateCompanyInfoDto, userInfo: ProviderUserInfoEntity,
-        branches: BranchEntity[], payment: ProviderPaymentEntity,
-        compliance: ProviderComplianceEntity,
-        services: CreateServicesDto, userId: string) {
-        return this.profileSaver.createProviderProfile(companyInfo, userInfo, branches, payment, compliance, services, userId)
-    }
-
-
 
     async getMyProfile(userId: string): Promise<ProviderProfileEntity> {
         return await this.profileRepo.findProfileByUserId(userId);
+    }
+
+    async updateServices(userId: string, createServiceDto: CreateServicesDto) {
+        const profile = await this.profileRepo.findProfileByUserId(userId);
+
+        await this.validateServiceIds(createServiceDto.selectedServiceIds);
+
+        profile.selectedServices = createServiceDto.selectedServiceIds.map(id => ({ id } as ServiceEntity));
+        await this.profileRepo.createProfile(profile);
+
+        return profile.selectedServices;
     }
 
 
@@ -180,5 +156,60 @@ export class ProfileService {
         await this.profileRepo.deleteBranch(branchId);
 
         return { message: 'Branch deleted successfully' };
+    }
+
+
+
+    // ------- private helper methods ------- //
+
+
+    // check if company has valid provider type and company type
+    private async validateCompanyInfo(companyInfo: any) {
+        const isValidProvider = await this.lookupService.isProviderTypeExist(companyInfo.providerTypeId);
+        if (!isValidProvider) throw new BadRequestException('Invalid provider type id');
+
+        if (companyInfo.companyTypeId) {
+            const isValidCompany = await this.lookupService.isCompanyTypeExist(companyInfo.companyTypeId);
+            if (!isValidCompany) throw new BadRequestException('Invalid company type id');
+        }
+    }
+
+    // check if services are valid and active
+    private async validateServiceIds(serviceIds: string[]) {
+        const invalidIds: string[] = [];
+        for (const serviceId of serviceIds) {
+            const service = await this.serviceManagement.findServiceById(serviceId);
+            if (!service) invalidIds.push(serviceId);
+        }
+        if (invalidIds.length > 0) {
+            throw new BadRequestException('Some service IDs are invalid or inactive');
+        }
+    }
+
+    // build branch entities
+    private buildBranchEntities(branchesData: any): BranchEntity[] {
+        return branchesData.branches.map((branchDto: any) => {
+            const servingAreas = (branchDto.servingAreas ?? []).map((area: any) =>
+                this.servingAreaRepo.create({
+                    radiusKm: area.radiusKm,
+                    phone: area.phone ?? null,
+                    mapLink: area.mapLink ?? null,
+                    lat: area.lat ?? null,
+                    lng: area.lng ?? null,
+                })
+            );
+
+            return this.branchRepo.create({
+                branchName: branchDto.branchName,
+                branchManagerName: branchDto.branchManagerName,
+                branchAddress: branchDto.branchAddress,
+                city: branchDto.city,
+                branchPhone: branchDto.branchPhone ?? null,
+                managerPhone: branchDto.managerPhone ?? null,
+                googleMapsLink: branchDto.googleMapsLink ?? null,
+                socialMediaLink: branchDto.socialMediaLink ?? null,
+                servingAreas,
+            });
+        });
     }
 }

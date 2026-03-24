@@ -5,6 +5,8 @@ import {
     OneToMany,
     ManyToOne,
     JoinColumn,
+    JoinTable,
+    ManyToMany,
 } from 'typeorm';
 import { ProviderUserInfoEntity } from './provider-user-info.entity';
 import { BranchEntity } from './branch.entity';
@@ -16,12 +18,11 @@ import { LookUpCompanyTypeEntity } from '../lookup-tables/entities/lookup-compan
 import { BaseEntity } from '../../../database/base-entity';
 import { UserEntity } from '../../user/entities/user.entity';
 import { ServiceEntity } from '../../service-management/entities/service.entity';
-import { JoinTable, ManyToMany } from 'typeorm';
 
 @Entity('provider_profiles')
 export class ProviderProfileEntity extends BaseEntity {
 
-    @ManyToOne(() => LookUpProfileStatusEntity, { cascade: true, onDelete: 'CASCADE' })
+    @ManyToOne(() => LookUpProfileStatusEntity, { cascade: true, onDelete: 'RESTRICT' })
     @JoinColumn()
     status: LookUpProfileStatusEntity;
 
@@ -29,13 +30,13 @@ export class ProviderProfileEntity extends BaseEntity {
     @ManyToOne(() => LookUpProviderTypeEntity, {
         nullable: true,
         cascade: true,
-        onDelete: 'CASCADE'
+        onDelete: 'RESTRICT'
     })
     @JoinColumn()
     providerType: LookUpProviderTypeEntity;
 
 
-    @ManyToOne(() => LookUpCompanyTypeEntity, { cascade: true, onDelete: 'CASCADE', nullable: true })
+    @ManyToOne(() => LookUpCompanyTypeEntity, { cascade: true, nullable: true, onDelete: 'RESTRICT' })
     @JoinColumn({ name: 'companyTypeId' })
     companyType: LookUpCompanyTypeEntity | null;
 
@@ -65,9 +66,6 @@ export class ProviderProfileEntity extends BaseEntity {
     })
     selectedServices: ServiceEntity[];
 
-
-    @Column({ type: 'int', default: 1 })
-    currentStep: number;
 
     @OneToOne(() => ProviderUserInfoEntity, (info) => info.providerProfile, {
         cascade: true
