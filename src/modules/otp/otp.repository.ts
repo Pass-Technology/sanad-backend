@@ -51,7 +51,14 @@ export class OtpRepository extends BaseRepository<OtpEntity> {
   }
 
   async deleteByIdentifier(identifier: string): Promise<void> {
-    await this.otpRepository.softDelete({ user: { identifier: identifier } });
+    const records = await this.otpRepository.find({
+      where: { user: { identifier: identifier } },
+      select: ['id'],
+    });
+
+    if (records.length > 0) {
+      await this.otpRepository.softDelete(records.map((r) => r.id));
+    }
   }
 
 

@@ -9,6 +9,7 @@ import { UserEntity } from '../user/entities/user.entity';
 import { UserInfoResponseWithTokensDto } from '../user/dto/user-info-response.dto';
 import { OtpPurposeEnum } from './enum/otp-purpose.enum';
 import { UserService } from '../user/user.service';
+import { OtpEntity } from './entities/otp.entity';
 
 
 @Injectable()
@@ -130,6 +131,21 @@ export class OtpService {
     }
 
     await this.otpRepository.markAsVerified(lastOtpOfUser.id);
+
+    return true;
+  }
+
+
+  validateUserForgetPasswordOtp(otpRecord: OtpEntity) {
+    if (!otpRecord.isVerified) {
+      console.log('step 1')
+      throw new BadRequestException('OTP is not valid');
+    }
+
+    if (otpRecord.expiresAt < new Date()) {
+      console.log('step 2')
+      throw new BadRequestException('OTP has expired');
+    }
 
     return true;
   }

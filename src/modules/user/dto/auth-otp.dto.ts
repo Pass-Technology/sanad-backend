@@ -3,15 +3,12 @@ import {
     IsEnum,
     IsNotEmpty,
     IsNumber,
-    IsString,
-    Length,
-    Matches,
 } from 'class-validator';
 import { IsEmailOrMobile } from '../../../shared/validators/email-or-mobile.validator';
 import { OtpPurposeEnum } from 'src/modules/otp/enum/otp-purpose.enum';
 
 export class OtpAuthDto {
-    @ApiPropertyOptional({
+    @ApiProperty({
         example: 'user@example.com or +1234567890',
         description: 'User identifier (email or mobile)',
     })
@@ -23,8 +20,7 @@ export class OtpAuthDto {
     @IsNumber()
     otp: number;
 
-    @ApiPropertyOptional({
-        example: OtpPurposeEnum.REGISTER,
+    @ApiProperty({
         enum: OtpPurposeEnum,
         description: 'OTP purpose',
     })

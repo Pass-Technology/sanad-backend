@@ -54,6 +54,14 @@ export class UserRepository extends BaseRepository<UserEntity> {
     });
   }
 
+  async findUserWithLastOtp(identifier: string) {
+    return await this.userRepository.findOne({
+      where: { identifier },
+      relations: { otps: true },
+      order: { otps: { createdAt: 'DESC' } },
+    })
+  }
+
   async findUserWithPassword(identifier: string) {
     return await this.userRepository.findOne({
       select: { id: true, identifier: true, isVerified: true, password: true },

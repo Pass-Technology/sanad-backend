@@ -13,12 +13,6 @@ export class ResetPasswordDto {
     @IsUserExisting({ field: 'identifier' })
     identifier: string;
 
-    @ApiProperty({ example: '12345', description: 'OTP received' })
-    @IsString()
-    @Length(4, 5, { message: 'OTP must be between 4 and 5 characters' })
-    @Matches(/^\d+$/, { message: 'OTP must contain only digits' })
-    otp: string;
-
     @ApiProperty({ example: 'newpassword123', minLength: 6 })
     @IsString()
     @MinLength(6, { message: 'Password must be at least 6 characters' })

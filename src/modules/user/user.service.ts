@@ -212,14 +212,20 @@ export class UserService {
   }
 
   async resetPassword(dto: ResetPasswordDto): Promise<{ message: string }> {
-    const { identifier, password, otp } = dto;
+    const { identifier, password } = dto;
 
-    const user = await this.userRepository.findByIdentifier(identifier);
+    const user = await this.userRepository.findUserWithLastOtp(identifier);
     if (!user) {
       throw new UnauthorizedException('User not found');
     }
 
-    const isValidOtp = await this.otpService.validateUserOtp(Number(otp), user.id, OtpPurposeEnum.FORGOT_PASSWORD);
+    const lastOtpOfUser = user.otps[0];
+
+    if (!lastOtpOfUser) {
+      throw new UnauthorizedException('OTP not found');
+    }
+
+    const isValidOtp = await this.otpService.validateUserForgetPasswordOtp(lastOtpOfUser);
     if (!isValidOtp) {
       throw new UnauthorizedException('Invalid or expired OTP');
     }
