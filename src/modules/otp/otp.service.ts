@@ -1,7 +1,6 @@
 import { BadRequestException, Injectable, Inject, forwardRef } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
-import { EventEmitter2 } from '@nestjs/event-emitter';
 import { OtpRepository } from './otp.repository';
 import { ValidateOtpDto } from './dto/validate-otp.dto';
 import { SendOtpDto } from './dto/send-otp.dto';
@@ -17,7 +16,6 @@ export class OtpService {
     @InjectRepository(UserEntity)
     private readonly userRepository: Repository<UserEntity>,
     private readonly otpRepository: OtpRepository,
-    private readonly eventEmitter: EventEmitter2,
     private readonly appConfig: AppConfigService,
     @Inject(forwardRef(() => UserService))
     private readonly userService: UserService,

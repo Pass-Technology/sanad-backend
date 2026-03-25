@@ -6,7 +6,6 @@ import { UserController } from './user.controller';
 import { UserService } from './user.service';
 import { UserRepository } from './user.repository';
 import { UserEntity } from './entities/user.entity';
-import { UserVerificationRequestedListener } from './listeners/user-verification-requested.listener';
 import { ExistingUserValidator } from './validators/existing-user.validator';
 import { ExistingUserForAuthValidator } from './validators/existing-user-for-auth.validator';
 import { JwtAuthGuard } from './guards/jwt-auth.guard';
@@ -35,7 +34,6 @@ import { OtpModule } from '../otp/otp.module';
   providers: [
     UserService,
     UserRepository,
-    UserVerificationRequestedListener,
     ExistingUserValidator,
     ExistingUserForAuthValidator,
     JwtAuthGuard,
