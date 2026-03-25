@@ -11,7 +11,7 @@ import { LOOKUP_IDS } from 'src/shared/constants/lookup-ids';
 
 export class CreateCompanyInfoDto {
     @ApiProperty({
-        example: LOOKUP_IDS.PROVIDER_TYPE.COMPANY,
+        example: LOOKUP_IDS.PROVIDER_TYPE.INDIVIDUAL,
         description: 'Provider type: individual or company',
     })
     @IsNotEmpty()
@@ -22,8 +22,8 @@ export class CreateCompanyInfoDto {
         example: LOOKUP_IDS.COMPANY_TYPE.GOVERNMENT,
         description: 'Required when providerType is company',
     })
-    @IsNotEmpty()
-    @IsUUID()
+    // @IsNotEmpty()
+    // @IsUUID()
     companyTypeId?: string;
 
     @ApiProperty({ example: 'Sanad Services LLC' })
