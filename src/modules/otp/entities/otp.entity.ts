@@ -14,6 +14,9 @@ export class OtpEntity extends BaseEntity {
     @Column()
     expiresAt: Date;
 
+    @Column({ type: 'enum', enum: OtpPurposeEnum })
+    purpose: OtpPurposeEnum;
+
     @ManyToOne(() => UserEntity, (user) => user.otps)
     user: UserEntity;
 

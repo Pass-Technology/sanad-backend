@@ -1,17 +1,15 @@
 import { Injectable, UnauthorizedException, ForbiddenException, Inject, forwardRef } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
-import { EventEmitter2 } from '@nestjs/event-emitter';
 import * as bcrypt from 'bcrypt';
 import { UserRepository } from './user.repository';
 import { RegisterDto } from './dto/register.dto';
 import { AuthDto } from './dto/auth.dto';
 import { ChangePasswordDto } from './dto/change-password.dto';
 import { RefreshDto } from './dto/refresh.dto';
-import { USER_REGISTERED_EVENT } from './constants/events.constants';
-import { UserRegisteredEvent } from './events/user-registered.event';
 import { AppConfigService } from '../../config/config.service';
 
 import { UserIdentifierType } from './enums/user-identifier-type.enum';
+import { OtpPurposeEnum } from '../otp/enum/otp-purpose.enum';
 import { ResetPasswordDto } from './dto/reset-password.dto';
 import { SendOtpDto } from '../otp/dto/send-otp.dto';
 import { OtpService } from '../otp/otp.service';
@@ -20,6 +18,7 @@ import { UserInfoResponseWithTokensDto } from './dto/user-info-response.dto';
 import { OtpAuthDto } from './dto/auth-otp.dto';
 import { UserPayloadType } from './types/user-payload.type';
 import { AuthTokensResponse } from './types/user-token.type';
+import { ForgetPasswordDto } from './dto/forget-password.dto';
 
 
 @Injectable()
@@ -27,7 +26,6 @@ export class UserService {
   constructor(
     private readonly userRepository: UserRepository,
     private readonly jwtService: JwtService,
-    private readonly eventEmitter: EventEmitter2,
     private readonly config: AppConfigService,
     @Inject(forwardRef(() => OtpService))
     private readonly otpService: OtpService,
@@ -51,15 +49,12 @@ export class UserService {
       password: hashedPassword,
     });
 
-    const event = new UserRegisteredEvent();
-    event.userId = user.id;
-    event.identifier = identifier;
-    await this.eventEmitter.emitAsync(USER_REGISTERED_EVENT, event);
+    const { otp } = await this.otpService.createOtpForUser(user.id, identifier, OtpPurposeEnum.REGISTER);
 
     return {
       message: 'Registration successful. Please verify your OTP.',
       userId: user.id,
-      otp: event.otp!,
+      otp: otp.toString(),
     };
   }
 
@@ -207,16 +202,32 @@ export class UserService {
     return { message: 'Password changed successfully' };
   }
 
-  async forgotPassword(dto: SendOtpDto): Promise<{ message: string }> {
-    return this.otpService.sendOtp(dto);
+  async forgotPassword(dto: ForgetPasswordDto): Promise<{ message: string }> {
+    const { identifier } = dto;
+    const user = await this.userRepository.findByIdentifier(identifier);
+    if (!user) {
+      throw new UnauthorizedException('User not found');
+    }
+    return this.otpService.sendOtp({ identifier, purpose: OtpPurposeEnum.FORGOT_PASSWORD });
   }
 
   async resetPassword(dto: ResetPasswordDto): Promise<{ message: string }> {
     const { identifier, password } = dto;
 
-    const user = await this.userRepository.findByIdentifier(identifier);
+    const user = await this.userRepository.findUserWithLastOtp(identifier);
     if (!user) {
       throw new UnauthorizedException('User not found');
+    }
+
+    const lastOtpOfUser = user.otps[0];
+
+    if (!lastOtpOfUser) {
+      throw new UnauthorizedException('OTP not found');
+    }
+
+    const isValidOtp = await this.otpService.validateUserForgetPasswordOtp(lastOtpOfUser);
+    if (!isValidOtp) {
+      throw new UnauthorizedException('Invalid or expired OTP');
     }
 
     const hashedPassword = await bcrypt.hash(password, 10);
@@ -268,14 +279,14 @@ export class UserService {
 
 
   async validateAuthOtp(dto: OtpAuthDto) {
-    const { identifier, otp } = dto;
+    const { identifier, otp, purpose } = dto;
     const user = await this.userRepository.findByIdentifier(identifier);
 
     if (!user) {
       throw new UnauthorizedException('User not found');
     }
 
-    const isValidOtp = await this.otpService.validateUserOtp(otp, user.id);
+    const isValidOtp = await this.otpService.validateUserOtp(otp, user.id, purpose);
 
     if (!isValidOtp) {
       throw new UnauthorizedException('Invalid OTP');
@@ -283,7 +294,10 @@ export class UserService {
 
     await this.userRepository.markUserVerified(user.id);
 
-    return this.generateTokens({ ...user, isVerified: true });
+    if (purpose === OtpPurposeEnum.REGISTER) {
+      return this.generateTokens({ ...user, isVerified: true });
+    }
+    return { message: 'OTP verified successfully' };
 
   }
 }

@@ -10,9 +10,9 @@ import { UserInfoResponseWithTokensDto } from '../user/dto/user-info-response.dt
 export class OtpController {
   constructor(private readonly otpService: OtpService) { }
 
-  @Post('send')
-  @ApiOperation({ summary: 'Send OTP to existing user by email or mobile' })
-  async sendOtp(@Body() dto: SendOtpDto): Promise<{ message: string }> {
+  @Post('resend')
+  @ApiOperation({ summary: 'Resend OTP to existing user by email or mobile' })
+  async resendOtp(@Body() dto: SendOtpDto): Promise<{ message: string }> {
     return await this.otpService.sendOtp(dto);
   }
 
