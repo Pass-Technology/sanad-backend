@@ -1,7 +1,8 @@
 import { ApiPropertyOptional } from '@nestjs/swagger';
-import { IsEmail, IsNotEmpty, IsString, ValidateIf } from 'class-validator';
+import { IsEmail, IsEnum, IsNotEmpty, IsString, ValidateIf } from 'class-validator';
 import { IsUserExisting } from '../../user/validators/existing-user-for-auth.validator';
 import { IsEmailOrMobile } from '../../../shared/validators/email-or-mobile.validator';
+import { OtpPurposeEnum } from '../enum/otp-purpose.enum';
 
 export class SendOtpDto {
   @ApiPropertyOptional({
@@ -15,4 +16,13 @@ export class SendOtpDto {
     message: 'User with this identifier does not exist',
   })
   identifier: string;
+
+  @ApiPropertyOptional({
+    example: OtpPurposeEnum.FORGOT_PASSWORD,
+    enum: OtpPurposeEnum,
+    description: 'OTP purpose',
+  })
+  @IsNotEmpty({ message: 'Purpose must be provided' })
+  @IsEnum(OtpPurposeEnum)
+  purpose: OtpPurposeEnum;
 }

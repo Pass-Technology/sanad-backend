@@ -27,6 +27,7 @@ import { UserInfoResponseWithTokensDto } from './dto/user-info-response.dto';
 import { RefreshDto } from './dto/refresh.dto';
 import { JwtAuthGuard } from './guards/jwt-auth.guard';
 import { OtpAuthDto } from './dto/auth-otp.dto';
+import { ForgetPasswordDto } from './dto/forget-password.dto';
 
 
 @ApiTags('user')
@@ -90,7 +91,7 @@ export class UserController {
 
   @Post('forgot-password')
   @ApiOperation({ summary: 'Request OTP for password reset' })
-  async forgotPassword(@Body() dto: SendOtpDto): Promise<{ message: string }> {
+  async forgotPassword(@Body() dto: ForgetPasswordDto): Promise<{ message: string }> {
     return await this.userService.forgotPassword(dto);
   }
 

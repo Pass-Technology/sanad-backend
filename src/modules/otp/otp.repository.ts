@@ -3,18 +3,19 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository, MoreThan } from 'typeorm';
 import { OtpEntity } from './entities/otp.entity';
 import { BaseRepository } from '../../shared/generics/repository.abstract';
+import { OtpPurposeEnum } from './enum/otp-purpose.enum';
 
 @Injectable()
 export class OtpRepository extends BaseRepository<OtpEntity> {
   constructor(
     @InjectRepository(OtpEntity)
-    private readonly repository: Repository<OtpEntity>,
+    private readonly otpRepository: Repository<OtpEntity>,
   ) {
     super();
   }
 
   async exists(where: { id?: string }): Promise<boolean> {
-    const record = await this.repository.findOne({ where });
+    const record = await this.otpRepository.findOne({ where });
     return !!record;
   }
 
@@ -22,18 +23,19 @@ export class OtpRepository extends BaseRepository<OtpEntity> {
     identifier: string;
     otp: number;
     expiresAt: Date;
+    purpose: OtpPurposeEnum;
     user?: { id: string };
   }): Promise<OtpEntity> {
-    const otp = this.repository.create(data);
-    return await this.repository.save(otp);
+    const otp = this.otpRepository.create(data);
+    return await this.otpRepository.save(otp);
   }
 
-  async findValidOtp(identifier: string, otp: number): Promise<OtpEntity | null> {
-    return await this.repository.findOne({
+  async findValidOtp(identifier: string, otp: number, purpose?: OtpPurposeEnum): Promise<OtpEntity | null> {
+    return await this.otpRepository.findOne({
       where: {
         user: { identifier },
         otp,
-        // otpPurpose,
+        ...(purpose && { purpose }),
         expiresAt: MoreThan(new Date()),
       },
       order: { createdAt: 'DESC' },
@@ -41,22 +43,23 @@ export class OtpRepository extends BaseRepository<OtpEntity> {
   }
 
   async markAsVerified(id: string): Promise<void> {
-    await this.repository.update(id, { isVerified: true });
+    await this.otpRepository.update(id, { isVerified: true });
   }
 
   async deleteById(id: string): Promise<void> {
-    await this.repository.softDelete(id);
+    await this.otpRepository.softDelete(id);
   }
 
   async deleteByIdentifier(identifier: string): Promise<void> {
-    await this.repository.softDelete({ user: { identifier } });
+    await this.otpRepository.softDelete({ user: { identifier: identifier } });
   }
 
 
-  async getLastOtpOfUser(userId: string): Promise<OtpEntity | null> {
-    return await this.repository.findOne({
+  async getLastOtpOfUser(userId: string, purpose?: OtpPurposeEnum): Promise<OtpEntity | null> {
+    return await this.otpRepository.findOne({
       where: {
         user: { id: userId },
+        ...(purpose && { purpose }),
       },
       order: { createdAt: 'DESC' },
     });

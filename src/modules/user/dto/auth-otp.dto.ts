@@ -1,5 +1,6 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import {
+    IsEnum,
     IsNotEmpty,
     IsNumber,
     IsString,
@@ -7,6 +8,7 @@ import {
     Matches,
 } from 'class-validator';
 import { IsEmailOrMobile } from '../../../shared/validators/email-or-mobile.validator';
+import { OtpPurposeEnum } from 'src/modules/otp/enum/otp-purpose.enum';
 
 export class OtpAuthDto {
     @ApiPropertyOptional({
@@ -17,7 +19,15 @@ export class OtpAuthDto {
     @IsEmailOrMobile()
     identifier: string;
 
-    @ApiProperty({ example: '12345', maxLength: 5, minLength: 5 })
+    @ApiProperty({ example: '55555', maxLength: 5, minLength: 5 })
     @IsNumber()
     otp: number;
+
+    @ApiPropertyOptional({
+        example: OtpPurposeEnum.REGISTER,
+        enum: OtpPurposeEnum,
+        description: 'OTP purpose',
+    })
+    @IsEnum(OtpPurposeEnum)
+    purpose: OtpPurposeEnum;
 }
