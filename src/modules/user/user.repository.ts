@@ -64,7 +64,11 @@ export class UserRepository extends BaseRepository<UserEntity> {
 
   async findUserWithPassword(identifier: string) {
     return await this.userRepository.findOne({
-      select: { id: true, identifier: true, isVerified: true, password: true },
+      //       "identifier": "mstwalasss@gmail.com",
+      // "identifierType": "email",
+      // "isVerified": true,
+      // "isProfileCompleted": false
+      select: { id: true, identifier: true, identifierType: true, isVerified: true, isProfileCompleted: true, password: true },
       where: { identifier }
     })
   }

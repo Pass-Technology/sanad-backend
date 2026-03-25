@@ -72,7 +72,7 @@ export class UserService {
     return this.generateTokens({ ...user, isVerified: true });
   }
 
-  async auth(dto: AuthDto): Promise<UserInfoResponseWithTokensDto> {
+  async auth(dto: AuthDto) {
     const { identifier } = dto;
 
     const user = (await this.userRepository.findUserWithPassword(identifier))!;
@@ -89,16 +89,16 @@ export class UserService {
       throw new ForbiddenException('Please verify your account first');
     }
 
-    const token = await this.generateTokens(user);
-    return {
-      accessToken: token.accessToken,
-      refreshToken: token.refreshToken,
-      userId: user.id,
-      isProfileCompleted: user.isProfileCompleted,
-      isVerified: user.isVerified,
-      identifier: user.identifier,
-      identifierType: user.identifierType,
-    }
+    return this.generateTokens(user as UserPayloadType);
+    // return {
+    //   accessToken: token.accessToken,
+    //   refreshToken: token.refreshToken,
+    //   userId: user.id,
+    //   isProfileCompleted: user.isProfileCompleted,
+    //   isVerified: user.isVerified,
+    //   identifier: user.identifier,
+    //   identifierType: user.identifierType,
+    // }
 
   }
 
