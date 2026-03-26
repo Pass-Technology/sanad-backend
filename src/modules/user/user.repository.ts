@@ -75,7 +75,7 @@ export class UserRepository extends BaseRepository<UserEntity> {
 
   async findUserRefreshTokenByUserId(userId: string) {
     return await this.userRepository.findOne({
-      select: { id: true, identifier: true, isVerified: true, password: true, refreshToken: true },
+      select: { id: true, identifier: true, identifierType: true, isVerified: true, isProfileCompleted: true, refreshToken: true },
       where: { id: userId }
     })
   }

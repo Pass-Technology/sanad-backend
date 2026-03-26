@@ -98,11 +98,13 @@ export class UserService {
     try {
       // Decode without verification first to get the user ID
       const decoded = this.jwtService.decode(refreshToken) as { sub: string };
+      console.log(decoded)
       if (!decoded || !decoded.sub) {
         throw new UnauthorizedException('Invalid refresh token');
       }
 
       const user = await this.userRepository.findUserRefreshTokenByUserId(decoded.sub);
+      console.log(user)
       if (!user || !user.refreshToken) {
         throw new UnauthorizedException('Invalid refresh token');
       }
