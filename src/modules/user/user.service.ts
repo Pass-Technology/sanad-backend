@@ -17,7 +17,7 @@ import { OtpRepository } from '../otp/otp.repository';
 import { UserInfoResponseWithTokensDto } from './dto/user-info-response.dto';
 import { OtpAuthDto } from './dto/auth-otp.dto';
 import { UserPayloadType } from './types/user-payload.type';
-import { AuthTokensResponse } from './types/user-token.type';
+import { AuthTokensResponse, JwtPayloadType } from './types/user-token.type';
 import { ForgetPasswordDto } from './dto/forget-password.dto';
 
 
@@ -72,7 +72,7 @@ export class UserService {
     return this.generateTokens({ ...user, isVerified: true });
   }
 
-  async auth(dto: AuthDto) {
+  async auth(dto: AuthDto): Promise<AuthTokensResponse> {
     const { identifier } = dto;
 
     const user = (await this.userRepository.findUserWithPassword(identifier))!;
@@ -90,16 +90,6 @@ export class UserService {
     }
 
     return this.generateTokens(user as UserPayloadType);
-    // return {
-    //   accessToken: token.accessToken,
-    //   refreshToken: token.refreshToken,
-    //   userId: user.id,
-    //   isProfileCompleted: user.isProfileCompleted,
-    //   isVerified: user.isVerified,
-    //   identifier: user.identifier,
-    //   identifierType: user.identifierType,
-    // }
-
   }
 
   async refreshTokens(dto: RefreshDto): Promise<AuthTokensResponse> {
@@ -269,11 +259,7 @@ export class UserService {
     };
   }
 
-  getMe(user: UserInfoResponseWithTokensDto) {
-    // const { userId, identifier, identifierType, isVerified, isProfileCompleted } = user;
-    // if (!isVerified || !isProfileCompleted) {
-
-    // }
+  getMe(user: JwtPayloadType) {
     return user;
   }
 
