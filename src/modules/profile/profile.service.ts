@@ -8,6 +8,7 @@ import {
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository, DataSource } from 'typeorm';
 import { ProfileRepository } from './profile.repository';
+import { UserRepository } from '../user/user.repository';
 import { UserEntity } from '../user/entities/user.entity';
 import { CreateBranchDto } from './dto/step-3-branches.dto';
 import { CreateFullProfileDto } from './dto/create-full-profile.dto';
@@ -43,6 +44,7 @@ export class ProfileService {
         private readonly complianceRepo: Repository<ProviderComplianceEntity>,
         @InjectRepository(ProviderPaymentEntity)
         private readonly paymentRepo: Repository<ProviderPaymentEntity>,
+        private readonly userRepo: UserRepository,
         private readonly dataSource: DataSource,
     ) { }
 
@@ -61,7 +63,7 @@ export class ProfileService {
 
         // 2. build and save the full profile in one step inside a transaction
         return await this.dataSource.transaction(async (manager) => {
-            const profile = await manager.save(ProviderProfileEntity, {
+            const profile = await this.profileRepo.createProfile({
                 user: { id: userId },
                 status: { id: LOOKUP_IDS.PROFILE_STATUS.DRAFT },
                 providerType: { id: companyInfo.providerTypeId },
@@ -78,10 +80,10 @@ export class ProfileService {
                 branches: this.buildBranchEntities(branches),
                 payment: manager.create(ProviderPaymentEntity, payment),
                 compliance: manager.create(ProviderComplianceEntity, compliance),
-            } as any);
+            } as any, manager);
 
             // 3. update user flag
-            await manager.update(UserEntity, userId, { isProfileCompleted: true });
+            await this.userRepo.updateProfileCompletionStatus(userId, true, manager);
 
             return profile;
         });

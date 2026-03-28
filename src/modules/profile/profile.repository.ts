@@ -1,6 +1,6 @@
 import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { Repository, EntityManager } from 'typeorm';
 import { ProviderProfileEntity } from './entities/provider-profile.entity';
 import { BranchEntity } from './entities/branch.entity';
 import { ServingAreaEntity } from './entities/serving-area.entity';
@@ -18,9 +18,10 @@ export class ProfileRepository {
     ) { }
 
 
-    async findProfileByUserId(userId: string): Promise<ProviderProfileEntity> {
+    async findProfileByUserId(userId: string, manager?: EntityManager): Promise<ProviderProfileEntity> {
+        const repo = manager ? manager.getRepository(ProviderProfileEntity) : this.profileRepo;
 
-        const profile = await this.profileRepo.findOne({
+        const profile = await repo.findOne({
             where: { user: { id: userId } },
             relations: {
                 status: true,
@@ -44,40 +45,46 @@ export class ProfileRepository {
         return profile;
     }
 
-    async createProfile(data: Partial<ProviderProfileEntity>): Promise<ProviderProfileEntity> {
-        const profile = this.profileRepo.create(data);
-        return await this.profileRepo.save(profile);
+    async createProfile(data: Partial<ProviderProfileEntity>, manager?: EntityManager): Promise<ProviderProfileEntity> {
+        const repo = manager ? manager.getRepository(ProviderProfileEntity) : this.profileRepo;
+        const profile = repo.create(data);
+        return await repo.save(profile);
     }
 
 
 
-    async findBranchById(id: string): Promise<BranchEntity | null> {
-        return await this.branchRepo.findOne({
+    async findBranchById(id: string, manager?: EntityManager): Promise<BranchEntity | null> {
+        const repo = manager ? manager.getRepository(BranchEntity) : this.branchRepo;
+        return await repo.findOne({
             where: { id },
             relations: ['servingAreas', 'providerProfile'],
         });
     }
 
 
-    async updateBranch(id: string, data: Partial<BranchEntity>): Promise<BranchEntity> {
-        await this.branchRepo.update(id, data);
-        return await this.branchRepo.findOneOrFail({
+    async updateBranch(id: string, data: Partial<BranchEntity>, manager?: EntityManager): Promise<BranchEntity> {
+        const repo = manager ? manager.getRepository(BranchEntity) : this.branchRepo;
+        await repo.update(id, data);
+        return await repo.findOneOrFail({
             where: { id },
             relations: ['servingAreas'],
         });
     }
 
-    async deleteBranch(id: string): Promise<void> {
-        await this.branchRepo.softDelete(id);
+    async deleteBranch(id: string, manager?: EntityManager): Promise<void> {
+        const repo = manager ? manager.getRepository(BranchEntity) : this.branchRepo;
+        await repo.softDelete(id);
     }
 
-    async deleteServingAreasByBranchId(branchId: string): Promise<void> {
-        await this.servingAreaRepo.delete({ branch: { id: branchId } });
+    async deleteServingAreasByBranchId(branchId: string, manager?: EntityManager): Promise<void> {
+        const repo = manager ? manager.getRepository(ServingAreaEntity) : this.servingAreaRepo;
+        await repo.delete({ branch: { id: branchId } });
     }
 
-    async saveServingAreas(areas: Partial<ServingAreaEntity>[]): Promise<ServingAreaEntity[]> {
-        const entities = this.servingAreaRepo.create(areas);
-        return await this.servingAreaRepo.save(entities);
+    async saveServingAreas(areas: Partial<ServingAreaEntity>[], manager?: EntityManager): Promise<ServingAreaEntity[]> {
+        const repo = manager ? manager.getRepository(ServingAreaEntity) : this.servingAreaRepo;
+        const entities = repo.create(areas);
+        return await repo.save(entities);
     }
 
 

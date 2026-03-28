@@ -261,8 +261,10 @@ export class UserService {
     };
   }
 
-  getMe(user: JwtPayloadType) {
-    return user;
+  async getMe(user: JwtPayloadType) {
+    const { identifier, identifierType, isVerified, isProfileCompleted } = user;
+    const updatedUser = await this.userRepository.findByIdentifier(identifier);
+    return updatedUser;
   }
 
 

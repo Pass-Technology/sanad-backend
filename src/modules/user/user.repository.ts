@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { Repository, EntityManager } from 'typeorm';
 import { UserEntity } from './entities/user.entity';
 import { BaseRepository } from '../../shared/generics/repository.abstract';
 import { UserIdentifierType } from './enums/user-identifier-type.enum';
@@ -102,6 +102,11 @@ export class UserRepository extends BaseRepository<UserEntity> {
 
   async softDelete(userId: string): Promise<void> {
     await this.userRepository.softDelete(userId);
+  }
+
+  async updateProfileCompletionStatus(userId: string, status: boolean, manager?: EntityManager): Promise<void> {
+    const repo = manager ? manager.getRepository(UserEntity) : this.userRepository;
+    await repo.update(userId, { isProfileCompleted: status });
   }
 }
 
