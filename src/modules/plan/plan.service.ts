@@ -4,6 +4,7 @@ import { Repository } from 'typeorm';
 import { PlanEntity } from './entities/plan.entity';
 import { BillingCycleEntity } from './entities/billing-cycle.entity';
 import { LookUpProviderTypeEntity } from '../profile/lookup-tables/entities/lookup-provider-type.entity';
+import { localize } from '../../shared/localization.util';
 
 @Injectable()
 export class PlanService {
@@ -18,7 +19,6 @@ export class PlanService {
     ) { }
 
     async getPlanViews(lang: string = 'en') {
-        const isAr = lang === 'ar';
 
         const providerTypes = await this.lookUpProviderTypeRepo.find({
             relations: {
@@ -31,7 +31,7 @@ export class PlanService {
                 }
             }
         });
-        return providerTypes;
+        return localize(providerTypes, lang);
 
 
         // const cycles = await this.billingCycleRepo.find({
