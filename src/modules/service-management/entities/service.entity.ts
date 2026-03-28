@@ -6,7 +6,7 @@ import { ProviderProfileEntity } from '../../profile/entities/provider-profile.e
 @Entity('services')
 export class ServiceEntity extends BaseEntity {
     @Column()
-    name: string;
+    nameEn: string;
 
     @Column({ name: 'name_ar' })
     nameAr: string;

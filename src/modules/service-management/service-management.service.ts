@@ -1,9 +1,10 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { Repository, ILike } from 'typeorm';
 import { CategoryEntity } from './entities/category.entity';
 import { ServiceEntity } from './entities/service.entity';
 
+import { localize } from '../../shared/localization.util'
 @Injectable()
 export class ServiceManagementService {
     constructor(
@@ -13,9 +14,12 @@ export class ServiceManagementService {
         private readonly serviceRepo: Repository<ServiceEntity>,
     ) { }
 
-    async findAllCategories(lang: string = 'en') {
+    async findAllCategories(lang: string = 'en', searchString?: string) {
         const categories = await this.categoryRepo.find({
-            where: { isActive: true },
+            where: searchString ? [
+                { isActive: true, services: { nameEn: ILike(`%${searchString}%`) } },
+                { isActive: true, services: { nameAr: ILike(`%${searchString}%`) } }
+            ] : { isActive: true },
             relations: { services: true },
             order: {
                 name: 'ASC',
@@ -25,7 +29,8 @@ export class ServiceManagementService {
             }
         });
 
-        return categories.map(category => this.localize(category, lang));
+        // return categories.map(category => this.localize(category, lang));
+        return localize(categories, lang)
     }
 
 

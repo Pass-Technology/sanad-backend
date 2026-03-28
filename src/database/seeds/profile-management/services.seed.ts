@@ -53,7 +53,7 @@ export async function servicesSeed(dataSource: DataSource) {
         if (!service) {
             service = serviceRepo.create({
                 id: serv.id,
-                name: serv.name,
+                nameEn: serv.name,
                 nameAr: serv.nameAr,
                 category: { id: serv.categoryId } as CategoryEntity,
                 isLeaf: true,
@@ -63,7 +63,7 @@ export async function servicesSeed(dataSource: DataSource) {
             });
             await serviceRepo.save(service);
         } else {
-            service.name = serv.name;
+            service.nameEn = serv.name;
             service.nameAr = serv.nameAr;
             service.category = { id: serv.categoryId } as CategoryEntity;
             await serviceRepo.save(service);

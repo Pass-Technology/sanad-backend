@@ -1,5 +1,5 @@
-import { Controller, Get, Param, Headers } from '@nestjs/common';
-import { ApiOperation, ApiTags, ApiParam } from '@nestjs/swagger';
+import { Controller, Get, Param, Headers, Query } from '@nestjs/common';
+import { ApiOperation, ApiTags, ApiParam, ApiQuery } from '@nestjs/swagger';
 import { ServiceManagementService } from './service-management.service';
 
 @ApiTags('Service Management')
@@ -9,8 +9,12 @@ export class ServiceManagementController {
 
     @Get('categories')
     @ApiOperation({ summary: 'Get all active categories with their services' })
-    async findAllCategories(@Headers('accept-language') lang: string = 'en') {
-        return this.serviceManagementService.findAllCategories(lang);
+    @ApiQuery({ name: 'searchString', required: false, type: String })
+    async findAllCategories(
+        @Headers('accept-language') lang: string = 'en',
+        @Query('searchString') searchString?: string
+    ) {
+        return this.serviceManagementService.findAllCategories(lang, searchString);
     }
 
     @Get('categories/:categoryId/services')
