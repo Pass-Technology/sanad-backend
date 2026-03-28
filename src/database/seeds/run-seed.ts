@@ -13,10 +13,10 @@ async function runSeed() {
 
     console.log('Lookup tables starting to seed');
 
-    await billingCycleSeed(dataSource);
     await profileStatusSeed(dataSource);
     await providerTypeSeed(dataSource);
     await companyTypeSeed(dataSource);
+    await billingCycleSeed(dataSource);
 
     console.log('Plans starting to seed');
 

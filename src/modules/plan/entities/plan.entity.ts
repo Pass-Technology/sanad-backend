@@ -1,7 +1,8 @@
 import { BaseEntity } from "../../../database/base-entity";
-import { Column, Entity, OneToMany } from "typeorm";
+import { Column, Entity, ManyToOne, OneToMany } from "typeorm";
 import { PlanPriceEntity } from "./plan-price.entity";
 import { PlanFeatureEntity } from "./plan-feature.entity";
+import { LookUpProviderTypeEntity } from "../../profile/lookup-tables/entities/lookup-provider-type.entity";
 
 @Entity('plans')
 export class PlanEntity extends BaseEntity {
@@ -34,4 +35,8 @@ export class PlanEntity extends BaseEntity {
 
     @OneToMany(() => PlanFeatureEntity, (planFeature) => planFeature.plan)
     features: PlanFeatureEntity[];
+
+
+    @ManyToOne(() => LookUpProviderTypeEntity, (pt) => pt.plans)
+    providerType: LookUpProviderTypeEntity;
 }

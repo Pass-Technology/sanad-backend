@@ -1,5 +1,5 @@
 import { BaseEntity } from "../../../database/base-entity";
-import { Column, Entity, JoinColumn, ManyToOne, OneToMany } from "typeorm";
+import { Column, Entity, JoinColumn, JoinTable, ManyToMany, ManyToOne, OneToMany } from "typeorm";
 import { PlanPriceEntity } from "./plan-price.entity";
 import { LookUpProviderTypeEntity } from "../../profile/lookup-tables/entities/lookup-provider-type.entity";
 
@@ -33,7 +33,7 @@ export class BillingCycleEntity extends BaseEntity {
     @OneToMany(() => PlanPriceEntity, (planPrice) => planPrice.billingCycle)
     prices: PlanPriceEntity[];
 
-    @ManyToOne(() => LookUpProviderTypeEntity, (providerType) => providerType.billingCycles)
-    @JoinColumn()
-    providerType: LookUpProviderTypeEntity;
+    @ManyToMany(() => LookUpProviderTypeEntity, (pt) => pt.billingCycles)
+    @JoinTable()
+    providerTypes: LookUpProviderTypeEntity[];
 }

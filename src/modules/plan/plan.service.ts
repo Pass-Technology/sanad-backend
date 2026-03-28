@@ -20,9 +20,18 @@ export class PlanService {
     async getPlanViews(lang: string = 'en') {
         const isAr = lang === 'ar';
 
-        const providerType = await this.lookUpProviderTypeRepo.find({ relations: { billingCycles: { prices: { plan: { features: true } } } } });
-
-        return providerType;
+        const providerTypes = await this.lookUpProviderTypeRepo.find({
+            relations: {
+                billingCycles: {
+                    prices: {
+                        plan: {
+                            features: true
+                        }
+                    }
+                }
+            }
+        });
+        return providerTypes;
 
 
         // const cycles = await this.billingCycleRepo.find({

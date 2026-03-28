@@ -1,18 +1,20 @@
 import { DataSource } from "typeorm";
 import { PlanPriceEntity } from "../../../modules/plan/entities/plan-price.entity";
 import { billingCycles } from "./billing-cycle.seed";
+import { individualPlans, companyPlans } from "./plan.seed";
 
 export async function planPriceSeed(dataSource: DataSource) {
     const repo = dataSource.getRepository(PlanPriceEntity);
 
-    const starterId = '11111111-0000-0000-0000-000000000001';
-    const profId = '22222222-0000-0000-0000-000000000002';
-    const entId = '33333333-0000-0000-0000-000000000003';
-
     const basePrices = [
-        { planId: starterId, monthlyPrice: 199 },
-        { planId: profId, monthlyPrice: 499 },
-        { planId: entId, monthlyPrice: 999 },
+        // Individual Plans
+        { planId: individualPlans[0].id, monthlyPrice: 199 },
+        { planId: individualPlans[1].id, monthlyPrice: 499 },
+        { planId: individualPlans[2].id, monthlyPrice: 999 },
+        // Company Plans
+        { planId: companyPlans[0].id, monthlyPrice: 299 },
+        { planId: companyPlans[1].id, monthlyPrice: 699 },
+        { planId: companyPlans[2].id, monthlyPrice: 1499 },
     ];
 
     for (const base of basePrices) {

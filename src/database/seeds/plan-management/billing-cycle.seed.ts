@@ -1,5 +1,7 @@
 import { DataSource } from "typeorm";
 import { BillingCycleEntity } from "../../../modules/plan/entities/billing-cycle.entity";
+import { LookUpProviderTypeEntity } from "../../../modules/profile/lookup-tables/entities/lookup-provider-type.entity";
+import { ProviderTypeStaticCode } from "../../../modules/profile/lookup-tables/enums/lookup-static-codes.enum";
 
 export const billingCycles = [
     {
@@ -14,7 +16,7 @@ export const billingCycles = [
     },
     {
         id: '8cbf916c-4821-4f7b-951c-4b3d872c65fe',
-        labelEn: 'Months 3',
+        labelEn: '3 Months',
         labelAr: '3 أشهر',
         months: 3,
         discountPercentage: 10,
@@ -24,7 +26,7 @@ export const billingCycles = [
     },
     {
         id: 'bf2e896c-d2c6-4b8a-81a2-5c9b74d6821e',
-        labelEn: 'Months 6',
+        labelEn: '6 Months',
         labelAr: '6 أشهر',
         months: 6,
         discountPercentage: 25,
@@ -45,14 +47,23 @@ export const billingCycles = [
 ];
 
 export async function billingCycleSeed(dataSource: DataSource) {
+    const ptRepo = dataSource.getRepository(LookUpProviderTypeEntity);
     const repo = dataSource.getRepository(BillingCycleEntity);
+
+    const individual = await ptRepo.findOne({ where: { staticCode: ProviderTypeStaticCode.INDIVIDUAL } });
+    const company = await ptRepo.findOne({ where: { staticCode: ProviderTypeStaticCode.COMPANY } });
+
     for (const data of billingCycles) {
-        let entry = await repo.findOne({ where: { id: data.id } });
+        let entry = await repo.findOne({ where: { id: data.id }, relations: ['providerTypes'] });
+        
         if (entry) {
             Object.assign(entry, data);
-            await repo.save(entry);
         } else {
-            await repo.save(repo.create(data));
+            entry = repo.create(data);
         }
+        
+        // Link to both provider types
+        entry.providerTypes = [individual, company].filter((pt): pt is LookUpProviderTypeEntity => !!pt);
+        await repo.save(entry);
     }
 }

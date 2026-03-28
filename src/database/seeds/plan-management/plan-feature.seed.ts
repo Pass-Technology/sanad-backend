@@ -1,12 +1,9 @@
 import { DataSource } from "typeorm";
 import { PlanFeatureEntity } from "../../../modules/plan/entities/plan-feature.entity";
+import { individualPlans, companyPlans } from "./plan.seed";
 
 export async function planFeatureSeed(dataSource: DataSource) {
     const repo = dataSource.getRepository(PlanFeatureEntity);
-
-    const starterId = '11111111-0000-0000-0000-000000000001';
-    const profId = '22222222-0000-0000-0000-000000000002';
-    const entId = '33333333-0000-0000-0000-000000000003';
 
     const featureMetadata = {
         'f1': { nameEn: 'Bookings', nameAr: 'حجوزات', descriptionEn: 'Number of bookings per month', displayOrder: 1 },
@@ -25,7 +22,7 @@ export async function planFeatureSeed(dataSource: DataSource) {
         'fe': { nameEn: 'Dedicated account manager', nameAr: 'مدير حساب مخصص', displayOrder: 14 },
     };
 
-    const planFeaturesData = [
+    const getPlanFeatures = (starterId: string, profId: string, entId: string) => [
         // Starter
         { planId: starterId, fKey: 'f1', vEn: 'Up to 50 bookings/month', vAr: 'حتى 50 حجز شهرياً' },
         { planId: starterId, fKey: 'f2', vEn: 'Basic analytics', vAr: 'تحليلات أساسية' },
@@ -51,7 +48,12 @@ export async function planFeatureSeed(dataSource: DataSource) {
         { planId: entId, fKey: 'fa', vEn: 'White-label options', vAr: 'خيار العلامة البيضاء' },
     ];
 
-    for (const data of planFeaturesData) {
+    const allFeatures = [
+        ...getPlanFeatures(individualPlans[0].id, individualPlans[1].id, individualPlans[2].id),
+        ...getPlanFeatures(companyPlans[0].id, companyPlans[1].id, companyPlans[2].id)
+    ];
+
+    for (const data of allFeatures) {
         const meta = featureMetadata[data.fKey];
         const planId = data.planId;
 
