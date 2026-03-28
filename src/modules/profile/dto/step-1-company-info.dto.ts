@@ -36,7 +36,7 @@ export class CreateCompanyInfoDto {
         description: 'Required when providerType is company',
     })
     @IsString()
-    @IsNotEmpty()
+    @IsOptional()
     companyRepresentativeName?: string;
 
     @ApiPropertyOptional({ example: 'Leading home services provider in the UAE' })

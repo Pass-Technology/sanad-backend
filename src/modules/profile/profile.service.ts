@@ -6,8 +6,9 @@ import {
     HttpStatus,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { Repository, DataSource } from 'typeorm';
 import { ProfileRepository } from './profile.repository';
+import { UserEntity } from '../user/entities/user.entity';
 import { CreateBranchDto } from './dto/step-3-branches.dto';
 import { CreateFullProfileDto } from './dto/create-full-profile.dto';
 
@@ -42,6 +43,7 @@ export class ProfileService {
         private readonly complianceRepo: Repository<ProviderComplianceEntity>,
         @InjectRepository(ProviderPaymentEntity)
         private readonly paymentRepo: Repository<ProviderPaymentEntity>,
+        private readonly dataSource: DataSource,
     ) { }
 
 
@@ -57,25 +59,32 @@ export class ProfileService {
         await this.validateCompanyInfo(companyInfo);
         await this.validateServiceIds(services.selectedServiceIds);
 
-        // 2. build and save the full profile in one step
-        return await this.profileRepo.createProfile({
-            user: { id: userId },
-            status: { id: LOOKUP_IDS.PROFILE_STATUS.DRAFT },
-            providerType: { id: companyInfo.providerTypeId },
-            companyType: companyInfo.companyTypeId ? { id: companyInfo.companyTypeId } : null,
-            tradeName: companyInfo.tradeName,
-            companyRepresentativeName: companyInfo.companyRepresentativeName,
-            companyDescription: companyInfo.companyDescription,
-            socialMediaLink: companyInfo.socialMediaLink,
-            websiteLink: companyInfo.websiteLink,
-            languagesSpoken: companyInfo.languagesSpoken,
+        // 2. build and save the full profile in one step inside a transaction
+        return await this.dataSource.transaction(async (manager) => {
+            const profile = await manager.save(ProviderProfileEntity, {
+                user: { id: userId },
+                status: { id: LOOKUP_IDS.PROFILE_STATUS.DRAFT },
+                providerType: { id: companyInfo.providerTypeId },
+                companyType: companyInfo.companyTypeId ? { id: companyInfo.companyTypeId } : null,
+                tradeName: companyInfo.tradeName,
+                companyRepresentativeName: companyInfo.companyRepresentativeName,
+                companyDescription: companyInfo.companyDescription,
+                socialMediaLink: companyInfo.socialMediaLink,
+                websiteLink: companyInfo.websiteLink,
+                languagesSpoken: companyInfo.languagesSpoken,
 
-            selectedServices: services.selectedServiceIds.map(id => ({ id })),
-            userInfo: this.userInfoRepo.create(userInfo),
-            branches: this.buildBranchEntities(branches),
-            payment: this.paymentRepo.create(payment),
-            compliance: this.complianceRepo.create(compliance),
-        } as Partial<ProviderProfileEntity>);
+                selectedServices: services.selectedServiceIds.map(id => ({ id })),
+                userInfo: manager.create(ProviderUserInfoEntity, userInfo),
+                branches: this.buildBranchEntities(branches),
+                payment: manager.create(ProviderPaymentEntity, payment),
+                compliance: manager.create(ProviderComplianceEntity, compliance),
+            } as any);
+
+            // 3. update user flag
+            await manager.update(UserEntity, userId, { isProfileCompleted: true });
+
+            return profile;
+        });
     }
 
     async getMyProfile(userId: string): Promise<ProviderProfileEntity> {
