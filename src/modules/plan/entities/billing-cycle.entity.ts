@@ -1,6 +1,7 @@
 import { BaseEntity } from "../../../database/base-entity";
-import { Column, Entity, OneToMany } from "typeorm";
+import { Column, Entity, JoinColumn, ManyToOne, OneToMany } from "typeorm";
 import { PlanPriceEntity } from "./plan-price.entity";
+import { LookUpProviderTypeEntity } from "../../profile/lookup-tables/entities/lookup-provider-type.entity";
 
 @Entity('billing_cycles')
 export class BillingCycleEntity extends BaseEntity {
@@ -26,12 +27,13 @@ export class BillingCycleEntity extends BaseEntity {
     @Column({ type: 'varchar', nullable: false })
     staticCode: string;
 
-    @Column({ default: 0 })
-    displayOrder: number;
-
     @Column({ default: true })
     isActive: boolean;
 
     @OneToMany(() => PlanPriceEntity, (planPrice) => planPrice.billingCycle)
     prices: PlanPriceEntity[];
+
+    @ManyToOne(() => LookUpProviderTypeEntity, (providerType) => providerType.billingCycles)
+    @JoinColumn()
+    providerType: LookUpProviderTypeEntity;
 }

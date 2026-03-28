@@ -24,9 +24,6 @@ export class PlanEntity extends BaseEntity {
     @Column({ type: 'varchar', nullable: true })
     tagAr: string | null;
 
-    @Column({ default: 0 })
-    displayOrder: number;
-
     @Column({ default: true })
     isActive: boolean;
 
