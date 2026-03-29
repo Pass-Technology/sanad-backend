@@ -55,11 +55,11 @@ export class CreateCompanyInfoDto {
     websiteLink?: string;
 
     @ApiPropertyOptional({
-        example: ['Arabic', 'English'],
+        example: ['000e8400-e29b-41d4-a716-446655440001'],
         type: [String],
     })
     @IsOptional()
     @IsArray()
-    @IsString({ each: true })
-    languagesSpoken?: string[];
+    @IsUUID('all', { each: true })
+    languageIds?: string[];
 }

@@ -7,6 +7,7 @@ import { profileStatusSeed } from './lookup-seeds/profile-status/profile-status.
 import { providerTypeSeed } from './lookup-seeds/provider-type/provider-type.seed';
 import { companyTypeSeed } from './lookup-seeds/company-type/company-type.seed';
 import { servicesSeed } from './profile-management/services.seed';
+import { langsSeed } from './lookup-seeds/languages/langs.seed';
 
 async function runSeed() {
     const dataSource = await AppDataSource.initialize();
@@ -17,6 +18,7 @@ async function runSeed() {
     await providerTypeSeed(dataSource);
     await companyTypeSeed(dataSource);
     await billingCycleSeed(dataSource);
+    await langsSeed(dataSource);
 
     console.log('Plans starting to seed');
 

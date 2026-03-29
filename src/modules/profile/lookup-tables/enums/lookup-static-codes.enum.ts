@@ -22,3 +22,11 @@ export enum CompanyTypeStaticCode {
     GOVERNMENT = 'GOVERNMENT',
     SEMI_GOVERNMENT = 'SEMI_GOVERNMENT',
 }
+
+export enum LanguageStaticCode {
+    ENGLISH = 'ENGLISH',
+    ARABIC = 'ARABIC',
+    URDU = 'URDU',
+    HINDI = 'HINDI',
+    TAGALOG = 'TAGALOG',
+}

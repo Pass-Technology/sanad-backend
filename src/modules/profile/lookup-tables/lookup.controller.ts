@@ -28,4 +28,10 @@ export class LookUpController {
     async getCompanyTypes(@Headers('accept-language') lang: string = 'en') {
         return await this.lookUpService.getCompanyTypes(lang)
     }
+
+    @Get('languages')
+    @ApiOperation({ summary: 'get languages' })
+    async getLanguages(@Headers('accept-language') lang: string = 'en') {
+        return await this.lookUpService.getLanguages(lang)
+    }
 }

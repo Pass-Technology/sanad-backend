@@ -18,6 +18,7 @@ import { LookUpCompanyTypeEntity } from '../lookup-tables/entities/lookup-compan
 import { BaseEntity } from '../../../database/base-entity';
 import { UserEntity } from '../../user/entities/user.entity';
 import { ServiceEntity } from '../../service-management/entities/service.entity';
+import { LookupLanguagesEntity } from '../lookup-tables/entities/lookup-languages.entity';
 
 @Entity('provider_profiles')
 export class ProviderProfileEntity extends BaseEntity {
@@ -55,8 +56,6 @@ export class ProviderProfileEntity extends BaseEntity {
     @Column({ type: 'varchar', nullable: true })
     websiteLink: string | null;
 
-    @Column('simple-array', { nullable: true })
-    languagesSpoken: string[] | null;
 
     @ManyToMany(() => ServiceEntity, (service) => service.profiles)
     @JoinTable({
@@ -100,4 +99,11 @@ export class ProviderProfileEntity extends BaseEntity {
     @JoinColumn()
     user: UserEntity;
 
+    @ManyToMany(() => LookupLanguagesEntity, (lang) => lang.profiles)
+    @JoinTable({
+        name: 'provider_profile_languages',
+        joinColumn: { name: 'profile_id', referencedColumnName: 'id' },
+        inverseJoinColumn: { name: 'language_id', referencedColumnName: 'id' }
+    })
+    languages: LookupLanguagesEntity[];
 }

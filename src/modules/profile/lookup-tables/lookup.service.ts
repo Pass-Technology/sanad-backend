@@ -4,6 +4,7 @@ import { EntityManager, Repository } from "typeorm";
 import { LookUpProfileStatusEntity } from "./entities/lookup-profile-status.entity";
 import { LookUpProviderTypeEntity } from "./entities/lookup-provider-type.entity";
 import { LookUpCompanyTypeEntity } from "./entities/lookup-company-type.entity";
+import { LookupLanguagesEntity } from "./entities/lookup-languages.entity";
 // import { LookUpBillingCycleEntity } from "./entities/lookup-biling-cycle.entity";
 import { LookupCacheService } from "./lookup-cache.service";
 
@@ -16,6 +17,8 @@ export class LookUpService {
         private readonly providerTypeRepo: Repository<LookUpProviderTypeEntity>,
         @InjectRepository(LookUpCompanyTypeEntity)
         private readonly companyTypeRepo: Repository<LookUpCompanyTypeEntity>,
+        @InjectRepository(LookupLanguagesEntity)
+        private readonly languagesRepo: Repository<LookupLanguagesEntity>,
         // @InjectRepository(LookUpBillingCycleEntity)
         // private readonly billingCycleRepo: Repository<LookUpBillingCycleEntity>,
         private readonly lookupCacheService: LookupCacheService,
@@ -58,6 +61,20 @@ export class LookUpService {
         } else {
             data = await this.companyTypeRepo.find();
             await this.lookupCacheService.set('lookup:company-types', data);
+        }
+
+        return data.map(item => this.localize(item, lang));
+    }
+
+    async getLanguages(lang: string = 'en') {
+        const cached = await this.lookupCacheService.get<LookupLanguagesEntity[]>('lookup:languages');
+        let data: LookupLanguagesEntity[];
+
+        if (cached) {
+            data = cached;
+        } else {
+            data = await this.languagesRepo.find();
+            await this.lookupCacheService.set('lookup:languages', data);
         }
 
         return data.map(item => this.localize(item, lang));

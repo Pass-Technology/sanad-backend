@@ -73,7 +73,7 @@ export class ProfileService {
                 companyDescription: companyInfo.companyDescription,
                 socialMediaLink: companyInfo.socialMediaLink,
                 websiteLink: companyInfo.websiteLink,
-                languagesSpoken: companyInfo.languagesSpoken,
+                languages: companyInfo.languageIds ? companyInfo.languageIds.map(id => ({ id })) : [],
 
                 selectedServices: services.selectedServiceIds.map(id => ({ id })),
                 userInfo: manager.create(ProviderUserInfoEntity, userInfo),
