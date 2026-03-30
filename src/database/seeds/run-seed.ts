@@ -14,20 +14,20 @@ async function runSeed() {
 
     console.log('Lookup tables starting to seed');
 
-    await profileStatusSeed(dataSource);
-    await providerTypeSeed(dataSource);
-    await companyTypeSeed(dataSource);
-    await billingCycleSeed(dataSource);
-    await langsSeed(dataSource);
+    // await profileStatusSeed(dataSource);
+    // await providerTypeSeed(dataSource);
+    // await companyTypeSeed(dataSource);
+    // await billingCycleSeed(dataSource);
+    // await langsSeed(dataSource);
 
     console.log('Plans starting to seed');
 
-    await planSeed(dataSource);
-    await planFeatureSeed(dataSource);
+    // await planSeed(dataSource);
+    // await planFeatureSeed(dataSource);
     await planPriceSeed(dataSource);
 
     console.log('Services starting to seed');
-    await servicesSeed(dataSource);
+    // await servicesSeed(dataSource);
 
     console.log('All seeds finished successfully');
 

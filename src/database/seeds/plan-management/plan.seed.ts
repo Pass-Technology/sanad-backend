@@ -31,15 +31,15 @@ export const individualPlans = [
         tagEn: null,
         tagAr: null
     },
-    {
-        id: '44444444-0000-0000-0000-000000000004',
-        nameEn: 'Customized Plan',
-        nameAr: 'خطة مخصصة',
-        descriptionEn: 'Reach out to our sales team for a tailored plan',
-        descriptionAr: 'تواصل مع فريق المبيعات لدينا للحصول على خطة مخصصة',
-        tagEn: null,
-        tagAr: null
-    }
+    // {
+    //     id: '44444444-0000-0000-0000-000000000004',
+    //     nameEn: 'Customized Plan',
+    //     nameAr: 'خطة مخصصة',
+    //     descriptionEn: 'Reach out to our sales team for a tailored plan',
+    //     descriptionAr: 'تواصل مع فريق المبيعات لدينا للحصول على خطة مخصصة',
+    //     tagEn: null,
+    //     tagAr: null
+    // }
 ];
 
 export const companyPlans = [

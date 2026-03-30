@@ -20,17 +20,29 @@ export class PlanService {
 
     async getPlanViews(lang: string = 'en') {
 
-        const providerTypes = await this.lookUpProviderTypeRepo.find({
-            relations: {
-                billingCycles: {
-                    prices: {
-                        plan: {
-                            features: true
-                        }
-                    }
-                }
-            }
-        });
+        const queryBuilder = this.lookUpProviderTypeRepo
+            .createQueryBuilder('pt')
+            .leftJoinAndSelect('pt.billingCycles', 'bc')
+            .leftJoinAndSelect('bc.prices', 'pp')
+            .innerJoinAndSelect('pp.plan', 'p', 'p.providerType = pt.id')
+            .leftJoinAndSelect('p.features', 'f')
+            .orderBy('pt.id', 'ASC')
+            .addOrderBy('bc.months', 'ASC')
+            .addOrderBy('p.id', 'ASC');
+
+        const providerTypes = await queryBuilder.getMany();
+
+        // const providerTypes = await this.lookUpProviderTypeRepo.find({
+        //     relations: {
+        //         plans: {
+        //             features: true,
+        //             prices: {
+        //                 billingCycle: true
+        //             }
+        //         },
+        //         // billingCycles: true
+        //     }
+        // });
         return localize(providerTypes, lang);
 
 
