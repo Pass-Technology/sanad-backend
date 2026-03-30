@@ -106,4 +106,7 @@ export class ProviderProfileEntity extends BaseEntity {
         inverseJoinColumn: { name: 'language_id', referencedColumnName: 'id' }
     })
     languages: LookupLanguagesEntity[];
+
+    @Column({ type: 'varchar', nullable: true })
+    referenceNumber: string | null;
 }

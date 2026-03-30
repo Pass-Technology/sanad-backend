@@ -80,6 +80,7 @@ export class ProfileService {
                 branches: this.buildBranchEntities(branches),
                 payment: manager.create(ProviderPaymentEntity, payment),
                 compliance: manager.create(ProviderComplianceEntity, compliance),
+                referenceNumber: await this.generateReferenceNumber(),
             } as any, manager);
 
             // 3. update user flag
@@ -173,7 +174,18 @@ export class ProfileService {
 
     // ------- private helper methods ------- //
 
+    // generate reference number 
 
+    private async generateReferenceNumber() {
+        const prefix = 'SND-';
+        const characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
+        const referenceNumberLength = 9;
+        let result = '';
+        for (let i = 0; i < referenceNumberLength; i++) {
+            result += characters.charAt(Math.floor(Math.random() * characters.length));
+        }
+        return prefix + result;
+    }
     // check if company has valid provider type and company type
     private async validateCompanyInfo(companyInfo: any) {
         const isValidProvider = await this.lookupService.isProviderTypeExist(companyInfo.providerTypeId);
