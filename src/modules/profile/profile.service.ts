@@ -274,70 +274,79 @@ export class ProfileService {
     }
 
     private addCashMethods(manager: any, payment: ProviderPaymentEntity, dto: CreatePaymentDto) {
-        if (dto.cash?.length) {
-            payment.cash = dto.cash.map(cashDto =>
-                manager.create(PaymentCashEntity, { ...cashDto, providerPayment: payment })
-            );
+        if (dto.cash?.isEnabled) {
+            payment.cash = manager.create(PaymentCashEntity, { ...dto.cash, providerPayment: payment });
         }
     }
 
     private addBankTransferMethods(manager: any, payment: ProviderPaymentEntity, dto: CreatePaymentDto) {
         if (dto.bankTransfer?.length) {
-            payment.bankTransfer = dto.bankTransfer.map(btDto => {
-                const bankAccount = this.createBankAccount(manager, payment, btDto);
-                return manager.create(PaymentBankTransferEntity, {
-                    isEnabled: btDto.isEnabled,
-                    providerPayment: payment,
-                    bankAccount,
+            payment.bankTransfer = dto.bankTransfer
+                .filter(btDto => btDto.isEnabled)
+                .map(btDto => {
+                    const bankAccount = this.createBankAccount(manager, payment, btDto);
+                    return manager.create(PaymentBankTransferEntity, {
+                        isEnabled: btDto.isEnabled,
+                        providerPayment: payment,
+                        bankAccount,
+                    });
                 });
-            });
         }
     }
 
     private addSanadMethods(manager: any, payment: ProviderPaymentEntity, dto: CreatePaymentDto) {
         if (dto.sanad?.length) {
-            payment.sanad = dto.sanad.map(sanadDto => {
-                let bankAccount: BankAccountEntity;
+            payment.sanad = dto.sanad
+                .filter(sanadDto => sanadDto.isEnabled)
+                .map(sanadDto => {
+                    let bankAccount: BankAccountEntity;
 
-                if (sanadDto.isUsingBankTransferData && payment.bankTransfer?.length > 0) {
-                    bankAccount = payment.bankTransfer[0].bankAccount;
-                    payment.bankTransfer[0].isEnabled = true;
-                } else {
-                    bankAccount = this.createBankAccount(manager, payment, sanadDto);
-                }
+                    if (sanadDto.isUsingBankTransferData) {
+                        if (payment.bankTransfer?.length > 0) {
+                            bankAccount = payment.bankTransfer[0].bankAccount;
+                        } else {
+                            throw new BadRequestException(
+                                'Cannot use bank transfer data for Sanad because no bank transfer method was provided',
+                            );
+                        }
+                    } else {
+                        bankAccount = this.createBankAccount(manager, payment, sanadDto);
+                    }
 
-                return manager.create(PaymentSanadEntity, {
-                    isEnabled: sanadDto.isEnabled,
-                    settlementPreference: sanadDto.settlementPreference,
-                    isUsingBankTransferData: sanadDto.isUsingBankTransferData,
-                    providerPayment: payment,
-                    bankAccount,
+                    return manager.create(PaymentSanadEntity, {
+                        isEnabled: sanadDto.isEnabled,
+                        settlementPreference: sanadDto.settlementPreference,
+                        isUsingBankTransferData: sanadDto.isUsingBankTransferData,
+                        providerPayment: payment,
+                        bankAccount,
+                    });
                 });
-            });
         }
     }
 
     private addPosMethods(manager: any, payment: ProviderPaymentEntity, dto: CreatePaymentDto) {
         if (dto.pos?.length) {
-            payment.pos = dto.pos.map(posDto =>
-                manager.create(PaymentPosEntity, { ...posDto, providerPayment: payment })
-            );
+            payment.pos = dto.pos
+                .filter(posDto => posDto.isEnabled)
+                .map(posDto =>
+                    manager.create(PaymentPosEntity, { ...posDto, providerPayment: payment })
+                );
         }
     }
 
     private addChequeMethods(manager: any, payment: ProviderPaymentEntity, dto: CreatePaymentDto) {
-        if (dto.cheque?.length) {
-            payment.cheque = dto.cheque.map(chequeDto =>
-                manager.create(PaymentChequeEntity, { ...chequeDto, providerPayment: payment })
-            );
+        if (dto.cheque?.isEnabled) {
+            payment.cheque = manager.create(PaymentChequeEntity, { ...dto.cheque, providerPayment: payment });
         }
     }
 
-    private addPaymentLinkMethods(manager: any, payment: ProviderPaymentEntity, dto: CreatePaymentDto) {
+    private addPaymentLinkMethods(manager: any, payment, dto: CreatePaymentDto) {
         if (dto.paymentLink?.length) {
-            payment.paymentLink = dto.paymentLink.map(linkDto =>
-                manager.create(PaymentLinkEntity, { ...linkDto, providerPayment: payment })
-            );
+            payment.paymentLink = dto.paymentLink
+                .filter(linkDto => linkDto.isEnabled)
+                .map(linkDto =>
+                    manager.create(PaymentLinkEntity, { ...linkDto, providerPayment: payment })
+                );
         }
     }
 

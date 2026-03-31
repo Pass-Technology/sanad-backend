@@ -34,8 +34,8 @@ export class ProviderPaymentEntity extends BaseEntity {
 
     // NESTED PAYMENT METHODS
 
-    @OneToMany(() => PaymentCashEntity, (c) => c.providerPayment, { cascade: true })
-    cash: PaymentCashEntity[];
+    @OneToOne(() => PaymentCashEntity, (c) => c.providerPayment, { cascade: true })
+    cash: PaymentCashEntity;
 
     @OneToMany(() => PaymentBankTransferEntity, (bt) => bt.providerPayment, { cascade: true })
     bankTransfer: PaymentBankTransferEntity[];
@@ -49,6 +49,6 @@ export class ProviderPaymentEntity extends BaseEntity {
     @OneToMany(() => PaymentPosEntity, (pos) => pos.providerPayment, { cascade: true })
     pos: PaymentPosEntity[];
 
-    @OneToMany(() => PaymentChequeEntity, (ch) => ch.providerPayment, { cascade: true })
-    cheque: PaymentChequeEntity[];
+    @OneToOne(() => PaymentChequeEntity, (ch) => ch.providerPayment, { cascade: true })
+    cheque: PaymentChequeEntity;
 }

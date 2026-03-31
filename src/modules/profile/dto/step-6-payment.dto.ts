@@ -18,12 +18,11 @@ import { PosMethodDto } from './payment-sub-dtos/POSMethod.dto';
 export class CreatePaymentDto {
     // NESTED PAYMENT METHODS
 
-    @ApiProperty({ type: [CashMethodDto], required: false })
+    @ApiProperty({ type: CashMethodDto, required: false })
     @IsOptional()
-    @IsArray()
-    @ValidateNested({ each: true })
+    @ValidateNested()
     @Type(() => CashMethodDto)
-    cash?: CashMethodDto[];
+    cash?: CashMethodDto;
 
     @ApiProperty({ type: [BankTransferMethodDto], required: false })
     @IsOptional()
@@ -53,10 +52,9 @@ export class CreatePaymentDto {
     @Type(() => PosMethodDto)
     pos?: PosMethodDto[];
 
-    @ApiProperty({ type: [ChequeMethodDto], required: false })
+    @ApiProperty({ type: ChequeMethodDto, required: false })
     @IsOptional()
-    @IsArray()
-    @ValidateNested({ each: true })
+    @ValidateNested()
     @Type(() => ChequeMethodDto)
-    cheque?: ChequeMethodDto[];
+    cheque?: ChequeMethodDto;
 }
