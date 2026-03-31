@@ -19,6 +19,9 @@ export class PaymentSanadEntity extends BaseEntity {
     @Column()
     settlementPreference: string;
 
+    @Column({ nullable: true })
+    linkedBankAccountId: string;
+
     @Column()
     bankName: string;
 

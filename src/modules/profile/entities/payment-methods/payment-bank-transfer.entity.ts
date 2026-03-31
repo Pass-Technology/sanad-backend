@@ -27,4 +27,7 @@ export class PaymentBankTransferEntity extends BaseEntity {
 
     @Column()
     iban: string;
+
+    @Column({ nullable: true })
+    swiftCode: string;
 }

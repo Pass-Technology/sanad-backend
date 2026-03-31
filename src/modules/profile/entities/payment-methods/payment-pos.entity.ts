@@ -14,7 +14,7 @@ export class PaymentPosEntity extends BaseEntity {
     providerPayment: ProviderPaymentEntity;
 
     @Column({ default: false })
-    isAvailable: boolean;
+    isEnabled: boolean;
 
     @Column({ nullable: false })
     providerName: string;
