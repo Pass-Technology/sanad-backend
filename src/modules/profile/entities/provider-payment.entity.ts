@@ -1,11 +1,17 @@
 import {
     Entity,
-    Column,
+    OneToMany,
     OneToOne,
     JoinColumn,
 } from 'typeorm';
 import { ProviderProfileEntity } from './provider-profile.entity';
 import { BaseEntity } from '../../../database/base-entity';
+import { PaymentCashEntity } from './payment-methods/payment-cash.entity';
+import { PaymentBankTransferEntity } from './payment-methods/payment-bank-transfer.entity';
+import { PaymentLinkEntity } from './payment-methods/payment-link.entity';
+import { PaymentSanadEntity } from './payment-methods/payment-sanad.entity';
+import { PaymentPosEntity } from './payment-methods/payment-pos.entity';
+import { PaymentChequeEntity } from './payment-methods/payment-cheque.entity';
 
 @Entity('provider_payments')
 export class ProviderPaymentEntity extends BaseEntity {
@@ -16,26 +22,24 @@ export class ProviderPaymentEntity extends BaseEntity {
     @JoinColumn()
     providerProfile: ProviderProfileEntity;
 
-    @Column()
-    bankName: string;
 
-    @Column()
-    accountHolderName: string;
+    // NESTED PAYMENT METHODS
 
-    @Column()
-    accountNumber: string;
+    @OneToMany(() => PaymentCashEntity, (c) => c.providerPayment, { cascade: true })
+    cash: PaymentCashEntity[];
 
-    @Column()
-    iban: string;
+    @OneToMany(() => PaymentBankTransferEntity, (bt) => bt.providerPayment, { cascade: true })
+    bankTransfer: PaymentBankTransferEntity[];
 
-    // what is payment methods?
-    // if its how the provider will receive payments from customers
-    // then it should be in the provider profile entity and should be one to many relation as the provider will 
-    // provide payment channels to customers 
-    // should be a separate entity not just an array? 
+    @OneToMany(() => PaymentLinkEntity, (pl) => pl.providerPayment, { cascade: true })
+    paymentLink: PaymentLinkEntity[];
 
-    @Column('simple-array')
-    paymentMethodIds: string[];
+    @OneToMany(() => PaymentSanadEntity, (s) => s.providerPayment, { cascade: true })
+    sanad: PaymentSanadEntity[];
 
+    @OneToMany(() => PaymentPosEntity, (pos) => pos.providerPayment, { cascade: true })
+    pos: PaymentPosEntity[];
 
+    @OneToMany(() => PaymentChequeEntity, (ch) => ch.providerPayment, { cascade: true })
+    cheque: PaymentChequeEntity[];
 }

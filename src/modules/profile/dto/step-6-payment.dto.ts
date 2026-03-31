@@ -1,50 +1,62 @@
 import { ApiProperty } from '@nestjs/swagger';
 import {
-    ArrayMinSize,
-    IsArray,
-    IsIn,
     IsNotEmpty,
+    IsOptional,
     IsString,
+    ValidateNested,
+    IsArray,
 } from 'class-validator';
+import { Type } from 'class-transformer';
+import { CashMethodDto } from './payment-sub-dtos/cashMethod.dto';
+import { BankTransferMethodDto } from './payment-sub-dtos/bankTransferMethod.dto';
+import { PaymentLinkMethodDto } from './payment-sub-dtos/paymentLinkMethod.dto';
+import { SanadMethodDto } from './payment-sub-dtos/sanadMethod.dto';
+import { ChequeMethodDto } from './payment-sub-dtos/chequeMethod.dto';
+import { PosMethodDto } from './payment-sub-dtos/POSMethod.dto';
 
-const PAYMENT_METHODS = [
-    'cash',
-    'bank-transfer',
-    'payment-link',
-    'through-sanad',
-    'card-machine',
-    'deposit-cheques',
-] as const;
 
 export class CreatePaymentDto {
-    @ApiProperty({ example: 'Emirates NBD' })
-    @IsString()
-    @IsNotEmpty()
-    bankName: string;
+    // NESTED PAYMENT METHODS
 
-    @ApiProperty({ example: 'Ahmed Al Maktoum' })
-    @IsString()
-    @IsNotEmpty()
-    accountHolderName: string;
-
-    @ApiProperty({ example: '1234567890' })
-    @IsString()
-    @IsNotEmpty()
-    accountNumber: string;
-
-    @ApiProperty({ example: 'AE070331234567890123456' })
-    @IsString()
-    @IsNotEmpty()
-    iban: string;
-
-    @ApiProperty({
-        example: ['cash', 'bank-transfer'],
-        enum: PAYMENT_METHODS,
-        isArray: true,
-        description: 'Accepted payment methods',
-    })
+    @ApiProperty({ type: [CashMethodDto], required: false })
+    @IsOptional()
     @IsArray()
-    @ArrayMinSize(1, { message: 'At least one payment method is required' })
-    @IsIn(PAYMENT_METHODS, { each: true, message: 'Each payment method must be one of: cash, bank-transfer, payment-link, through-sanad, card-machine, deposit-cheques' })
-    paymentMethodIds: string[];
+    @ValidateNested({ each: true })
+    @Type(() => CashMethodDto)
+    cash?: CashMethodDto[];
+
+    @ApiProperty({ type: [BankTransferMethodDto], required: false })
+    @IsOptional()
+    @IsArray()
+    @ValidateNested({ each: true })
+    @Type(() => BankTransferMethodDto)
+    bankTransfer?: BankTransferMethodDto[];
+
+    @ApiProperty({ type: [PaymentLinkMethodDto], required: false })
+    @IsOptional()
+    @IsArray()
+    @ValidateNested({ each: true })
+    @Type(() => PaymentLinkMethodDto)
+    paymentLink?: PaymentLinkMethodDto[];
+
+    @ApiProperty({ type: [SanadMethodDto], required: false })
+    @IsOptional()
+    @IsArray()
+    @ValidateNested({ each: true })
+    @Type(() => SanadMethodDto)
+    sanad?: SanadMethodDto[];
+
+    @ApiProperty({ type: [PosMethodDto], required: false })
+    @IsOptional()
+    @IsArray()
+    @ValidateNested({ each: true })
+    @Type(() => PosMethodDto)
+    pos?: PosMethodDto[];
+
+    @ApiProperty({ type: [ChequeMethodDto], required: false })
+    @IsOptional()
+    @IsArray()
+    @ValidateNested({ each: true })
+    @Type(() => ChequeMethodDto)
+    cheque?: ChequeMethodDto[];
 }

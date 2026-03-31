@@ -11,6 +11,12 @@ import { BranchEntity } from './entities/branch.entity';
 import { ServingAreaEntity } from './entities/serving-area.entity';
 import { ProviderComplianceEntity } from './entities/provider-compliance.entity';
 import { ProviderPaymentEntity } from './entities/provider-payment.entity';
+import { PaymentCashEntity } from './entities/payment-methods/payment-cash.entity';
+import { PaymentBankTransferEntity } from './entities/payment-methods/payment-bank-transfer.entity';
+import { PaymentLinkEntity } from './entities/payment-methods/payment-link.entity';
+import { PaymentSanadEntity } from './entities/payment-methods/payment-sanad.entity';
+import { PaymentPosEntity } from './entities/payment-methods/payment-pos.entity';
+import { PaymentChequeEntity } from './entities/payment-methods/payment-cheque.entity';
 import { ServiceManagementModule } from '../service-management/service-management.module';
 
 
@@ -34,11 +40,16 @@ import { LookupCacheService } from './lookup-tables/lookup-cache.service';
         ServingAreaEntity,
         ProviderComplianceEntity,
         ProviderPaymentEntity,
+        PaymentCashEntity,
+        PaymentBankTransferEntity,
+        PaymentLinkEntity,
+        PaymentSanadEntity,
+        PaymentPosEntity,
+        PaymentChequeEntity,
         LookUpProfileStatusEntity,
         LookUpProviderTypeEntity,
         LookUpCompanyTypeEntity,
         LookupLanguagesEntity,
-
     ]),
         UserModule,
         ServiceManagementModule,

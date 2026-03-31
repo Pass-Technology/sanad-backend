@@ -18,11 +18,18 @@ import { ProviderUserInfoEntity } from './entities/provider-user-info.entity';
 import { BranchEntity } from './entities/branch.entity';
 import { ProviderComplianceEntity } from './entities/provider-compliance.entity';
 import { ProviderPaymentEntity } from './entities/provider-payment.entity';
+import { PaymentCashEntity } from './entities/payment-methods/payment-cash.entity';
+import { PaymentBankTransferEntity } from './entities/payment-methods/payment-bank-transfer.entity';
+import { PaymentLinkEntity } from './entities/payment-methods/payment-link.entity';
+import { PaymentSanadEntity } from './entities/payment-methods/payment-sanad.entity';
+import { PaymentPosEntity } from './entities/payment-methods/payment-pos.entity';
+import { PaymentChequeEntity } from './entities/payment-methods/payment-cheque.entity';
 import { ServingAreaEntity } from './entities/serving-area.entity';
 import { ServiceEntity } from '../service-management/entities/service.entity';
 import { LookUpService } from './lookup-tables/lookup.service';
 import { ServiceManagementService } from '../service-management/service-management.service';
 import { CreateServicesDto } from './dto/step-4-services.dto';
+import { CreatePaymentDto } from './dto/step-6-payment.dto';
 import { LOOKUP_IDS } from '../../shared/constants/lookup-ids';
 
 // import { CreateCompanyInfoDto } from './dto/step-1-company-info.dto';
@@ -44,6 +51,18 @@ export class ProfileService {
         private readonly complianceRepo: Repository<ProviderComplianceEntity>,
         @InjectRepository(ProviderPaymentEntity)
         private readonly paymentRepo: Repository<ProviderPaymentEntity>,
+        @InjectRepository(PaymentCashEntity)
+        private readonly paymentCashRepo: Repository<PaymentCashEntity>,
+        @InjectRepository(PaymentBankTransferEntity)
+        private readonly paymentBankTransferRepo: Repository<PaymentBankTransferEntity>,
+        @InjectRepository(PaymentLinkEntity)
+        private readonly paymentLinkRepo: Repository<PaymentLinkEntity>,
+        @InjectRepository(PaymentSanadEntity)
+        private readonly paymentSanadRepo: Repository<PaymentSanadEntity>,
+        @InjectRepository(PaymentPosEntity)
+        private readonly paymentPosRepo: Repository<PaymentPosEntity>,
+        @InjectRepository(PaymentChequeEntity)
+        private readonly paymentChequeRepo: Repository<PaymentChequeEntity>,
         private readonly userRepo: UserRepository,
         private readonly dataSource: DataSource,
     ) { }
@@ -78,7 +97,7 @@ export class ProfileService {
                 selectedServices: services.selectedServiceIds.map(id => ({ id })),
                 userInfo: manager.create(ProviderUserInfoEntity, userInfo),
                 branches: this.buildBranchEntities(branches),
-                payment: manager.create(ProviderPaymentEntity, payment),
+                payment: this.buildPaymentEntity(manager, payment),
                 compliance: manager.create(ProviderComplianceEntity, compliance),
                 referenceNumber: await this.generateReferenceNumber(),
             } as any, manager);
@@ -234,5 +253,30 @@ export class ProfileService {
                 servingAreas,
             });
         });
+    }
+
+    private buildPaymentEntity(manager: any, paymentDto: CreatePaymentDto): ProviderPaymentEntity {
+        const payment = manager.create(ProviderPaymentEntity, {});
+
+        if (paymentDto.cash?.length) {
+            payment.cash = paymentDto.cash.map(dto => manager.create(PaymentCashEntity, { ...dto, providerPayment: payment }));
+        }
+        if (paymentDto.bankTransfer?.length) {
+            payment.bankTransfer = paymentDto.bankTransfer.map(dto => manager.create(PaymentBankTransferEntity, { ...dto, providerPayment: payment }));
+        }
+        if (paymentDto.paymentLink?.length) {
+            payment.paymentLink = paymentDto.paymentLink.map(dto => manager.create(PaymentLinkEntity, { ...dto, providerPayment: payment }));
+        }
+        if (paymentDto.sanad?.length) {
+            payment.sanad = paymentDto.sanad.map(dto => manager.create(PaymentSanadEntity, { ...dto, providerPayment: payment }));
+        }
+        if (paymentDto.pos?.length) {
+            payment.pos = paymentDto.pos.map(dto => manager.create(PaymentPosEntity, { ...dto, providerPayment: payment }));
+        }
+        if (paymentDto.cheque?.length) {
+            payment.cheque = paymentDto.cheque.map(dto => manager.create(PaymentChequeEntity, { ...dto, providerPayment: payment }));
+        }
+
+        return payment;
     }
 }
