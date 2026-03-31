@@ -8,6 +8,8 @@ import {
     Put,
     Request,
     UseGuards,
+    UseInterceptors,
+    ClassSerializerInterceptor,
 } from '@nestjs/common';
 import {
     ApiBearerAuth,
@@ -26,6 +28,7 @@ import { CurrentUser } from 'src/shared/decorators/current-user.decorator';
 @ApiTags('profile')
 @ApiBearerAuth()
 @UseGuards(JwtAuthGuard)
+@UseInterceptors(ClassSerializerInterceptor)
 @Controller('profile')
 export class ProfileController {
     constructor(private readonly profileService: ProfileService) { }

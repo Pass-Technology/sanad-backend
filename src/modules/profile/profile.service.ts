@@ -24,6 +24,7 @@ import { PaymentLinkEntity } from './entities/payment-methods/payment-link.entit
 import { PaymentSanadEntity } from './entities/payment-methods/payment-sanad.entity';
 import { PaymentPosEntity } from './entities/payment-methods/payment-pos.entity';
 import { PaymentChequeEntity } from './entities/payment-methods/payment-cheque.entity';
+import { BankAccountEntity } from './entities/payment-methods/bank-account.entity';
 import { ServingAreaEntity } from './entities/serving-area.entity';
 import { ServiceEntity } from '../service-management/entities/service.entity';
 import { LookUpService } from './lookup-tables/lookup.service';
@@ -74,7 +75,7 @@ export class ProfileService {
             throw new BadRequestException('User already has a profile');
         }
 
-        const { companyInfo, userInfo, services, branches, payment, compliance } = profileDto;
+        const { companyInfo, services } = profileDto;
 
         // 1. validate lookup ids and service ids
         await this.validateCompanyInfo(companyInfo);
@@ -82,31 +83,37 @@ export class ProfileService {
 
         // 2. build and save the full profile in one step inside a transaction
         return await this.dataSource.transaction(async (manager) => {
-            const profile = await this.profileRepo.createProfile({
-                user: { id: userId },
-                status: { id: LOOKUP_IDS.PROFILE_STATUS.DRAFT },
-                providerType: { id: companyInfo.providerTypeId },
-                companyType: companyInfo.companyTypeId ? { id: companyInfo.companyTypeId } : null,
-                tradeName: companyInfo.tradeName,
-                companyRepresentativeName: companyInfo.companyRepresentativeName,
-                companyDescription: companyInfo.companyDescription,
-                socialMediaLink: companyInfo.socialMediaLink,
-                websiteLink: companyInfo.websiteLink,
-                languages: companyInfo.languageIds ? companyInfo.languageIds.map(id => ({ id })) : [],
+            const profileData = await this.buildFullProfileObject(manager, userId, profileDto);
+            const profile = await this.profileRepo.createProfile(profileData as any, manager);
 
-                selectedServices: services.selectedServiceIds.map(id => ({ id })),
-                userInfo: manager.create(ProviderUserInfoEntity, userInfo),
-                branches: this.buildBranchEntities(branches),
-                payment: this.buildPaymentEntity(manager, payment),
-                compliance: manager.create(ProviderComplianceEntity, compliance),
-                referenceNumber: await this.generateReferenceNumber(),
-            } as any, manager);
-
-            // 3. update user flag
+            // 3. Mark user profile as complete
             await this.userRepo.updateProfileCompletionStatus(userId, true, manager);
 
             return profile;
         });
+    }
+
+    private async buildFullProfileObject(manager: any, userId: string, dto: CreateFullProfileDto) {
+        const { companyInfo, userInfo, services, branches, payment, compliance } = dto;
+
+        return {
+            user: { id: userId },
+            status: { id: LOOKUP_IDS.PROFILE_STATUS.DRAFT },
+            referenceNumber: await this.generateReferenceNumber(),
+            providerType: { id: companyInfo.providerTypeId },
+            companyType: companyInfo.companyTypeId ? { id: companyInfo.companyTypeId } : null,
+            tradeName: companyInfo.tradeName,
+            companyRepresentativeName: companyInfo.companyRepresentativeName,
+            companyDescription: companyInfo.companyDescription,
+            socialMediaLink: companyInfo.socialMediaLink,
+            websiteLink: companyInfo.websiteLink,
+            languages: companyInfo.languageIds ? companyInfo.languageIds.map(id => ({ id })) : [],
+            selectedServices: services.selectedServiceIds.map(id => ({ id })),
+            userInfo: manager.create(ProviderUserInfoEntity, userInfo),
+            branches: this.buildBranchEntities(branches),
+            payment: this.buildPaymentEntity(manager, payment),
+            compliance: manager.create(ProviderComplianceEntity, compliance),
+        };
     }
 
     async getMyProfile(userId: string): Promise<ProviderProfileEntity> {
@@ -123,8 +130,6 @@ export class ProfileService {
 
         return profile.selectedServices;
     }
-
-
 
     async updateBranch(
         userId: string,
@@ -194,7 +199,6 @@ export class ProfileService {
     // ------- private helper methods ------- //
 
     // generate reference number 
-
     private async generateReferenceNumber() {
         const prefix = 'SND-';
         const characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
@@ -255,28 +259,99 @@ export class ProfileService {
         });
     }
 
+    // build payment entities
     private buildPaymentEntity(manager: any, paymentDto: CreatePaymentDto): ProviderPaymentEntity {
-        const payment = manager.create(ProviderPaymentEntity, {});
+        const payment = manager.create(ProviderPaymentEntity, { bankAccounts: [] });
 
-        if (paymentDto.cash?.length) {
-            payment.cash = paymentDto.cash.map(dto => manager.create(PaymentCashEntity, { ...dto, providerPayment: payment }));
-        }
-        if (paymentDto.bankTransfer?.length) {
-            payment.bankTransfer = paymentDto.bankTransfer.map(dto => manager.create(PaymentBankTransferEntity, { ...dto, providerPayment: payment }));
-        }
-        if (paymentDto.paymentLink?.length) {
-            payment.paymentLink = paymentDto.paymentLink.map(dto => manager.create(PaymentLinkEntity, { ...dto, providerPayment: payment }));
-        }
-        if (paymentDto.sanad?.length) {
-            payment.sanad = paymentDto.sanad.map(dto => manager.create(PaymentSanadEntity, { ...dto, providerPayment: payment }));
-        }
-        if (paymentDto.pos?.length) {
-            payment.pos = paymentDto.pos.map(dto => manager.create(PaymentPosEntity, { ...dto, providerPayment: payment }));
-        }
-        if (paymentDto.cheque?.length) {
-            payment.cheque = paymentDto.cheque.map(dto => manager.create(PaymentChequeEntity, { ...dto, providerPayment: payment }));
-        }
+        this.addCashMethods(manager, payment, paymentDto);
+        this.addBankTransferMethods(manager, payment, paymentDto);
+        this.addSanadMethods(manager, payment, paymentDto);
+        this.addPosMethods(manager, payment, paymentDto);
+        this.addChequeMethods(manager, payment, paymentDto);
+        this.addPaymentLinkMethods(manager, payment, paymentDto);
 
         return payment;
     }
+
+    private addCashMethods(manager: any, payment: ProviderPaymentEntity, dto: CreatePaymentDto) {
+        if (dto.cash?.length) {
+            payment.cash = dto.cash.map(cashDto =>
+                manager.create(PaymentCashEntity, { ...cashDto, providerPayment: payment })
+            );
+        }
+    }
+
+    private addBankTransferMethods(manager: any, payment: ProviderPaymentEntity, dto: CreatePaymentDto) {
+        if (dto.bankTransfer?.length) {
+            payment.bankTransfer = dto.bankTransfer.map(btDto => {
+                const bankAccount = this.createBankAccount(manager, payment, btDto);
+                return manager.create(PaymentBankTransferEntity, {
+                    isEnabled: btDto.isEnabled,
+                    providerPayment: payment,
+                    bankAccount,
+                });
+            });
+        }
+    }
+
+    private addSanadMethods(manager: any, payment: ProviderPaymentEntity, dto: CreatePaymentDto) {
+        if (dto.sanad?.length) {
+            payment.sanad = dto.sanad.map(sanadDto => {
+                let bankAccount: BankAccountEntity;
+
+                if (sanadDto.isUsingBankTransferData && payment.bankTransfer?.length > 0) {
+                    bankAccount = payment.bankTransfer[0].bankAccount;
+                    payment.bankTransfer[0].isEnabled = true;
+                } else {
+                    bankAccount = this.createBankAccount(manager, payment, sanadDto);
+                }
+
+                return manager.create(PaymentSanadEntity, {
+                    isEnabled: sanadDto.isEnabled,
+                    settlementPreference: sanadDto.settlementPreference,
+                    isUsingBankTransferData: sanadDto.isUsingBankTransferData,
+                    providerPayment: payment,
+                    bankAccount,
+                });
+            });
+        }
+    }
+
+    private addPosMethods(manager: any, payment: ProviderPaymentEntity, dto: CreatePaymentDto) {
+        if (dto.pos?.length) {
+            payment.pos = dto.pos.map(posDto =>
+                manager.create(PaymentPosEntity, { ...posDto, providerPayment: payment })
+            );
+        }
+    }
+
+    private addChequeMethods(manager: any, payment: ProviderPaymentEntity, dto: CreatePaymentDto) {
+        if (dto.cheque?.length) {
+            payment.cheque = dto.cheque.map(chequeDto =>
+                manager.create(PaymentChequeEntity, { ...chequeDto, providerPayment: payment })
+            );
+        }
+    }
+
+    private addPaymentLinkMethods(manager: any, payment: ProviderPaymentEntity, dto: CreatePaymentDto) {
+        if (dto.paymentLink?.length) {
+            payment.paymentLink = dto.paymentLink.map(linkDto =>
+                manager.create(PaymentLinkEntity, { ...linkDto, providerPayment: payment })
+            );
+        }
+    }
+
+    private createBankAccount(manager: any, payment: ProviderPaymentEntity, data: any): BankAccountEntity {
+        const bankAccount = manager.create(BankAccountEntity, {
+            bankName: data.bankName,
+            accountHolderName: data.accountHolderName,
+            accountNumber: data.accountNumber,
+            iban: data.iban,
+            swiftCode: data.swiftCode,
+            providerPayment: payment,
+        });
+        payment.bankAccounts.push(bankAccount);
+        return bankAccount;
+    }
+
 }

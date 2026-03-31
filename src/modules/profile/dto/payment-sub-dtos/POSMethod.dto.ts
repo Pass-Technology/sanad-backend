@@ -22,6 +22,6 @@ export class PosMethodDto {
     @ValidateIf(o => o.isEnabled === true)
     @IsArray()
     @IsString({ each: true })
-    @IsNotEmpty()
+    @IsNotEmpty({ each: true })
     supportedCards: string[];
 }

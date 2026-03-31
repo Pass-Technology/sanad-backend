@@ -1,14 +1,11 @@
-import {
-    Entity,
-    Column,
-    ManyToOne,
-    JoinColumn,
-} from 'typeorm';
+import { Entity, Column, ManyToOne, JoinColumn } from 'typeorm';
+import { Exclude } from 'class-transformer';
 import { BaseEntity } from '../../../../database/base-entity';
 import { ProviderPaymentEntity } from '../provider-payment.entity';
 
 @Entity('payment_pos')
 export class PaymentPosEntity extends BaseEntity {
+    @Exclude()
     @ManyToOne(() => ProviderPaymentEntity, (p) => p.pos, { onDelete: 'CASCADE' })
     @JoinColumn()
     providerPayment: ProviderPaymentEntity;

@@ -22,8 +22,8 @@ export class CreateCompanyInfoDto {
         example: LOOKUP_IDS.COMPANY_TYPE.GOVERNMENT,
         description: 'Required when providerType is company',
     })
-    // @IsNotEmpty()
-    // @IsUUID()
+    @IsOptional()
+    @IsUUID()
     companyTypeId?: string;
 
     @ApiProperty({ example: 'Sanad Services LLC' })

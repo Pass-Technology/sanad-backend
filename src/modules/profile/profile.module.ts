@@ -17,6 +17,7 @@ import { PaymentLinkEntity } from './entities/payment-methods/payment-link.entit
 import { PaymentSanadEntity } from './entities/payment-methods/payment-sanad.entity';
 import { PaymentPosEntity } from './entities/payment-methods/payment-pos.entity';
 import { PaymentChequeEntity } from './entities/payment-methods/payment-cheque.entity';
+import { BankAccountEntity } from './entities/payment-methods/bank-account.entity';
 import { ServiceManagementModule } from '../service-management/service-management.module';
 
 
@@ -46,6 +47,7 @@ import { LookupCacheService } from './lookup-tables/lookup-cache.service';
         PaymentSanadEntity,
         PaymentPosEntity,
         PaymentChequeEntity,
+        BankAccountEntity,
         LookUpProfileStatusEntity,
         LookUpProviderTypeEntity,
         LookUpCompanyTypeEntity,
