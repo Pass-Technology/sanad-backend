@@ -7,14 +7,14 @@ import { BankAccountEntity } from './bank-account.entity';
 @Entity('payment_bank_transfer')
 export class PaymentBankTransferEntity extends BaseEntity {
     @Exclude()
-    @ManyToOne(() => ProviderPaymentEntity, (p) => p.bankTransfer, { onDelete: 'CASCADE' })
+    @ManyToOne(() => ProviderPaymentEntity, (p) => p.bankTransfer)
     @JoinColumn()
     providerPayment: ProviderPaymentEntity;
 
     @Column({ default: false })
     isEnabled: boolean;
 
-    @ManyToOne(() => BankAccountEntity)
+    @ManyToOne(() => BankAccountEntity, { cascade: true })
     @JoinColumn({ name: 'bank_account_id' })
     bankAccount: BankAccountEntity;
 }

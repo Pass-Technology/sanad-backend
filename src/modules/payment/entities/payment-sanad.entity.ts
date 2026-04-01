@@ -20,7 +20,7 @@ export class PaymentSanadEntity extends BaseEntity {
     @Column({ default: false })
     isUsingBankTransferData: boolean;
 
-    @ManyToOne(() => BankAccountEntity)
+    @ManyToOne(() => BankAccountEntity, { cascade: true })
     @JoinColumn({ name: 'bank_account_id' })
     bankAccount: BankAccountEntity;
 }

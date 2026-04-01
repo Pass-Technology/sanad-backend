@@ -9,63 +9,55 @@ import { PaymentSanadEntity } from './entities/payment-sanad.entity';
 import { PaymentPosEntity } from './entities/payment-pos.entity';
 import { PaymentChequeEntity } from './entities/payment-cheque.entity';
 import { BankAccountEntity } from './entities/bank-account.entity';
+import { BankTransferMethodDto } from './dto/bank-transfer-method.dto';
+import { SanadMethodDto } from './dto/sanad-method.dto';
 
 @Injectable()
 export class PaymentService {
 
-    buildPaymentEntity(manager: EntityManager, paymentDto: CreatePaymentDto): ProviderPaymentEntity {
+    buildPaymentEntity(paymentDto: CreatePaymentDto, manager?: EntityManager): ProviderPaymentEntity {
+        const paymentData = { bankAccounts: [] } as any;
+        const payment = manager
+            ? manager.create(ProviderPaymentEntity, paymentData)
+            : Object.assign(new ProviderPaymentEntity(), paymentData);
 
-        const payment = manager.create(ProviderPaymentEntity);
-
-        const cachEntity = this.addCashMethods(manager, paymentDto);
-        const bankTransferEntity = this.addBankTransferMethods(manager, paymentDto);
-        const sanadEntity = this.addSanadMethods(manager, payment, paymentDto);
-        const posEntity = this.addPosMethods(manager, payment, paymentDto);
-        const chequeEntity = this.addChequeMethods(manager, payment, paymentDto);
-        const paymentLinkEntity = this.addPaymentLinkMethods(manager, payment, paymentDto);
-
-        // payment.cash = cachEntity;
-        if (bankTransferEntity?.length) {
-            payment.bankTransfer = bankTransferEntity;
-        }
-        // payment.sanad = sanadEntity;
-        // payment.pos = posEntity;
-        // payment.cheque = chequeEntity;
-        // payment.paymentLink = paymentLinkEntity;
+        this.addCashMethods(payment, paymentDto, manager);
+        this.addBankTransferMethods(payment, paymentDto, manager);
+        this.addSanadMethods(payment, paymentDto, manager);
+        this.addPosMethods(payment, paymentDto, manager);
+        this.addChequeMethods(payment, paymentDto, manager);
+        this.addPaymentLinkMethods(payment, paymentDto, manager);
 
         return payment;
     }
 
-    private addCashMethods(manager: EntityManager, dto: CreatePaymentDto) {
+    private addCashMethods(payment: ProviderPaymentEntity, dto: CreatePaymentDto, manager?: EntityManager) {
         if (dto.cash?.isEnabled) {
-            return manager.create(PaymentCashEntity, { ...dto.cash, });
+            const data = { ...dto.cash } as any;
+            payment.cash = manager ? manager.create(PaymentCashEntity, data) : Object.assign(new PaymentCashEntity(), data);
         }
-        // console.log(`payment.cash: ${payment.cash.isEnabled}`);
     }
 
-    private addBankTransferMethods(manager: EntityManager, dto: CreatePaymentDto) {
-
-        const { bankTransfer } = dto;
-
-        // let bankTransferEntity = [];
-
-        if (bankTransfer && bankTransfer?.length) {
-            return bankTransfer
+    private addBankTransferMethods(payment: ProviderPaymentEntity, dto: CreatePaymentDto, manager?: EntityManager) {
+        if (dto.bankTransfer?.length) {
+            payment.bankTransfer = dto.bankTransfer
                 .filter(btDto => btDto.isEnabled)
                 .map(btDto => {
-                    const bankAccount = this.createBankAccount(manager, btDto);
-                    return manager.create(PaymentBankTransferEntity, {
-                        isEnabled: btDto.isEnabled,
-                        bankAccount,
-                    });
+                    const bankAccount = this.createBankAccount(btDto, manager);
+                    payment.bankAccounts.push(bankAccount);
+
+                    const data = { isEnabled: btDto.isEnabled } as any;
+                    const entity = manager
+                        ? manager.create(PaymentBankTransferEntity, data)
+                        : Object.assign(new PaymentBankTransferEntity(), data);
+
+                    entity.bankAccount = bankAccount; // Assign AFTER creation to preserve exact memory pointer
+                    return entity;
                 });
         }
-
-        // console.log(payment.bankAccounts)
-        // console.log(payment.bankTransfer)
     }
 
-    private addSanadMethods(manager: EntityManager, payment: ProviderPaymentEntity, dto: CreatePaymentDto) {
+    private addSanadMethods(payment: ProviderPaymentEntity, dto: CreatePaymentDto, manager?: EntityManager) {
         if (dto.sanad?.length) {
             payment.sanad = dto.sanad
                 .filter(sanadDto => sanadDto.isEnabled)
@@ -81,60 +73,62 @@ export class PaymentService {
                             );
                         }
                     } else {
-                        bankAccount = this.createBankAccount(manager, sanadDto);
+                        bankAccount = this.createBankAccount(sanadDto, manager);
+                        payment.bankAccounts.push(bankAccount);
                     }
 
-                    return manager.create(PaymentSanadEntity, {
+                    const data = {
                         isEnabled: sanadDto.isEnabled,
                         settlementPreference: sanadDto.settlementPreference,
                         isUsingBankTransferData: sanadDto.isUsingBankTransferData,
-                        providerPayment: payment,
-                        bankAccount,
-                    });
+                    } as any;
+                    const entity = manager
+                        ? manager.create(PaymentSanadEntity, data)
+                        : Object.assign(new PaymentSanadEntity(), data);
+
+                    entity.bankAccount = bankAccount; // Assign AFTER creation to preserve exact memory pointer
+                    return entity;
                 });
         }
-        // console.log(payment.sanad)
     }
 
-    private addPosMethods(manager: EntityManager, payment: ProviderPaymentEntity, dto: CreatePaymentDto) {
+    private addPosMethods(payment: ProviderPaymentEntity, dto: CreatePaymentDto, manager?: EntityManager) {
         if (dto.pos?.length) {
             payment.pos = dto.pos
                 .filter(posDto => posDto.isEnabled)
-                .map(posDto =>
-                    manager.create(PaymentPosEntity, { ...posDto, providerPayment: payment })
-                );
+                .map(posDto => {
+                    const data = { ...posDto } as any;
+                    return manager ? manager.create(PaymentPosEntity, data) : Object.assign(new PaymentPosEntity(), data);
+                });
         }
-        // console.log(payment.pos)
     }
 
-    private addChequeMethods(manager: EntityManager, payment: ProviderPaymentEntity, dto: CreatePaymentDto) {
+    private addChequeMethods(payment: ProviderPaymentEntity, dto: CreatePaymentDto, manager?: EntityManager) {
         if (dto.cheque?.isEnabled) {
-            payment.cheque = manager.create(PaymentChequeEntity, { ...dto.cheque, providerPayment: payment });
+            const data = { ...dto.cheque } as any;
+            payment.cheque = manager ? manager.create(PaymentChequeEntity, data) : Object.assign(new PaymentChequeEntity(), data);
         }
-        // console.log(payment.cheque)
     }
 
-    private addPaymentLinkMethods(manager: EntityManager, payment: ProviderPaymentEntity, dto: CreatePaymentDto) {
+    private addPaymentLinkMethods(payment: ProviderPaymentEntity, dto: CreatePaymentDto, manager?: EntityManager) {
         if (dto.paymentLink?.length) {
             payment.paymentLink = dto.paymentLink
                 .filter(linkDto => linkDto.isEnabled)
-                .map(linkDto =>
-                    manager.create(PaymentLinkEntity, { ...linkDto, providerPayment: payment })
-                );
+                .map(linkDto => {
+                    const data = { ...linkDto } as any;
+                    return manager ? manager.create(PaymentLinkEntity, data) : Object.assign(new PaymentLinkEntity(), data);
+                });
         }
-        // console.log(payment.providerProfile.id)
-        // console.log(payment.paymentLink)
     }
 
-    private createBankAccount(manager: EntityManager, data: any): BankAccountEntity {
-        const bankAccount = manager.create(BankAccountEntity, {
+    private createBankAccount(data: BankTransferMethodDto | SanadMethodDto, manager?: EntityManager): BankAccountEntity {
+        const bankData = {
             bankName: data.bankName,
             accountHolderName: data.accountHolderName,
             accountNumber: data.accountNumber,
             iban: data.iban,
             swiftCode: data.swiftCode,
-        });
-        // console.log(bankAccount.id)
-        return bankAccount;
+        } as any;
+        return manager ? manager.create(BankAccountEntity, bankData) : Object.assign(new BankAccountEntity(), bankData);
     }
 }

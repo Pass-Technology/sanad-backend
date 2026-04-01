@@ -19,9 +19,7 @@ import { PaymentSanadEntity } from './payment-sanad.entity';
 export class ProviderPaymentEntity extends BaseEntity {
 
     @Exclude()
-    @OneToOne(() => ProviderProfileEntity, (profile) => profile.payment, {
-        onDelete: 'CASCADE',
-    })
+    @OneToOne(() => ProviderProfileEntity, (profile) => profile.payment)
     @JoinColumn()
     providerProfile: ProviderProfileEntity;
 

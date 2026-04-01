@@ -89,7 +89,7 @@ export class ProfileService {
             selectedServices: services.selectedServiceIds.map(id => ({ id })),
             userInfo: manager.create(ProviderUserInfoEntity, userInfo),
             branches: this.buildBranchEntities(branches),
-            payment: this.paymentService.buildPaymentEntity(manager, payment),
+            payment: this.paymentService.buildPaymentEntity(payment, manager),
             compliance: manager.create(ProviderComplianceEntity, compliance),
 
         });
