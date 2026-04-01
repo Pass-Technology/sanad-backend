@@ -4,16 +4,16 @@ import {
     OneToOne,
     JoinColumn,
 } from 'typeorm';
-import { ProviderProfileEntity } from './provider-profile.entity';
+import { ProviderProfileEntity } from '../../profile/entities/provider-profile.entity';
 import { BaseEntity } from '../../../database/base-entity';
-import { PaymentCashEntity } from './payment-methods/payment-cash.entity';
-import { PaymentBankTransferEntity } from './payment-methods/payment-bank-transfer.entity';
-import { PaymentLinkEntity } from './payment-methods/payment-link.entity';
-import { PaymentSanadEntity } from './payment-methods/payment-sanad.entity';
-import { PaymentPosEntity } from './payment-methods/payment-pos.entity';
-import { PaymentChequeEntity } from './payment-methods/payment-cheque.entity';
-import { BankAccountEntity } from './payment-methods/bank-account.entity';
 import { Exclude } from 'class-transformer';
+import { BankAccountEntity } from './bank-account.entity';
+import { PaymentBankTransferEntity } from './payment-bank-transfer.entity';
+import { PaymentCashEntity } from './payment-cash.entity';
+import { PaymentChequeEntity } from './payment-cheque.entity';
+import { PaymentLinkEntity } from './payment-link.entity';
+import { PaymentPosEntity } from './payment-pos.entity';
+import { PaymentSanadEntity } from './payment-sanad.entity';
 
 @Entity('provider_payments')
 export class ProviderPaymentEntity extends BaseEntity {

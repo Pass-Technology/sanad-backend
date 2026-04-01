@@ -63,5 +63,3 @@ export class SanadMethodDto {
     @IsOptional()
     swiftCode?: string;
 }
-
-

@@ -17,24 +17,13 @@ import { ProviderProfileEntity } from './entities/provider-profile.entity';
 import { ProviderUserInfoEntity } from './entities/provider-user-info.entity';
 import { BranchEntity } from './entities/branch.entity';
 import { ProviderComplianceEntity } from './entities/provider-compliance.entity';
-import { ProviderPaymentEntity } from './entities/provider-payment.entity';
-import { PaymentCashEntity } from './entities/payment-methods/payment-cash.entity';
-import { PaymentBankTransferEntity } from './entities/payment-methods/payment-bank-transfer.entity';
-import { PaymentLinkEntity } from './entities/payment-methods/payment-link.entity';
-import { PaymentSanadEntity } from './entities/payment-methods/payment-sanad.entity';
-import { PaymentPosEntity } from './entities/payment-methods/payment-pos.entity';
-import { PaymentChequeEntity } from './entities/payment-methods/payment-cheque.entity';
-import { BankAccountEntity } from './entities/payment-methods/bank-account.entity';
 import { ServingAreaEntity } from './entities/serving-area.entity';
 import { ServiceEntity } from '../service-management/entities/service.entity';
 import { LookUpService } from './lookup-tables/lookup.service';
 import { ServiceManagementService } from '../service-management/service-management.service';
 import { CreateServicesDto } from './dto/step-4-services.dto';
-import { CreatePaymentDto } from './dto/step-6-payment.dto';
+import { PaymentService } from '../payment/payment.service';
 import { LOOKUP_IDS } from '../../shared/constants/lookup-ids';
-
-// import { CreateCompanyInfoDto } from './dto/step-1-company-info.dto';
-// import { CreateBranchesDto } from './dto/step-3-branches.dto';
 
 @Injectable()
 export class ProfileService {
@@ -42,28 +31,13 @@ export class ProfileService {
         private readonly profileRepo: ProfileRepository,
         private readonly lookupService: LookUpService,
         private readonly serviceManagement: ServiceManagementService,
+        private readonly paymentService: PaymentService,
         @InjectRepository(ProviderUserInfoEntity)
         private readonly userInfoRepo: Repository<ProviderUserInfoEntity>,
         @InjectRepository(BranchEntity)
         private readonly branchRepo: Repository<BranchEntity>,
         @InjectRepository(ServingAreaEntity)
         private readonly servingAreaRepo: Repository<ServingAreaEntity>,
-        @InjectRepository(ProviderComplianceEntity)
-        private readonly complianceRepo: Repository<ProviderComplianceEntity>,
-        @InjectRepository(ProviderPaymentEntity)
-        private readonly paymentRepo: Repository<ProviderPaymentEntity>,
-        @InjectRepository(PaymentCashEntity)
-        private readonly paymentCashRepo: Repository<PaymentCashEntity>,
-        @InjectRepository(PaymentBankTransferEntity)
-        private readonly paymentBankTransferRepo: Repository<PaymentBankTransferEntity>,
-        @InjectRepository(PaymentLinkEntity)
-        private readonly paymentLinkRepo: Repository<PaymentLinkEntity>,
-        @InjectRepository(PaymentSanadEntity)
-        private readonly paymentSanadRepo: Repository<PaymentSanadEntity>,
-        @InjectRepository(PaymentPosEntity)
-        private readonly paymentPosRepo: Repository<PaymentPosEntity>,
-        @InjectRepository(PaymentChequeEntity)
-        private readonly paymentChequeRepo: Repository<PaymentChequeEntity>,
         private readonly userRepo: UserRepository,
         private readonly dataSource: DataSource,
     ) { }
@@ -111,7 +85,7 @@ export class ProfileService {
             selectedServices: services.selectedServiceIds.map(id => ({ id })),
             userInfo: manager.create(ProviderUserInfoEntity, userInfo),
             branches: this.buildBranchEntities(branches),
-            payment: this.buildPaymentEntity(manager, payment),
+            payment: this.paymentService.buildPaymentEntity(manager, payment),
             compliance: manager.create(ProviderComplianceEntity, compliance),
         };
     }
@@ -170,7 +144,6 @@ export class ProfileService {
         }
 
         const updatedBranch = await this.profileRepo.findBranchById(branchId);
-        // return this.buildStepResponse('Branch updated', profile, updatedBranch);
         return {
             statusId: profile.status.id,
             data: updatedBranch,
@@ -257,110 +230,6 @@ export class ProfileService {
                 servingAreas,
             });
         });
-    }
-
-    // build payment entities
-    private buildPaymentEntity(manager: any, paymentDto: CreatePaymentDto): ProviderPaymentEntity {
-        const payment = manager.create(ProviderPaymentEntity, { bankAccounts: [] });
-
-        this.addCashMethods(manager, payment, paymentDto);
-        this.addBankTransferMethods(manager, payment, paymentDto);
-        this.addSanadMethods(manager, payment, paymentDto);
-        this.addPosMethods(manager, payment, paymentDto);
-        this.addChequeMethods(manager, payment, paymentDto);
-        this.addPaymentLinkMethods(manager, payment, paymentDto);
-
-        return payment;
-    }
-
-    private addCashMethods(manager: any, payment: ProviderPaymentEntity, dto: CreatePaymentDto) {
-        if (dto.cash?.isEnabled) {
-            payment.cash = manager.create(PaymentCashEntity, { ...dto.cash, providerPayment: payment });
-        }
-    }
-
-    private addBankTransferMethods(manager: any, payment: ProviderPaymentEntity, dto: CreatePaymentDto) {
-        if (dto.bankTransfer?.length) {
-            payment.bankTransfer = dto.bankTransfer
-                .filter(btDto => btDto.isEnabled)
-                .map(btDto => {
-                    const bankAccount = this.createBankAccount(manager, payment, btDto);
-                    return manager.create(PaymentBankTransferEntity, {
-                        isEnabled: btDto.isEnabled,
-                        providerPayment: payment,
-                        bankAccount,
-                    });
-                });
-        }
-    }
-
-    private addSanadMethods(manager: any, payment: ProviderPaymentEntity, dto: CreatePaymentDto) {
-        if (dto.sanad?.length) {
-            payment.sanad = dto.sanad
-                .filter(sanadDto => sanadDto.isEnabled)
-                .map(sanadDto => {
-                    let bankAccount: BankAccountEntity;
-
-                    if (sanadDto.isUsingBankTransferData) {
-                        if (payment.bankTransfer?.length > 0) {
-                            bankAccount = payment.bankTransfer[0].bankAccount;
-                        } else {
-                            throw new BadRequestException(
-                                'Cannot use bank transfer data for Sanad because no bank transfer method was provided',
-                            );
-                        }
-                    } else {
-                        bankAccount = this.createBankAccount(manager, payment, sanadDto);
-                    }
-
-                    return manager.create(PaymentSanadEntity, {
-                        isEnabled: sanadDto.isEnabled,
-                        settlementPreference: sanadDto.settlementPreference,
-                        isUsingBankTransferData: sanadDto.isUsingBankTransferData,
-                        providerPayment: payment,
-                        bankAccount,
-                    });
-                });
-        }
-    }
-
-    private addPosMethods(manager: any, payment: ProviderPaymentEntity, dto: CreatePaymentDto) {
-        if (dto.pos?.length) {
-            payment.pos = dto.pos
-                .filter(posDto => posDto.isEnabled)
-                .map(posDto =>
-                    manager.create(PaymentPosEntity, { ...posDto, providerPayment: payment })
-                );
-        }
-    }
-
-    private addChequeMethods(manager: any, payment: ProviderPaymentEntity, dto: CreatePaymentDto) {
-        if (dto.cheque?.isEnabled) {
-            payment.cheque = manager.create(PaymentChequeEntity, { ...dto.cheque, providerPayment: payment });
-        }
-    }
-
-    private addPaymentLinkMethods(manager: any, payment, dto: CreatePaymentDto) {
-        if (dto.paymentLink?.length) {
-            payment.paymentLink = dto.paymentLink
-                .filter(linkDto => linkDto.isEnabled)
-                .map(linkDto =>
-                    manager.create(PaymentLinkEntity, { ...linkDto, providerPayment: payment })
-                );
-        }
-    }
-
-    private createBankAccount(manager: any, payment: ProviderPaymentEntity, data: any): BankAccountEntity {
-        const bankAccount = manager.create(BankAccountEntity, {
-            bankName: data.bankName,
-            accountHolderName: data.accountHolderName,
-            accountNumber: data.accountNumber,
-            iban: data.iban,
-            swiftCode: data.swiftCode,
-            providerPayment: payment,
-        });
-        payment.bankAccounts.push(bankAccount);
-        return bankAccount;
     }
 
 }

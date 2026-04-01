@@ -1,7 +1,7 @@
 import { Entity, Column, ManyToOne, JoinColumn } from 'typeorm';
 import { Exclude } from 'class-transformer';
-import { BaseEntity } from '../../../../database/base-entity';
-import { ProviderPaymentEntity } from '../provider-payment.entity';
+import { BaseEntity } from '../../../database/base-entity';
+import { ProviderPaymentEntity } from './provider-payment.entity';
 
 @Entity('bank_accounts')
 export class BankAccountEntity extends BaseEntity {

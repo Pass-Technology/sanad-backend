@@ -6,7 +6,7 @@ import { CreateUserInfoDto } from './step-2-user-info.dto';
 import { CreateBranchesDto } from './step-3-branches.dto';
 import { CreateServicesDto } from './step-4-services.dto';
 import { CreateComplianceDto } from './step-5-compliance.dto';
-import { CreatePaymentDto } from './step-6-payment.dto';
+import { CreatePaymentDto } from '../../payment/dto/create-payment.dto';
 
 export class CreateFullProfileDto {
     @ApiProperty({ type: CreateCompanyInfoDto })

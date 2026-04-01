@@ -7,12 +7,12 @@ import {
     IsArray,
 } from 'class-validator';
 import { Type } from 'class-transformer';
-import { CashMethodDto } from './payment-sub-dtos/cashMethod.dto';
-import { BankTransferMethodDto } from './payment-sub-dtos/bankTransferMethod.dto';
-import { PaymentLinkMethodDto } from './payment-sub-dtos/paymentLinkMethod.dto';
-import { SanadMethodDto } from './payment-sub-dtos/sanadMethod.dto';
-import { ChequeMethodDto } from './payment-sub-dtos/chequeMethod.dto';
-import { PosMethodDto } from './payment-sub-dtos/POSMethod.dto';
+import { CashMethodDto } from './cash-method.dto';
+import { BankTransferMethodDto } from './bank-transfer-method.dto';
+import { PaymentLinkMethodDto } from './payment-link-method.dto';
+import { SanadMethodDto } from './sanad-method.dto';
+import { ChequeMethodDto } from './cheque-method.dto';
+import { PosMethodDto } from './pos-method.dto';
 
 
 export class CreatePaymentDto {
