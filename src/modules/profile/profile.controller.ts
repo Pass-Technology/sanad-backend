@@ -53,14 +53,14 @@ export class ProfileController {
 
     // update services only in case the user wants to update services
     // should also add new services?
-    @Put('setup/step-4/services')
-    @ApiOperation({ summary: 'Update selected services on an existing profile' })
-    async updateServices(
-        @CurrentUser() user: UserInfoResponseWithTokensDto,
-        @Body() createServiceDto: CreateServicesDto,
-    ) {
-        return await this.profileService.updateServices(user.userId, createServiceDto);
-    }
+    // @Put('setup/step-4/services')
+    // @ApiOperation({ summary: 'Update selected services on an existing profile' })
+    // async updateServices(
+    //     @CurrentUser() user: UserInfoResponseWithTokensDto,
+    //     @Body() createServiceDto: CreateServicesDto,
+    // ) {
+    //     return await this.profileService.updateServices(user.userId, createServiceDto);
+    // }
 
 
     @Put('setup/step-3/branches/:id')

@@ -14,34 +14,48 @@ import { BankAccountEntity } from './entities/bank-account.entity';
 export class PaymentService {
 
     buildPaymentEntity(manager: EntityManager, paymentDto: CreatePaymentDto): ProviderPaymentEntity {
-        const payment = manager.create(ProviderPaymentEntity, { bankAccounts: [] });
 
-        this.addCashMethods(manager, payment, paymentDto);
-        this.addBankTransferMethods(manager, payment, paymentDto);
-        this.addSanadMethods(manager, payment, paymentDto);
-        this.addPosMethods(manager, payment, paymentDto);
-        this.addChequeMethods(manager, payment, paymentDto);
-        this.addPaymentLinkMethods(manager, payment, paymentDto);
+        const payment = manager.create(ProviderPaymentEntity);
+
+        const cachEntity = this.addCashMethods(manager, paymentDto);
+        const bankTransferEntity = this.addBankTransferMethods(manager, paymentDto);
+        const sanadEntity = this.addSanadMethods(manager, payment, paymentDto);
+        const posEntity = this.addPosMethods(manager, payment, paymentDto);
+        const chequeEntity = this.addChequeMethods(manager, payment, paymentDto);
+        const paymentLinkEntity = this.addPaymentLinkMethods(manager, payment, paymentDto);
+
+        // payment.cash = cachEntity;
+        if (bankTransferEntity?.length) {
+            payment.bankTransfer = bankTransferEntity;
+        }
+        // payment.sanad = sanadEntity;
+        // payment.pos = posEntity;
+        // payment.cheque = chequeEntity;
+        // payment.paymentLink = paymentLinkEntity;
 
         return payment;
     }
 
-    private addCashMethods(manager: EntityManager, payment: ProviderPaymentEntity, dto: CreatePaymentDto) {
+    private addCashMethods(manager: EntityManager, dto: CreatePaymentDto) {
         if (dto.cash?.isEnabled) {
-            payment.cash = manager.create(PaymentCashEntity, { ...dto.cash, providerPayment: payment });
+            return manager.create(PaymentCashEntity, { ...dto.cash, });
         }
         // console.log(`payment.cash: ${payment.cash.isEnabled}`);
     }
 
-    private addBankTransferMethods(manager: EntityManager, payment: ProviderPaymentEntity, dto: CreatePaymentDto) {
-        if (dto.bankTransfer?.length) {
-            payment.bankTransfer = dto.bankTransfer
+    private addBankTransferMethods(manager: EntityManager, dto: CreatePaymentDto) {
+
+        const { bankTransfer } = dto;
+
+        // let bankTransferEntity = [];
+
+        if (bankTransfer && bankTransfer?.length) {
+            return bankTransfer
                 .filter(btDto => btDto.isEnabled)
                 .map(btDto => {
-                    const bankAccount = this.createBankAccount(manager, payment, btDto);
+                    const bankAccount = this.createBankAccount(manager, btDto);
                     return manager.create(PaymentBankTransferEntity, {
                         isEnabled: btDto.isEnabled,
-                        providerPayment: payment,
                         bankAccount,
                     });
                 });
@@ -67,7 +81,7 @@ export class PaymentService {
                             );
                         }
                     } else {
-                        bankAccount = this.createBankAccount(manager, payment, sanadDto);
+                        bankAccount = this.createBankAccount(manager, sanadDto);
                     }
 
                     return manager.create(PaymentSanadEntity, {
@@ -112,16 +126,14 @@ export class PaymentService {
         // console.log(payment.paymentLink)
     }
 
-    private createBankAccount(manager: EntityManager, payment: ProviderPaymentEntity, data: any): BankAccountEntity {
+    private createBankAccount(manager: EntityManager, data: any): BankAccountEntity {
         const bankAccount = manager.create(BankAccountEntity, {
             bankName: data.bankName,
             accountHolderName: data.accountHolderName,
             accountNumber: data.accountNumber,
             iban: data.iban,
             swiftCode: data.swiftCode,
-            providerPayment: payment,
         });
-        payment.bankAccounts.push(bankAccount);
         // console.log(bankAccount.id)
         return bankAccount;
     }

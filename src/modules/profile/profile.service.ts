@@ -6,7 +6,7 @@ import {
     HttpStatus,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository, DataSource } from 'typeorm';
+import { Repository, DataSource, EntityManager } from 'typeorm';
 import { ProfileRepository } from './profile.repository';
 import { UserRepository } from '../user/user.repository';
 import { UserEntity } from '../user/entities/user.entity';
@@ -58,19 +58,23 @@ export class ProfileService {
         // 2. build and save the full profile in one step inside a transaction
         return await this.dataSource.transaction(async (manager) => {
             const profileData = await this.buildFullProfileObject(manager, userId, profileDto);
-            const profile = await this.profileRepo.createProfile(profileData as any, manager);
+            // const profile = await this.profileRepo.createProfile(profileData as any, manager);
 
             // 3. Mark user profile as complete
+
+
+
             await this.userRepo.updateProfileCompletionStatus(userId, true, manager);
 
-            return profile;
+            return profileData;
         });
     }
 
-    private async buildFullProfileObject(manager: any, userId: string, dto: CreateFullProfileDto) {
+    private async buildFullProfileObject(manager: EntityManager, userId: string, dto: CreateFullProfileDto) {
         const { companyInfo, userInfo, services, branches, payment, compliance } = dto;
 
-        return {
+
+        return manager.save(ProviderProfileEntity, {
             user: { id: userId },
             status: { id: LOOKUP_IDS.PROFILE_STATUS.DRAFT },
             referenceNumber: await this.generateReferenceNumber(),
@@ -87,23 +91,24 @@ export class ProfileService {
             branches: this.buildBranchEntities(branches),
             payment: this.paymentService.buildPaymentEntity(manager, payment),
             compliance: manager.create(ProviderComplianceEntity, compliance),
-        };
+
+        });
     }
 
     async getMyProfile(userId: string): Promise<ProviderProfileEntity> {
         return await this.profileRepo.findProfileByUserId(userId);
     }
 
-    async updateServices(userId: string, createServiceDto: CreateServicesDto) {
-        const profile = await this.profileRepo.findProfileByUserId(userId);
+    // async updateServices(userId: string, createServiceDto: CreateServicesDto) {
+    //     const profile = await this.profileRepo.findProfileByUserId(userId);
 
-        await this.validateServiceIds(createServiceDto.selectedServiceIds);
+    //     await this.validateServiceIds(createServiceDto.selectedServiceIds);
 
-        profile.selectedServices = createServiceDto.selectedServiceIds.map(id => ({ id } as ServiceEntity));
-        await this.profileRepo.createProfile(profile);
+    //     profile.selectedServices = createServiceDto.selectedServiceIds.map(id => ({ id } as ServiceEntity));
+    //     await this.profileRepo.createProfile(profile);
 
-        return profile.selectedServices;
-    }
+    //     return profile.selectedServices;
+    // }
 
     async updateBranch(
         userId: string,

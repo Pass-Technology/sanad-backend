@@ -45,11 +45,11 @@ export class ProfileRepository {
         return profile;
     }
 
-    async createProfile(data: Partial<ProviderProfileEntity>, manager?: EntityManager): Promise<ProviderProfileEntity> {
-        const repo = manager ? manager.getRepository(ProviderProfileEntity) : this.profileRepo;
-        const profile = repo.create(data);
-        return await repo.save(profile);
-    }
+    // async createProfile(data: Partial<ProviderProfileEntity>, manager?: EntityManager): Promise<ProviderProfileEntity> {
+    //     const repo = manager ? manager.getRepository(ProviderProfileEntity) : this.profileRepo;
+    //     const profile = repo.create(data);
+    //     return await repo.save(profile);
+    // }
 
 
 
