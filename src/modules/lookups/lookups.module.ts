@@ -1,5 +1,6 @@
 import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
+import { UserModule } from '../user/user.module';
 import { CacheModule } from '@nestjs/cache-manager';
 
 import { LookUpProfileStatusEntity } from './entities/lookup-profile-status.entity';
@@ -20,6 +21,7 @@ import { LookupCacheService } from './lookup-cache.service';
             LookUpCompanyTypeEntity,
             LookupLanguagesEntity,
         ]),
+        UserModule,
     ],
     controllers: [LookUpController],
     providers: [LookUpService, LookupCacheService],
