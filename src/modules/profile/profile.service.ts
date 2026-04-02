@@ -27,7 +27,7 @@ import { PaymentChequeEntity } from './entities/payment-methods/payment-cheque.e
 import { BankAccountEntity } from './entities/payment-methods/bank-account.entity';
 import { ServingAreaEntity } from './entities/serving-area.entity';
 import { ServiceEntity } from '../service-management/entities/service.entity';
-import { LookUpService } from './lookup-tables/lookup.service';
+import { LookUpService } from '../lookups/lookup.service';
 import { ServiceManagementService } from '../service-management/service-management.service';
 import { CreateServicesDto } from './dto/step-4-services.dto';
 import { CreatePaymentDto } from './dto/step-6-payment.dto';

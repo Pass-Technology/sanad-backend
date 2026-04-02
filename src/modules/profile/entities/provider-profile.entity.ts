@@ -12,13 +12,13 @@ import { ProviderUserInfoEntity } from './provider-user-info.entity';
 import { BranchEntity } from './branch.entity';
 import { ProviderComplianceEntity } from './provider-compliance.entity';
 import { ProviderPaymentEntity } from './provider-payment.entity';
-import { LookUpProfileStatusEntity } from '../lookup-tables/entities/lookup-profile-status.entity';
-import { LookUpProviderTypeEntity } from '../lookup-tables/entities/lookup-provider-type.entity';
-import { LookUpCompanyTypeEntity } from '../lookup-tables/entities/lookup-company-type.entity';
+import { LookUpProfileStatusEntity } from '../../lookups/entities/lookup-profile-status.entity';
+import { LookUpProviderTypeEntity } from '../../lookups/entities/lookup-provider-type.entity';
+import { LookUpCompanyTypeEntity } from '../../lookups/entities/lookup-company-type.entity';
 import { BaseEntity } from '../../../database/base-entity';
 import { UserEntity } from '../../user/entities/user.entity';
 import { ServiceEntity } from '../../service-management/entities/service.entity';
-import { LookupLanguagesEntity } from '../lookup-tables/entities/lookup-languages.entity';
+import { LookupLanguagesEntity } from '../../lookups/entities/lookup-languages.entity';
 
 @Entity('provider_profiles')
 export class ProviderProfileEntity extends BaseEntity {

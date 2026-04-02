@@ -1,4 +1,4 @@
-import { CompanyTypeStaticCode } from "../../../../modules/profile/lookup-tables/enums/lookup-static-codes.enum";
+import { CompanyTypeStaticCode } from "../../../../modules/lookups/enums/lookup-static-codes.enum";
 
 export const companyTypeObjects = [
     { id: 'ce1dd6b9-608f-4e83-8a12-a211cab9b02c', labelEn: 'Private', labelAr: 'خاص', staticCode: CompanyTypeStaticCode.PRIVATE },

@@ -7,7 +7,7 @@ import { LookUpCompanyTypeEntity } from "./entities/lookup-company-type.entity";
 import { LookupLanguagesEntity } from "./entities/lookup-languages.entity";
 // import { LookUpBillingCycleEntity } from "./entities/lookup-biling-cycle.entity";
 import { LookupCacheService } from "./lookup-cache.service";
-import { localize } from '../../../shared/localization.util'
+import { localize } from '../../shared/localization.util'
 @Injectable()
 export class LookUpService {
     constructor(

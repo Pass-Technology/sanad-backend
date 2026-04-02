@@ -1,4 +1,4 @@
-import { BaseEntity } from "../../../../database/base-entity";
+import { BaseEntity } from "../../../database/base-entity";
 import { Column } from "typeorm";
 
 export abstract class LookupBaseEntity extends BaseEntity {

@@ -57,11 +57,11 @@ export async function planFeatureSeed(dataSource: DataSource) {
         const meta = featureMetadata[data.fKey];
         const planId = data.planId;
 
-        let entry = await repo.findOne({ 
-            where: { 
-                plan: { id: planId }, 
-                nameEn: meta.nameEn 
-            } 
+        let entry = await repo.findOne({
+            where: {
+                plan: { id: planId },
+                nameEn: meta.nameEn
+            }
         });
 
         const entityData = {

@@ -1,4 +1,4 @@
-import { LookUpProfileStatusEntity } from "../../../../modules/profile/lookup-tables/entities/lookup-profile-status.entity";
+import { LookUpProfileStatusEntity } from "../../../../modules/lookups/entities/lookup-profile-status.entity";
 import { DataSource, In } from "typeorm";
 import { profileStatusObjects } from "./profile-status.objects";
 

@@ -4,7 +4,6 @@ import { ProfileController } from './profile.controller';
 import { ProfileService } from './profile.service';
 import { ProfileRepository } from './profile.repository';
 
-
 import { ProviderProfileEntity } from './entities/provider-profile.entity';
 import { ProviderUserInfoEntity } from './entities/provider-user-info.entity';
 import { BranchEntity } from './entities/branch.entity';
@@ -20,44 +19,32 @@ import { PaymentChequeEntity } from './entities/payment-methods/payment-cheque.e
 import { BankAccountEntity } from './entities/payment-methods/bank-account.entity';
 import { ServiceManagementModule } from '../service-management/service-management.module';
 
-
 import { UserModule } from '../user/user.module';
-import { CacheModule } from '@nestjs/cache-manager';
-import { LookUpProfileStatusEntity } from './lookup-tables/entities/lookup-profile-status.entity';
-import { LookUpProviderTypeEntity } from './lookup-tables/entities/lookup-provider-type.entity';
-import { LookUpCompanyTypeEntity } from './lookup-tables/entities/lookup-company-type.entity';
-import { LookupLanguagesEntity } from './lookup-tables/entities/lookup-languages.entity';
-// import { LookUpBillingCycleEntity } from './lookup-tables/entities/lookup-biling-cycle.entity';
-import { LookUpController } from './lookup-tables/lookup.controller';
-import { LookUpService } from './lookup-tables/lookup.service';
-import { LookupCacheService } from './lookup-tables/lookup-cache.service';
+import { LookupsModule } from '../lookups/lookups.module';
 
 @Module({
-    imports: [CacheModule.register(),
-    TypeOrmModule.forFeature([
-        ProviderProfileEntity,
-        ProviderUserInfoEntity,
-        BranchEntity,
-        ServingAreaEntity,
-        ProviderComplianceEntity,
-        ProviderPaymentEntity,
-        PaymentCashEntity,
-        PaymentBankTransferEntity,
-        PaymentLinkEntity,
-        PaymentSanadEntity,
-        PaymentPosEntity,
-        PaymentChequeEntity,
-        BankAccountEntity,
-        LookUpProfileStatusEntity,
-        LookUpProviderTypeEntity,
-        LookUpCompanyTypeEntity,
-        LookupLanguagesEntity,
-    ]),
+    imports: [
+        TypeOrmModule.forFeature([
+            ProviderProfileEntity,
+            ProviderUserInfoEntity,
+            BranchEntity,
+            ServingAreaEntity,
+            ProviderComplianceEntity,
+            ProviderPaymentEntity,
+            PaymentCashEntity,
+            PaymentBankTransferEntity,
+            PaymentLinkEntity,
+            PaymentSanadEntity,
+            PaymentPosEntity,
+            PaymentChequeEntity,
+            BankAccountEntity,
+        ]),
         UserModule,
         ServiceManagementModule,
+        LookupsModule,
     ],
-    controllers: [ProfileController, LookUpController],
-    providers: [ProfileService, ProfileRepository, LookUpService, LookupCacheService],
-    exports: [ProfileService, LookUpService],
+    controllers: [ProfileController],
+    providers: [ProfileService, ProfileRepository],
+    exports: [ProfileService],
 })
 export class ProfileModule { }
