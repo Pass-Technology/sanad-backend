@@ -8,11 +8,11 @@ export async function servicesSeed(dataSource: DataSource) {
 
     // Categories
     const categories = [
-        { id: '111e8400-e29b-41d4-a716-446655440001', name: 'Home Services', nameAr: 'خدمات المنزل', icon: 'home' },
-        { id: '111e8400-e29b-41d4-a716-446655440002', name: 'Car Services', nameAr: 'خدمات السيارات', icon: 'directions_car' },
-        { id: '111e8400-e29b-41d4-a716-446655440003', name: 'Technical', nameAr: 'تقنية', icon: 'settings' },
-        { id: '111e8400-e29b-41d4-a716-446655440004', name: 'Medical', nameAr: 'طبي', icon: 'medical_services' },
-        { id: '111e8400-e29b-41d4-a716-446655440005', name: 'Personal', nameAr: 'بياناتي', icon: 'person' },
+        { id: '111e8400-e29b-41d4-a716-446655440001', name: 'Home Services', nameAr: 'خدمات المنزل', icon: '🏠' },
+        { id: '111e8400-e29b-41d4-a716-446655440002', name: 'Car Services', nameAr: 'خدمات السيارات', icon: '🚗' },
+        { id: '111e8400-e29b-41d4-a716-446655440003', name: 'Technical', nameAr: 'تقنية', icon: '⚙️' },
+        { id: '111e8400-e29b-41d4-a716-446655440004', name: 'Medical', nameAr: 'طبي', icon: '🏥' },
+        { id: '111e8400-e29b-41d4-a716-446655440005', name: 'Personal', nameAr: 'بياناتي', icon: '👤' },
     ];
 
     console.log('Seeding Categories...');
