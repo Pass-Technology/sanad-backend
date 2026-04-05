@@ -3,7 +3,7 @@ import { Transform } from 'class-transformer';
 import { IsBoolean, IsEnum, IsNotEmpty, IsOptional, IsString, ValidateIf } from 'class-validator';
 
 enum SettlementPreference {
-    DAILY = 'daily',
+    // DAILY = 'daily',
     WEEKLY = 'weekly',
     MONTHLY = 'monthly',
 }
@@ -21,7 +21,7 @@ export class SanadMethodDto {
     @ApiProperty({
         example: 'weekly',
         enum: SettlementPreference,
-        description: 'Settlement Preference (Daily, Weekly, Monthly)',
+        description: 'Settlement Preference (Weekly, Monthly)',
     })
     @ValidateIf(o => o.isEnabled === true)
     @Transform(({ value, obj }) => (obj.isEnabled ? value : undefined))
