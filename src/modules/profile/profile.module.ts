@@ -13,6 +13,14 @@ import { ServiceManagementModule } from '../service-management/service-managemen
 
 import { UserModule } from '../user/user.module';
 import { LookupsModule } from '../lookups/lookups.module';
+import { BankAccountEntity } from '../payment/entities/bank-account.entity';
+import { PaymentBankTransferEntity } from '../payment/entities/payment-bank-transfer.entity';
+import { PaymentCashEntity } from '../payment/entities/payment-cash.entity';
+import { PaymentChequeEntity } from '../payment/entities/payment-cheque.entity';
+import { PaymentLinkEntity } from '../payment/entities/payment-link.entity';
+import { PaymentPosEntity } from '../payment/entities/payment-pos.entity';
+import { PaymentSanadEntity } from '../payment/entities/payment-sanad.entity';
+import { ProviderPaymentEntity } from '../payment/entities/provider-payment.entity';
 
 @Module({
     imports: [
