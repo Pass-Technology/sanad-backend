@@ -21,6 +21,7 @@ import { PaymentLinkEntity } from '../payment/entities/payment-link.entity';
 import { PaymentPosEntity } from '../payment/entities/payment-pos.entity';
 import { PaymentSanadEntity } from '../payment/entities/payment-sanad.entity';
 import { ProviderPaymentEntity } from '../payment/entities/provider-payment.entity';
+import { PaymentModule } from '../payment/payment.module';
 
 @Module({
     imports: [
@@ -31,17 +32,18 @@ import { ProviderPaymentEntity } from '../payment/entities/provider-payment.enti
             ServingAreaEntity,
             ProviderComplianceEntity,
             ProviderPaymentEntity,
-            PaymentCashEntity,
-            PaymentBankTransferEntity,
-            PaymentLinkEntity,
-            PaymentSanadEntity,
-            PaymentPosEntity,
-            PaymentChequeEntity,
-            BankAccountEntity,
+            // PaymentCashEntity,
+            // PaymentBankTransferEntity,
+            // PaymentLinkEntity,
+            // PaymentSanadEntity,
+            // PaymentPosEntity,
+            // PaymentChequeEntity,
+            // BankAccountEntity,
         ]),
         UserModule,
         ServiceManagementModule,
         LookupsModule,
+        PaymentModule
     ],
     controllers: [ProfileController],
     providers: [ProfileService, ProfileRepository],
