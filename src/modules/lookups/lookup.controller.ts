@@ -1,7 +1,7 @@
 import { Controller, Get, Headers, UseGuards } from "@nestjs/common";
 import { LookUpService } from "./lookup.service";
 import { ApiBearerAuth, ApiOperation, ApiTags } from "@nestjs/swagger";
-import { JwtAuthGuard } from '../../user/guards/jwt-auth.guard';
+import { JwtAuthGuard } from '../user/guards/jwt-auth.guard';
 
 
 @ApiTags('lookup-tables')
@@ -35,3 +35,10 @@ export class LookUpController {
         return await this.lookUpService.getLanguages(lang)
     }
 }
+
+// shared lookup table
+// column => name
+// column => lookupCategoryId (FK)
+
+//look up category table
+// column => name ex: companyType id = 1

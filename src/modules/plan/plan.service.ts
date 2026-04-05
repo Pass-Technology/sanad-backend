@@ -3,7 +3,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { PlanEntity } from './entities/plan.entity';
 import { BillingCycleEntity } from './entities/billing-cycle.entity';
-import { LookUpProviderTypeEntity } from '../profile/lookup-tables/entities/lookup-provider-type.entity';
+import { LookUpProviderTypeEntity } from '../lookups/entities/lookup-provider-type.entity';
 import { localize } from '../../shared/localization.util';
 
 @Injectable()

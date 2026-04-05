@@ -1,8 +1,8 @@
 import { Entity, ManyToMany, OneToMany } from "typeorm";
 import { LookupBaseEntity } from "./lookup-base.entity";
-import { ProviderProfileEntity } from "../../entities/provider-profile.entity";
-import { BillingCycleEntity } from "../../../plan/entities/billing-cycle.entity";
-import { PlanEntity } from "../../../plan/entities/plan.entity";
+import { ProviderProfileEntity } from "../../profile/entities/provider-profile.entity";
+import { BillingCycleEntity } from "../../plan/entities/billing-cycle.entity";
+import { PlanEntity } from "../../plan/entities/plan.entity";
 
 @Entity('lookup_provider_type')
 export class LookUpProviderTypeEntity extends LookupBaseEntity {

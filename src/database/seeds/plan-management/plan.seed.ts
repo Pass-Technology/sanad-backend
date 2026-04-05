@@ -1,7 +1,7 @@
 import { DataSource } from "typeorm";
 import { PlanEntity } from "../../../modules/plan/entities/plan.entity";
-import { LookUpProviderTypeEntity } from "../../../modules/profile/lookup-tables/entities/lookup-provider-type.entity";
-import { ProviderTypeStaticCode } from "../../../modules/profile/lookup-tables/enums/lookup-static-codes.enum";
+import { LookUpProviderTypeEntity } from "../../../modules/lookups/entities/lookup-provider-type.entity";
+import { ProviderTypeStaticCode } from "../../../modules/lookups/enums/lookup-static-codes.enum";
 
 export const individualPlans = [
     {

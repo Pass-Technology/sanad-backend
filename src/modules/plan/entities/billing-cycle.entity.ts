@@ -1,7 +1,7 @@
 import { BaseEntity } from "../../../database/base-entity";
 import { Column, Entity, JoinColumn, JoinTable, ManyToMany, ManyToOne, OneToMany } from "typeorm";
 import { PlanPriceEntity } from "./plan-price.entity";
-import { LookUpProviderTypeEntity } from "../../profile/lookup-tables/entities/lookup-provider-type.entity";
+import { LookUpProviderTypeEntity } from "../../lookups/entities/lookup-provider-type.entity";
 
 @Entity('billing_cycles')
 export class BillingCycleEntity extends BaseEntity {

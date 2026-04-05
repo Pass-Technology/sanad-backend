@@ -2,7 +2,7 @@ import { BaseEntity } from "../../../database/base-entity";
 import { Column, Entity, ManyToOne, OneToMany } from "typeorm";
 import { PlanPriceEntity } from "./plan-price.entity";
 import { PlanFeatureEntity } from "./plan-feature.entity";
-import { LookUpProviderTypeEntity } from "../../profile/lookup-tables/entities/lookup-provider-type.entity";
+import { LookUpProviderTypeEntity } from "../../lookups/entities/lookup-provider-type.entity";
 
 @Entity('plans')
 export class PlanEntity extends BaseEntity {

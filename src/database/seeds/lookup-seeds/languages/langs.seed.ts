@@ -1,6 +1,6 @@
 import { DataSource } from "typeorm";
-import { LookupLanguagesEntity } from "../../../../modules/profile/lookup-tables/entities/lookup-languages.entity";
-import { LanguageStaticCode } from "src/modules/profile/lookup-tables/enums/lookup-static-codes.enum";
+import { LookupLanguagesEntity } from "../../../../modules/lookups/entities/lookup-languages.entity";
+import { LanguageStaticCode } from "src/modules/lookups/enums/lookup-static-codes.enum";
 
 export async function langsSeed(dataSource: DataSource) {
     const langRepo = dataSource.getRepository(LookupLanguagesEntity);

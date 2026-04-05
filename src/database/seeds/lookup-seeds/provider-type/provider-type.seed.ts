@@ -1,4 +1,4 @@
-import { LookUpProviderTypeEntity } from "../../../../modules/profile/lookup-tables/entities/lookup-provider-type.entity";
+import { LookUpProviderTypeEntity } from "../../../../modules/lookups/entities/lookup-provider-type.entity";
 import { DataSource, In } from "typeorm";
 import { providerTypeObjects } from "./provider-type.objects";
 

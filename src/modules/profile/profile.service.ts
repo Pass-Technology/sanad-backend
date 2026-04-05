@@ -19,7 +19,7 @@ import { BranchEntity } from './entities/branch.entity';
 import { ProviderComplianceEntity } from './entities/provider-compliance.entity';
 import { ServingAreaEntity } from './entities/serving-area.entity';
 import { ServiceEntity } from '../service-management/entities/service.entity';
-import { LookUpService } from './lookup-tables/lookup.service';
+import { LookUpService } from '../lookups/lookup.service';
 import { ServiceManagementService } from '../service-management/service-management.service';
 import { CreateServicesDto } from './dto/step-4-services.dto';
 import { PaymentService } from '../payment/payment.service';
