@@ -19,13 +19,12 @@ export class SanadMethodDto {
     isUsingBankTransferData?: boolean;
 
     @ApiProperty({
-        example: 'weekly',
-        enum: SettlementPreference,
-        description: 'Settlement Preference (Weekly, Monthly)',
+        example: '11e0a1a1-3333-4444-8888-000000000001',
+        description: 'Settlement Preference UUID (Weekly, Monthly)',
     })
     @ValidateIf(o => o.isEnabled === true)
     @Transform(({ value, obj }) => (obj.isEnabled ? value : undefined))
-    @IsEnum(SettlementPreference)
+    @IsString()
     settlementPreference: string;
 
     @ApiProperty({ example: 'Emirates NBD', description: 'Bank Name' })
