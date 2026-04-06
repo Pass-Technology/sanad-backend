@@ -84,21 +84,19 @@ export class LookUpService {
     }
 
     async getPaymentLookups(lang: string = 'en') {
-        const cacheKey = `lookup:payments:hierarchical`;
-        const cached = await this.lookupCacheService.get<any>(cacheKey);
-
+        const cacheKey = `lookup:payments`;
+        const cached = await this.lookupCacheService.get<LookUpPaymentCategoryEntity[]>(cacheKey);
+        let data: LookUpPaymentCategoryEntity[];
         if (cached) {
-            return cached;
+            data = cached;
+        } else {
+            data = await this.paymentCategoryRepo.find({
+                relations: { payments: true }
+            });
+            await this.lookupCacheService.set(cacheKey, data);
         }
 
-        const categories = await this.paymentCategoryRepo.find({
-            relations: { payments: true }
-        });
-
-        const response = localize(categories, lang);
-
-        await this.lookupCacheService.set(cacheKey, response);
-        return response;
+        return localize(data, lang);
     }
 
 
