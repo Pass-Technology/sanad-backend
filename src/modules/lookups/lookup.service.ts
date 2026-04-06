@@ -5,6 +5,7 @@ import { LookUpProfileStatusEntity } from "./entities/lookup-profile-status.enti
 import { LookUpProviderTypeEntity } from "./entities/lookup-provider-type.entity";
 import { LookUpCompanyTypeEntity } from "./entities/lookup-company-type.entity";
 import { LookupLanguagesEntity } from "./entities/lookup-languages.entity";
+import { LookUpPaymentEntity } from "./entities/lookup-payment.entity";
 // import { LookUpBillingCycleEntity } from "./entities/lookup-biling-cycle.entity";
 import { LookupCacheService } from "./lookup-cache.service";
 import { localize } from '../../shared/localization.util'
@@ -19,6 +20,8 @@ export class LookUpService {
         private readonly companyTypeRepo: Repository<LookUpCompanyTypeEntity>,
         @InjectRepository(LookupLanguagesEntity)
         private readonly languagesRepo: Repository<LookupLanguagesEntity>,
+        @InjectRepository(LookUpPaymentEntity)
+        private readonly paymentRepo: Repository<LookUpPaymentEntity>,
         // @InjectRepository(LookUpBillingCycleEntity)
         // private readonly billingCycleRepo: Repository<LookUpBillingCycleEntity>,
         private readonly lookupCacheService: LookupCacheService,
@@ -77,6 +80,23 @@ export class LookUpService {
             await this.lookupCacheService.set('lookup:languages', data);
         }
         return localize(data, lang)
+    }
+
+    async getPaymentLookups(category?: string, lang: string = 'en') {
+        const cacheKey = `lookup:payments${category ? `:${category}` : ''}`;
+        const cached = await this.lookupCacheService.get<LookUpPaymentEntity[]>(cacheKey);
+        let data: LookUpPaymentEntity[];
+
+        if (cached) {
+            data = cached;
+        } else {
+            data = await this.paymentRepo.find({
+                where: category ? { category } : {}
+            });
+            await this.lookupCacheService.set(cacheKey, data);
+        }
+
+        return data.map(item => this.localize(item, lang));
     }
 
 

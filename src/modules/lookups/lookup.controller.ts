@@ -1,6 +1,6 @@
-import { Controller, Get, Headers, UseGuards } from "@nestjs/common";
+import { Controller, Get, Headers, Query, UseGuards } from "@nestjs/common";
 import { LookUpService } from "./lookup.service";
-import { ApiBearerAuth, ApiOperation, ApiTags } from "@nestjs/swagger";
+import { ApiBearerAuth, ApiOperation, ApiQuery, ApiTags } from "@nestjs/swagger";
 import { JwtAuthGuard } from '../user/guards/jwt-auth.guard';
 
 
@@ -33,6 +33,16 @@ export class LookUpController {
     @ApiOperation({ summary: 'get languages' })
     async getLanguages(@Headers('accept-language') lang: string = 'en') {
         return await this.lookUpService.getLanguages(lang)
+    }
+
+    @Get('payments')
+    @ApiOperation({ summary: 'get payment lookups (Category can be CARD_TYPE, POS_PROVIDER, SETTLEMENT_PREFERENCE)' })
+    @ApiQuery({ name: 'category', required: false, type: String })
+    async getPaymentLookups(
+        @Headers('accept-language') lang: string = 'en',
+        @Query('category') category?: string
+    ) {
+        return await this.lookUpService.getPaymentLookups(category, lang)
     }
 }
 

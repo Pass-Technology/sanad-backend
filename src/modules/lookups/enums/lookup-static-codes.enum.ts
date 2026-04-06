@@ -67,3 +67,28 @@ export enum LanguageStaticCode {
     KURDISH = 'KURDISH',
     FILIPINO = 'FILIPINO',
 }
+
+// payment lookup table
+
+export enum PaymentLookupCategory {
+    SETTLEMENT_PREFERENCE = 'SETTLEMENT_PREFERENCE',
+    POS_PROVIDER = 'POS_PROVIDER',
+    CARD_TYPE = 'CARD_TYPE',
+}
+
+export enum SettlementPreferenceStaticCode {
+    WEEKLY = 'WEEKLY',
+    MONTHLY = 'MONTHLY',
+}
+
+export enum POSProviderStaticCode {
+    PAYTAB = 'PAYTAB',
+    STRIPE = 'STRIPE',
+}
+
+export enum CardTypeStaticCode {
+    VISA = 'VISA',
+    MASTERCARD = 'MASTERCARD',
+    AMERICAN_EXPRESS = 'AMERICAN_EXPRESS',
+    MADA = 'MADA',
+}
