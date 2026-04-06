@@ -8,6 +8,7 @@ import { LookUpProviderTypeEntity } from './entities/lookup-provider-type.entity
 import { LookUpCompanyTypeEntity } from './entities/lookup-company-type.entity';
 import { LookupLanguagesEntity } from './entities/lookup-languages.entity';
 import { LookUpPaymentEntity } from './entities/lookup-payment.entity';
+import { LookUpPaymentCategoryEntity } from './entities/lookup-payment-category.entity';
 
 import { LookUpController } from './lookup.controller';
 import { LookUpService } from './lookup.service';
@@ -22,6 +23,7 @@ import { LookupCacheService } from './lookup-cache.service';
             LookUpCompanyTypeEntity,
             LookupLanguagesEntity,
             LookUpPaymentEntity,
+            LookUpPaymentCategoryEntity,
         ]),
         UserModule,
     ],

@@ -1,14 +1,15 @@
 import { Injectable } from "@nestjs/common";
 import { InjectRepository } from "@nestjs/typeorm";
-import { EntityManager, Repository } from "typeorm";
+import { Repository } from "typeorm";
 import { LookUpProfileStatusEntity } from "./entities/lookup-profile-status.entity";
 import { LookUpProviderTypeEntity } from "./entities/lookup-provider-type.entity";
 import { LookUpCompanyTypeEntity } from "./entities/lookup-company-type.entity";
 import { LookupLanguagesEntity } from "./entities/lookup-languages.entity";
 import { LookUpPaymentEntity } from "./entities/lookup-payment.entity";
-// import { LookUpBillingCycleEntity } from "./entities/lookup-biling-cycle.entity";
+import { LookUpPaymentCategoryEntity } from "./entities/lookup-payment-category.entity";
 import { LookupCacheService } from "./lookup-cache.service";
 import { localize } from '../../shared/localization.util'
+
 @Injectable()
 export class LookUpService {
     constructor(
@@ -22,8 +23,8 @@ export class LookUpService {
         private readonly languagesRepo: Repository<LookupLanguagesEntity>,
         @InjectRepository(LookUpPaymentEntity)
         private readonly paymentRepo: Repository<LookUpPaymentEntity>,
-        // @InjectRepository(LookUpBillingCycleEntity)
-        // private readonly billingCycleRepo: Repository<LookUpBillingCycleEntity>,
+        @InjectRepository(LookUpPaymentCategoryEntity)
+        private readonly paymentCategoryRepo: Repository<LookUpPaymentCategoryEntity>,
         private readonly lookupCacheService: LookupCacheService,
     ) { }
 
@@ -82,31 +83,27 @@ export class LookUpService {
         return localize(data, lang)
     }
 
-    async getPaymentLookups(category?: string, lang: string = 'en') {
-        const cacheKey = `lookup:payments${category ? `:${category}` : ''}`;
-        const cached = await this.lookupCacheService.get<LookUpPaymentEntity[]>(cacheKey);
-        let data: LookUpPaymentEntity[];
+    async getPaymentLookups(lang: string = 'en') {
+        const cacheKey = `lookup:payments:hierarchical`;
+        const cached = await this.lookupCacheService.get<any>(cacheKey);
 
         if (cached) {
-            data = cached;
-        } else {
-            data = await this.paymentRepo.find({
-                where: category ? { category } : {}
-            });
-            await this.lookupCacheService.set(cacheKey, data);
+            return cached;
         }
 
-        return data.map(item => this.localize(item, lang));
+        const categories = await this.paymentCategoryRepo.find({
+            relations: { payments: true }
+        });
+
+        const response = localize(categories, lang);
+
+        await this.lookupCacheService.set(cacheKey, response);
+        return response;
     }
 
 
     private localize(entity: any, lang: string) {
-        const { labelEn, labelAr, badgeEn, badgeAr, ...rest } = entity;
-        return {
-            ...rest,
-            label: lang === 'ar' ? labelAr : labelEn,
-            ...(badgeEn !== undefined && { badge: lang === 'ar' ? badgeAr : badgeEn })
-        };
+        return localize(entity, lang);
     }
 
     async validateProviderTypeId(id: string): Promise<boolean> {

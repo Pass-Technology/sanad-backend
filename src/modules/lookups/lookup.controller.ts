@@ -36,13 +36,11 @@ export class LookUpController {
     }
 
     @Get('payments')
-    @ApiOperation({ summary: 'get payment lookups (Category can be CARD_TYPE, POS_PROVIDER, SETTLEMENT_PREFERENCE)' })
-    @ApiQuery({ name: 'category', required: false, type: String })
+    @ApiOperation({ summary: 'get payment lookups' })
     async getPaymentLookups(
         @Headers('accept-language') lang: string = 'en',
-        @Query('category') category?: string
     ) {
-        return await this.lookUpService.getPaymentLookups(category, lang)
+        return await this.lookUpService.getPaymentLookups(lang)
     }
 }
 
