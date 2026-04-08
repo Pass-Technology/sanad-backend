@@ -68,10 +68,22 @@ export class ServiceManagementService {
     }
 
     async getRequestedServices(userId: string) {
-        return await this.requestServiceRepo.find({
+        const response = await this.requestServiceRepo.find({
             where: { user: { id: userId } },
             // order: { createdAt: 'DESC' }
         });
+        if (!response) {
+            return {
+                message: 'No requested services found'
+            }
+        }
+        return response.map((e) => {
+            return {
+                name: e.nameAr ? e.nameAr : e.nameEn,
+                description: e.description ? e.description : ""
+            }
+        })
+
     }
 
 
