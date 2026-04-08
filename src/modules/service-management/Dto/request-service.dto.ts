@@ -1,15 +1,11 @@
 import { IsNotEmpty, IsOptional, IsString } from "class-validator";
 
 export class RequestServiceDto {
-    @IsOptional()
+    @IsNotEmpty()
     @IsString()
-    nameAr?: string;
+    name: string;
 
     @IsOptional()
     @IsString()
-    nameEn?: string;
-
-    @IsOptional()
-    @IsString()
-    description?: string;
+    categoryId?: string;
 }

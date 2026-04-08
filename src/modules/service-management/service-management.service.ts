@@ -1,4 +1,4 @@
-import { BadRequestException, Injectable } from '@nestjs/common';
+import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository, ILike } from 'typeorm';
 import { CategoryEntity } from './entities/category.entity';
@@ -61,8 +61,18 @@ export class ServiceManagementService {
     // request service endpoints
 
     async requestService(requestServiceDto: RequestServiceDto, userId: string) {
+        let category: CategoryEntity | null = null;
+
+        if (requestServiceDto.categoryId) {
+            category = await this.categoryRepo.findOneBy({ id: requestServiceDto.categoryId });
+            if (!category) {
+                throw new NotFoundException('Category not found');
+            }
+        }
+
         const requestService = this.requestServiceRepo.create({
-            ...requestServiceDto,
+            name: requestServiceDto.name,
+            ...(category && { category }),
             user: { id: userId }
         });
         return this.requestServiceRepo.save(requestService);
@@ -75,7 +85,8 @@ export class ServiceManagementService {
 
         return response.map((e) => {
             return {
-                name: e.nameAr ? e.nameAr : e.nameEn,
+                id: e.id,
+                name: e.name,
             } as RequestServiceResponseDto
         })
     }
