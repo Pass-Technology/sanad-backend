@@ -48,7 +48,7 @@ export class ServiceManagementController {
         @Body() requestServiceDto: RequestServiceDto,
         @Request() req: { user: UserInfoResponseWithTokensDto }) {
         // console.log(req.user.userId)
-        return this.serviceManagementService.reques\tService(requestServiceDto, req.user.userId);
+        return this.serviceManagementService.requestService(requestServiceDto, req.user.userId);
     }
 
     @Get('requested-services')
