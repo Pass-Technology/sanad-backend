@@ -5,6 +5,7 @@ import { BaseEntity } from '../../../database/base-entity';
 import { ProviderProfileEntity } from '../../profile/entities/provider-profile.entity';
 import { OtpEntity } from '../../otp/entities/otp.entity';
 import { SubscriptionEntity } from '../../../subscription/entities/subscription.entity';
+import { RequestServiceEntity } from '../../../modules/service-management/entities/request-service.entity';
 
 
 
@@ -45,5 +46,8 @@ export class UserEntity extends BaseEntity {
 
     @OneToMany(() => SubscriptionEntity, (subscription) => subscription.user)
     subscriptions: SubscriptionEntity[];
+
+    @OneToMany(() => RequestServiceEntity, (requestService) => requestService.user)
+    requestServices: RequestServiceEntity[];
 }
 

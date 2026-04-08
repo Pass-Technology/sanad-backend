@@ -5,6 +5,8 @@ import { CategoryEntity } from './entities/category.entity';
 import { ServiceEntity } from './entities/service.entity';
 
 import { localize } from '../../shared/localization.util'
+import { RequestServiceDto } from './Dto/request-service.dto';
+import { RequestServiceEntity } from './entities/request-service.entity';
 @Injectable()
 export class ServiceManagementService {
     constructor(
@@ -12,6 +14,8 @@ export class ServiceManagementService {
         private readonly categoryRepo: Repository<CategoryEntity>,
         @InjectRepository(ServiceEntity)
         private readonly serviceRepo: Repository<ServiceEntity>,
+        @InjectRepository(RequestServiceEntity)
+        private readonly requestServiceRepo: Repository<RequestServiceEntity>,
     ) { }
 
     async findAllCategories(lang: string = 'en', searchString?: string) {
@@ -53,6 +57,23 @@ export class ServiceManagementService {
         return this.localize(service, lang);
     }
 
+    // request service endpoints
+
+    async requestService(requestServiceDto: RequestServiceDto, userId: string) {
+        const requestService = this.requestServiceRepo.create({
+            ...requestServiceDto,
+            user: { id: userId }
+        });
+        return this.requestServiceRepo.save(requestService);
+    }
+
+    async getRequestedServices(userId: string) {
+        return await this.requestServiceRepo.find({
+            where: { user: { id: userId } },
+            // order: { createdAt: 'DESC' }
+        });
+    }
+
 
     private localize(entity: any, lang: string) {
         if (!entity) return null;
@@ -73,6 +94,8 @@ export class ServiceManagementService {
 
         return localized;
     }
+
+
 }
 
 

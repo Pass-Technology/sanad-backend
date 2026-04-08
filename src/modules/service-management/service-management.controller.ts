@@ -1,6 +1,9 @@
-import { Controller, Get, Param, Headers, Query } from '@nestjs/common';
-import { ApiOperation, ApiTags, ApiParam, ApiQuery } from '@nestjs/swagger';
+import { Controller, Get, Param, Headers, Query, Body, Post, UseGuards, Request } from '@nestjs/common';
+import { ApiOperation, ApiTags, ApiParam, ApiQuery, ApiBearerAuth } from '@nestjs/swagger';
 import { ServiceManagementService } from './service-management.service';
+import { RequestServiceDto } from './Dto/request-service.dto';
+import { JwtAuthGuard } from '../user/guards/jwt-auth.guard';
+import { UserInfoResponseWithTokensDto } from '../user/dto/user-info-response.dto';
 
 @ApiTags('Service Management')
 @Controller('service-management')
@@ -35,5 +38,24 @@ export class ServiceManagementController {
         @Headers('accept-language') lang: string = 'en'
     ) {
         return this.serviceManagementService.findServiceById(serviceId, lang);
+    }
+
+    @Post('request-service')
+    @UseGuards(JwtAuthGuard)
+    @ApiBearerAuth()
+    @ApiOperation({ summary: 'Request a new service' })
+    async requestService(
+        @Body() requestServiceDto: RequestServiceDto,
+        @Request() req: { user: UserInfoResponseWithTokensDto }) {
+        // console.log(req.user.userId)
+        return this.serviceManagementService.requestService(requestServiceDto, req.user.userId);
+    }
+
+    @Get('requested-services')
+    @UseGuards(JwtAuthGuard)
+    @ApiBearerAuth()
+    @ApiOperation({ summary: 'Get all requested services by user' })
+    async getRequestedServices(@Request() req: { user: UserInfoResponseWithTokensDto }) {
+        return await this.serviceManagementService.getRequestedServices(req.user.userId);
     }
 }
