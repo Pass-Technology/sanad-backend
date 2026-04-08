@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { BadRequestException, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository, ILike } from 'typeorm';
 import { CategoryEntity } from './entities/category.entity';
@@ -7,6 +7,7 @@ import { ServiceEntity } from './entities/service.entity';
 import { localize } from '../../shared/localization.util'
 import { RequestServiceDto } from './Dto/request-service.dto';
 import { RequestServiceEntity } from './entities/request-service.entity';
+import { RequestServiceResponseDto } from './Dto/request-service-response.dto';
 @Injectable()
 export class ServiceManagementService {
     constructor(
@@ -67,23 +68,16 @@ export class ServiceManagementService {
         return this.requestServiceRepo.save(requestService);
     }
 
-    async getRequestedServices(userId: string) {
+    async getRequestedServices(userId: string): Promise<RequestServiceResponseDto[]> {
         const response = await this.requestServiceRepo.find({
-            where: { user: { id: userId } },
-            // order: { createdAt: 'DESC' }
+            where: { user: { id: userId } }
         });
-        if (!response) {
-            return {
-                message: 'No requested services found'
-            }
-        }
+
         return response.map((e) => {
             return {
                 name: e.nameAr ? e.nameAr : e.nameEn,
-                description: e.description ? e.description : ""
-            }
+            } as RequestServiceResponseDto
         })
-
     }
 
 
