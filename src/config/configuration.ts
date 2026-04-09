@@ -2,12 +2,14 @@ import { ConfigType } from '@nestjs/config';
 import { appConfig } from './app/app.config';
 import { databaseConfig } from './database/database.config';
 import { authConfig } from './auth/auth.config';
+import { mailConfig } from './mail/mail.config';
 
-export const configurations = [appConfig, databaseConfig, authConfig];
+export const configurations = [appConfig, databaseConfig, authConfig, mailConfig];
 
 export type RootConfig = {
 
     app: ConfigType<typeof appConfig>;
     database: ConfigType<typeof databaseConfig>;
     auth: ConfigType<typeof authConfig>;
+    mail: ConfigType<typeof mailConfig>;
 };

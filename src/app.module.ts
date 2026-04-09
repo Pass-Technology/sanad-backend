@@ -10,6 +10,7 @@ import { PlanModule } from './modules/plan/plan.module';
 import { SubscriptionModule } from './subscription/subscription.module';
 import { ServiceManagementModule } from './modules/service-management/service-management.module';
 import { PaymentModule } from './modules/payment/payment.module';
+import { MailModule } from './modules/mail/mail.module';
 
 
 @Module({
@@ -24,6 +25,7 @@ import { PaymentModule } from './modules/payment/payment.module';
     SubscriptionModule,
     ServiceManagementModule,
     PaymentModule,
+    MailModule,
   ],
   controllers: [HealthController],
 })

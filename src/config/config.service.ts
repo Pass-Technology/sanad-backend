@@ -26,4 +26,11 @@ export class AppConfigService {
     get auth() {
         return this.configService.get('auth', { infer: true })!;
     }
+
+    /**
+     * Mail configuration
+     */
+    get mail() {
+        return this.configService.get('mail', { infer: true })!;
+    }
 }
