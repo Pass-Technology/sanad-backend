@@ -11,7 +11,7 @@ import { SubscriptionModule } from './subscription/subscription.module';
 import { ServiceManagementModule } from './modules/service-management/service-management.module';
 import { PaymentModule } from './modules/payment/payment.module';
 import { MailModule } from './modules/mail/mail.module';
-
+import { TemplateModule } from './modules/template/template.module';
 
 @Module({
   imports: [
@@ -26,6 +26,7 @@ import { MailModule } from './modules/mail/mail.module';
     ServiceManagementModule,
     PaymentModule,
     MailModule,
+    TemplateModule,
   ],
   controllers: [HealthController],
 })

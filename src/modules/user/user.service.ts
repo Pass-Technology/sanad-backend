@@ -14,6 +14,7 @@ import { ResetPasswordDto } from './dto/reset-password.dto';
 import { SendOtpDto } from '../otp/dto/send-otp.dto';
 import { OtpService } from '../otp/otp.service';
 import { OtpRepository } from '../otp/otp.repository';
+import { MailService } from '../mail/mail.service';
 import { UserInfoResponseWithTokensDto } from './dto/user-info-response.dto';
 import { OtpAuthDto } from './dto/auth-otp.dto';
 import { UserPayloadType } from './types/user-payload.type';
@@ -30,6 +31,7 @@ export class UserService {
     @Inject(forwardRef(() => OtpService))
     private readonly otpService: OtpService,
     private readonly otpRepository: OtpRepository,
+    private readonly mailService: MailService,
   ) { }
 
 
@@ -50,6 +52,18 @@ export class UserService {
     });
 
     const { otp } = await this.otpService.createOtpForUser(user.id, identifier, OtpPurposeEnum.REGISTER);
+
+    if (identifierType === UserIdentifierType.EMAIL) {
+      this.mailService.sendMail({
+        to: identifier,
+        subject: 'Sanad - Welcome to Sanad App!',
+        template: 'otp-arabic',
+        context: {
+          OTP_CODE: otp.toString(),
+          LOGO_URL: 'sanad.png',
+        },
+      }).catch(err => console.error('Failed to send registration email', err));
+    }
 
     return {
       message: 'Registration successful. Please verify your OTP.',

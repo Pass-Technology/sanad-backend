@@ -1,9 +1,8 @@
 import { Module } from '@nestjs/common';
 import { MailerModule } from '@nestjs-modules/mailer';
-import { HandlebarsAdapter } from '@nestjs-modules/mailer/adapters/handlebars.adapter';
 import { AppConfigService } from 'src/config/config.service';
-import { join } from 'path';
 import { MailService } from './mail.service';
+import { TemplateModule } from '../template/template.module';
 
 @Module({
     imports: [
@@ -25,15 +24,9 @@ import { MailService } from './mail.service';
                 defaults: {
                     from: configService.mail.from,
                 },
-                template: {
-                    dir: join(process.cwd(), 'src/modules/mail/templates'),
-                    adapter: new HandlebarsAdapter(),
-                    options: {
-                        strict: true,
-                    },
-                },
             }),
         }),
+        TemplateModule
     ],
     providers: [MailService],
     exports: [MailService],
