@@ -2,28 +2,37 @@ import {
     Injectable,
     NotFoundException,
     BadRequestException,
-    HttpException,
-    HttpStatus,
+    // HttpException,
+    // HttpStatus,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository, DataSource, EntityManager } from 'typeorm';
 import { ProfileRepository } from './profile.repository';
 import { UserRepository } from '../user/user.repository';
-import { UserEntity } from '../user/entities/user.entity';
-import { CreateBranchDto } from './dto/step-3-branches.dto';
+// import { UserEntity } from '../user/entities/user.entity';
+// import { CreateBranchDto } from './dto/step-3-branches.dto';
 import { CreateFullProfileDto } from './dto/create-full-profile.dto';
+import {
+    UpdateCompanyInfoDto,
+    UpdateUserInfoDto,
+    UpdateComplianceDto,
+    UpdateServicesDto,
+    UpdateBranchDto,
+} from './dto/update-profile.dto';
 
 import { ProviderProfileEntity } from './entities/provider-profile.entity';
 import { ProviderUserInfoEntity } from './entities/provider-user-info.entity';
 import { BranchEntity } from './entities/branch.entity';
 import { ProviderComplianceEntity } from './entities/provider-compliance.entity';
 import { ServingAreaEntity } from './entities/serving-area.entity';
-import { ServiceEntity } from '../service-management/entities/service.entity';
+// import { ServiceEntity } from '../service-management/entities/service.entity';
 import { LookUpService } from '../lookups/lookup.service';
 import { ServiceManagementService } from '../service-management/service-management.service';
-import { CreateServicesDto } from './dto/step-4-services.dto';
+// import { CreateServicesDto } from './dto/step-4-services.dto';
 import { PaymentService } from '../payment/payment.service';
 import { LOOKUP_IDS } from '../../shared/constants/lookup-ids';
+import { UpdatePaymentDto } from '../payment/dto/update-payment.dto';
+import { CreateBranchDto } from './dto/step-3-branches.dto';
 
 @Injectable()
 export class ProfileService {
@@ -61,9 +70,6 @@ export class ProfileService {
             // const profile = await this.profileRepo.createProfile(profileData as any, manager);
 
             // 3. Mark user profile as complete
-
-
-
             await this.userRepo.updateProfileCompletionStatus(userId, true, manager);
 
             return profileData;
@@ -99,60 +105,74 @@ export class ProfileService {
         return await this.profileRepo.findProfileByUserId(userId);
     }
 
-    // async updateServices(userId: string, createServiceDto: CreateServicesDto) {
-    //     const profile = await this.profileRepo.findProfileByUserId(userId);
+    async updateCompanyInfo(userId: string, updateCompanyInfoDto: UpdateCompanyInfoDto) {
+        const profile = await this.profileRepo.findProfileByUserId(userId);
 
-    //     await this.validateServiceIds(createServiceDto.selectedServiceIds);
+        if (updateCompanyInfoDto.languageIds) {
+            profile.languages = updateCompanyInfoDto.languageIds.map(id => ({ id } as any));
+            delete updateCompanyInfoDto.languageIds;
+        }
 
-    //     profile.selectedServices = createServiceDto.selectedServiceIds.map(id => ({ id } as ServiceEntity));
-    //     await this.profileRepo.createProfile(profile);
+        Object.assign(profile, updateCompanyInfoDto);
+        return await this.dataSource.manager.save(ProviderProfileEntity, profile);
+    }
 
-    //     return profile.selectedServices;
-    // }
+    async updateUserInfo(userId: string, updateUserInfoInfoDto: UpdateUserInfoDto) {
+        const profile = await this.profileRepo.findProfileByUserId(userId);
+        const userInfo = profile.userInfo;
+
+        Object.assign(userInfo, updateUserInfoInfoDto);
+        return await this.userInfoRepo.save(userInfo);
+    }
+
+    async updateServices(userId: string, updateServiceDto: UpdateServicesDto) {
+        const profile = await this.profileRepo.findProfileByUserId(userId);
+
+        if (updateServiceDto.selectedServiceIds) {
+            await this.validateServiceIds(updateServiceDto.selectedServiceIds);
+            profile.selectedServices = updateServiceDto.selectedServiceIds.map(id => ({ id } as any));
+        }
+
+        return await this.dataSource.manager.save(ProviderProfileEntity, profile);
+    }
+
+    async updateCompliance(userId: string, updateComplianceDto: UpdateComplianceDto) {
+        const profile = await this.profileRepo.findProfileByUserId(userId);
+        const compliance = profile.compliance;
+
+        Object.assign(compliance, updateComplianceDto);
+        return await this.dataSource.manager.save(ProviderComplianceEntity, compliance);
+    }
+
+    async updatePayment(userId: string, updatePaymentDto: UpdatePaymentDto) {
+        return await this.paymentService.syncPayment(userId, updatePaymentDto);
+    }
 
     async updateBranch(
         userId: string,
         branchId: string,
-        dto: CreateBranchDto,
+        dto: UpdateBranchDto,
     ) {
-        const profile = await this.profileRepo.findProfileByUserId(userId);
         const branch = await this.profileRepo.findBranchById(branchId);
+        if (!branch) throw new NotFoundException('Branch not found');
 
-        if (!branch) {
-            throw new NotFoundException('Branch not found');
-        }
+        const updatedData = this.buildBranchEntity(dto);
+        Object.assign(branch, updatedData);
 
-        // Update branch fields
-        await this.profileRepo.updateBranch(branchId, {
-            branchName: dto.branchName,
-            branchManagerName: dto.branchManagerName,
-            branchAddress: dto.branchAddress,
-            city: dto.city,
-            branchPhone: dto.branchPhone ?? null,
-            managerPhone: dto.managerPhone ?? null,
-            googleMapsLink: dto.googleMapsLink ?? null,
-            socialMediaLink: dto.socialMediaLink ?? null,
-        });
+        const updatedBranch = await this.dataSource.manager.save(BranchEntity, branch);
 
-        // Replace serving areas
-        await this.profileRepo.deleteServingAreasByBranchId(branchId);
-        if (dto.servingAreas?.length) {
-            await this.profileRepo.saveServingAreas(
-                dto.servingAreas.map((area) => ({
-                    branchId,
-                    radiusKm: area.radiusKm,
-                    phone: area.phone ?? null,
-                    mapLink: area.mapLink ?? null,
-                    lat: area.lat ?? null,
-                    lng: area.lng ?? null,
-                })),);
-        }
-
-        const updatedBranch = await this.profileRepo.findBranchById(branchId);
         return {
-            statusId: profile.status.id,
+            status: 'updated',
             data: updatedBranch,
         };
+    }
+
+    async addBranch(userId: string, addBranchDto: CreateBranchDto) {
+        const profile = await this.profileRepo.findProfileByUserId(userId);
+        const newBranch = this.buildBranchEntity(addBranchDto);
+        newBranch.providerProfile = profile;
+
+        return await this.dataSource.manager.save(BranchEntity, newBranch);
     }
 
     async deleteBranch(
@@ -212,28 +232,30 @@ export class ProfileService {
 
     // build branch entities
     private buildBranchEntities(branchesData: any): BranchEntity[] {
-        return branchesData.branches.map((branchDto: any) => {
-            const servingAreas = (branchDto.servingAreas ?? []).map((area: any) =>
-                this.servingAreaRepo.create({
-                    radiusKm: area.radiusKm,
-                    phone: area.phone ?? null,
-                    mapLink: area.mapLink ?? null,
-                    lat: area.lat ?? null,
-                    lng: area.lng ?? null,
-                })
-            );
+        return branchesData.branches.map((branchDto: any) => this.buildBranchEntity(branchDto));
+    }
 
-            return this.branchRepo.create({
-                branchName: branchDto.branchName,
-                branchManagerName: branchDto.branchManagerName,
-                branchAddress: branchDto.branchAddress,
-                city: branchDto.city,
-                branchPhone: branchDto.branchPhone ?? null,
-                managerPhone: branchDto.managerPhone ?? null,
-                googleMapsLink: branchDto.googleMapsLink ?? null,
-                socialMediaLink: branchDto.socialMediaLink ?? null,
-                servingAreas,
-            });
+    private buildBranchEntity(branchDto: any): BranchEntity {
+        const servingAreas = (branchDto.servingAreas ?? []).map((area: any) =>
+            this.servingAreaRepo.create({
+                radiusKm: area.radiusKm,
+                phone: area.phone ?? null,
+                mapLink: area.mapLink ?? null,
+                lat: area.lat ?? null,
+                lng: area.lng ?? null,
+            })
+        );
+
+        return this.branchRepo.create({
+            branchName: branchDto.branchName,
+            branchManagerName: branchDto.branchManagerName,
+            branchAddress: branchDto.branchAddress,
+            city: branchDto.city,
+            branchPhone: branchDto.branchPhone ?? null,
+            managerPhone: branchDto.managerPhone ?? null,
+            googleMapsLink: branchDto.googleMapsLink ?? null,
+            socialMediaLink: branchDto.socialMediaLink ?? null,
+            servingAreas,
         });
     }
 

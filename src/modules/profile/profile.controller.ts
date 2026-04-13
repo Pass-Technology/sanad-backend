@@ -5,7 +5,8 @@ import {
     Get,
     Param,
     Post,
-    Put,
+    // Put,
+    Patch,
     Request,
     UseGuards,
     UseInterceptors,
@@ -20,10 +21,17 @@ import {
 import { JwtAuthGuard } from '../user/guards/jwt-auth.guard';
 import { UserInfoResponseWithTokensDto } from '../user/dto/user-info-response.dto';
 import { ProfileService } from './profile.service';
-import { CreateBranchDto } from './dto/step-3-branches.dto';
 import { CreateFullProfileDto } from './dto/create-full-profile.dto';
-import { CreateServicesDto } from './dto/step-4-services.dto';
-import { CurrentUser } from 'src/shared/decorators/current-user.decorator';
+import {
+    UpdateCompanyInfoDto,
+    UpdateUserInfoDto,
+    UpdateComplianceDto,
+    UpdateServicesDto,
+    UpdateBranchDto,
+} from './dto/update-profile.dto';
+import { CreateBranchDto } from './dto/step-3-branches.dto';
+// import { CurrentUser } from 'src/shared/decorators/current-user.decorator';
+import { UpdatePaymentDto } from '../payment/dto/update-payment.dto';
 
 @ApiTags('profile')
 @ApiBearerAuth()
@@ -42,39 +50,89 @@ export class ProfileController {
         return await this.profileService.submitFullProfile(req.user.userId, dto);
     }
 
-
-
     @Get('me')
     @ApiOperation({ summary: 'Get full completed profile' })
     async getMyProfile(@Request() req: { user: UserInfoResponseWithTokensDto }) {
         return await this.profileService.getMyProfile(req.user.userId);
     }
 
-
-    // update services only in case the user wants to update services
-    // should also add new services?
-    // @Put('setup/step-4/services')
-    // @ApiOperation({ summary: 'Update selected services on an existing profile' })
-    // async updateServices(
-    //     @CurrentUser() user: UserInfoResponseWithTokensDto,
-    //     @Body() createServiceDto: CreateServicesDto,
-    // ) {
-    //     return await this.profileService.updateServices(user.userId, createServiceDto);
-    // }
-
-
-    @Put('setup/step-3/branches/:id')
-    @ApiOperation({ summary: 'Update an existing branch' })
-    @ApiParam({ name: 'id', description: 'Branch UUID' })
-    async updateBranch(
+    @Patch('update/company-info')
+    @ApiOperation({ summary: 'Update company profile info' })
+    async updateCompanyInfo(
         @Request() req: { user: UserInfoResponseWithTokensDto },
-        @Param('id') branchId: string,
-        @Body() dto: CreateBranchDto,
+        @Body() dto: UpdateCompanyInfoDto,
     ) {
-        return await this.profileService.updateBranch(req.user.userId, branchId, dto);
+        return await this.profileService.updateCompanyInfo(req.user.userId, dto);
     }
 
-    @Delete('setup/step-3/branches/:id')
+    @Patch('update/user-info')
+    @ApiOperation({ summary: 'Update provider user personal info' })
+    async updateUserInfo(
+        @Request() req: { user: UserInfoResponseWithTokensDto },
+        @Body() dto: UpdateUserInfoDto,
+    ) {
+        return await this.profileService.updateUserInfo(req.user.userId, dto);
+    }
+
+    @Patch('update/services')
+    @ApiOperation({ summary: 'Update selected services' })
+    async updateServices(
+        @Request() req: { user: UserInfoResponseWithTokensDto },
+        @Body() dto: UpdateServicesDto,
+    ) {
+        return await this.profileService.updateServices(req.user.userId, dto);
+    }
+
+    @Patch('update/compliance')
+    @ApiOperation({ summary: 'Update compliance documents and info' })
+    async updateCompliance(
+        @Request() req: { user: UserInfoResponseWithTokensDto },
+        @Body() dto: UpdateComplianceDto,
+    ) {
+        return await this.profileService.updateCompliance(req.user.userId, dto);
+    }
+
+    @Patch('update/payment')
+    @ApiOperation({ summary: 'Update payment methods and details' })
+    async updatePayment(
+        @Request() req: { user: UserInfoResponseWithTokensDto },
+        @Body() dto: UpdatePaymentDto,
+    ) {
+        return await this.profileService.updatePayment(req.user.userId, dto);
+    }
+
+    @Patch('update/branches/:id')
+    @ApiOperation({ summary: 'Partial update of an existing branch' })
+    @ApiParam({ name: 'id', description: 'Branch UUID' })
+    async patchBranch(
+        @Request() req: { user: UserInfoResponseWithTokensDto },
+        @Param('id') branchId: string,
+        @Body() dto: UpdateBranchDto,
+    ) {
+        return await this.profileService.updateBranch(req.user.userId, branchId, dto as any);
+    }
+
+    @Post('add-new-branch')
+    @ApiOperation({ summary: 'Add a new branch to the profile' })
+    async addBranch(
+        @Request() req: { user: UserInfoResponseWithTokensDto },
+        @Body() addBranchDto: CreateBranchDto,
+    ) {
+        return await this.profileService.addBranch(req.user.userId, addBranchDto);
+    }
+
+    // @Put('setup/step-3/branches/:id')
+    // @ApiOperation({ summary: 'Update an existing branch (Full replacement)' })
+    // @ApiParam({ name: 'id', description: 'Branch UUID' })
+    // async updateBranch(
+    //     @Request() req: { user: UserInfoResponseWithTokensDto },
+    //     @Param('id') branchId: string,
+    //     @Body() dto: CreateBranchDto,
+    // ) {
+    //     return await this.profileService.updateBranch(req.user.userId, branchId, dto);
+    // }
+
+    @Delete('delete-branch/:id')
     @ApiOperation({ summary: 'Delete a branch' })
     @ApiParam({ name: 'id', description: 'Branch UUID' })
     async deleteBranch(

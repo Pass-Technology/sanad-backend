@@ -41,7 +41,10 @@ export class BranchEntity extends BaseEntity {
     @Column({ type: 'varchar', nullable: true })
     socialMediaLink: string | null;
 
-    @OneToMany(() => ServingAreaEntity, (area) => area.branch)
+    @OneToMany(() => ServingAreaEntity, (area) => area.branch, { cascade: true })
     servingAreas: ServingAreaEntity[];
+
+    @Column({ type: 'boolean', default: true })
+    isAvailable: boolean;
 
 }
