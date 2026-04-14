@@ -1,20 +1,21 @@
 import { Injectable, Logger, Inject, forwardRef } from '@nestjs/common';
 import { SCORING_CONFIG, ScoringSectionConfig, ScoringFieldConfig } from './scoring.config';
-import { ScoringCacheService } from './scoring-cache.service';
+import { SharedCacheService } from '../../shared/cache/shared-cache.service';
 import { ProfileRepository } from '../profile/profile.repository';
 
 @Injectable()
 export class ScoringSystemService {
     private readonly logger = new Logger(ScoringSystemService.name);
+    private readonly CACHE_PREFIX = 'scoring_profile:';
 
     constructor(
-        private readonly cacheService: ScoringCacheService,
+        private readonly cacheService: SharedCacheService,
         @Inject(forwardRef(() => ProfileRepository))
         private readonly profileRepo: ProfileRepository,
     ) { }
 
     async getScore(userId: string) {
-        let score = await this.cacheService.get(userId);
+        let score = await this.cacheService.get(this.CACHE_PREFIX, userId);
         if (!score) {
             this.logger.log(`Cache miss for user ${userId}. Recalculating...`);
             score = await this.recalculate(userId);
@@ -26,7 +27,7 @@ export class ScoringSystemService {
         try {
             const profile = await this.profileRepo.findProfileByUserId(userId);
             const score = this.calculate(profile);
-            await this.cacheService.set(userId, score);
+            await this.cacheService.set(this.CACHE_PREFIX, userId, score);
             return score;
         } catch (error) {
             this.logger.error(`Failed to recalculate score for user ${userId}: ${error.message}`);

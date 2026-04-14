@@ -12,11 +12,10 @@ import { LookUpPaymentCategoryEntity } from './entities/lookup-payment-category.
 
 import { LookUpController } from './lookup.controller';
 import { LookUpService } from './lookup.service';
-import { LookupCacheService } from './lookup-cache.service';
+
 
 @Module({
     imports: [
-        CacheModule.register(),
         TypeOrmModule.forFeature([
             LookUpProfileStatusEntity,
             LookUpProviderTypeEntity,
@@ -28,7 +27,7 @@ import { LookupCacheService } from './lookup-cache.service';
         UserModule,
     ],
     controllers: [LookUpController],
-    providers: [LookUpService, LookupCacheService],
+    providers: [LookUpService],
     exports: [LookUpService],
 })
 export class LookupsModule { }

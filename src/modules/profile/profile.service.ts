@@ -35,7 +35,7 @@ import { PaymentService } from '../payment/payment.service';
 import { LOOKUP_IDS } from '../../shared/constants/lookup-ids';
 import { UpdatePaymentDto } from '../payment/dto/update-payment.dto';
 import { CreateBranchDto } from './dto/step-3-branches.dto';
-import { ScoringSystemService } from '../scoring-system/scoring-system.service';
+import { ScoringSystemService } from '../profile-scoring-system/scoring-system.service';
 
 @Injectable()
 export class ProfileService {

@@ -1,10 +1,10 @@
 
 export interface ScoringFieldConfig {
-    key: string; // dot notation path (e.g., 'userInfo.fullName')
+    key: string;
     label: string;
     required: boolean;
     type: 'string' | 'number' | 'array' | 'document' | 'boolean';
-    expiryKey?: string; // for 'document' type, e.g., 'compliance.tradeLicenseExpiryDate'
+    expiryKey?: string;
 }
 
 export interface ScoringSectionConfig {
@@ -36,7 +36,7 @@ export const SCORING_CONFIG: ScoringSectionConfig[] = [
         title: 'Location & Coverage',
         fields: [
             { key: 'branches', label: 'Branches', required: true, type: 'array' },
-            // We can add deeper checks for branch fields if needed
+            // we can add more for branches if we want
         ],
     },
     {

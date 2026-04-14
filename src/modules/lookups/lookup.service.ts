@@ -7,7 +7,7 @@ import { LookUpCompanyTypeEntity } from "./entities/lookup-company-type.entity";
 import { LookupLanguagesEntity } from "./entities/lookup-languages.entity";
 import { LookUpPaymentEntity } from "./entities/lookup-payment.entity";
 import { LookUpPaymentCategoryEntity } from "./entities/lookup-payment-category.entity";
-import { LookupCacheService } from "./lookup-cache.service";
+import { SharedCacheService } from "../../shared/cache/shared-cache.service";
 import { localize } from '../../shared/localization.util'
 
 @Injectable()
@@ -25,67 +25,67 @@ export class LookUpService {
         private readonly paymentRepo: Repository<LookUpPaymentEntity>,
         @InjectRepository(LookUpPaymentCategoryEntity)
         private readonly paymentCategoryRepo: Repository<LookUpPaymentCategoryEntity>,
-        private readonly lookupCacheService: LookupCacheService,
+        private readonly cacheService: SharedCacheService,
     ) { }
 
     async getProfileStatus(lang: string = 'en') {
-        const cached = await this.lookupCacheService.get<LookUpProfileStatusEntity[]>('lookup:profile-status');
+        const cached = await this.cacheService.get<LookUpProfileStatusEntity[]>('lookup:', 'profile-status');
         let data: LookUpProfileStatusEntity[];
 
         if (cached) {
             data = cached;
         } else {
             data = await this.profileStatusrRepo.find();
-            await this.lookupCacheService.set('lookup:profile-status', data);
+            await this.cacheService.set('lookup:', 'profile-status', data);
         }
 
         return data.map(item => this.localize(item, lang));
     }
 
     async getProviderTypes(lang: string = 'en') {
-        const cached = await this.lookupCacheService.get<LookUpProviderTypeEntity[]>('lookup:provider-types');
+        const cached = await this.cacheService.get<LookUpProviderTypeEntity[]>('lookup:', 'provider-types');
         let data: LookUpProviderTypeEntity[];
 
         if (cached) {
             data = cached;
         } else {
             data = await this.providerTypeRepo.find();
-            await this.lookupCacheService.set('lookup:provider-types', data);
+            await this.cacheService.set('lookup:', 'provider-types', data);
         }
 
         return data.map(item => this.localize(item, lang));
     }
 
     async getCompanyTypes(lang: string = 'en') {
-        const cached = await this.lookupCacheService.get<LookUpCompanyTypeEntity[]>('lookup:company-types');
+        const cached = await this.cacheService.get<LookUpCompanyTypeEntity[]>('lookup:', 'company-types');
         let data: LookUpCompanyTypeEntity[];
 
         if (cached) {
             data = cached;
         } else {
             data = await this.companyTypeRepo.find();
-            await this.lookupCacheService.set('lookup:company-types', data);
+            await this.cacheService.set('lookup:', 'company-types', data);
         }
 
         return data.map(item => this.localize(item, lang));
     }
 
     async getLanguages(lang: string = 'en') {
-        const cached = await this.lookupCacheService.get<LookupLanguagesEntity[]>('lookup:languages');
+        const cached = await this.cacheService.get<LookupLanguagesEntity[]>('lookup:', 'languages');
         let data: LookupLanguagesEntity[];
 
         if (cached) {
             data = cached;
         } else {
             data = await this.languagesRepo.find();
-            await this.lookupCacheService.set('lookup:languages', data);
+            await this.cacheService.set('lookup:', 'languages', data);
         }
         return localize(data, lang)
     }
 
     async getPaymentLookups(lang: string = 'en') {
-        const cacheKey = `lookup:payments`;
-        const cached = await this.lookupCacheService.get<LookUpPaymentCategoryEntity[]>(cacheKey);
+        const cacheKey = `payments`;
+        const cached = await this.cacheService.get<LookUpPaymentCategoryEntity[]>('lookup:', cacheKey);
         let data: LookUpPaymentCategoryEntity[];
         if (cached) {
             data = cached;
@@ -93,7 +93,7 @@ export class LookUpService {
             data = await this.paymentCategoryRepo.find({
                 relations: { payments: true }
             });
-            await this.lookupCacheService.set(cacheKey, data);
+            await this.cacheService.set('lookup:', cacheKey, data);
         }
 
         return localize(data, lang);

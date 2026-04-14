@@ -1,17 +1,18 @@
 import { Module, forwardRef } from '@nestjs/common';
-import { CacheModule } from '@nestjs/cache-manager';
 import { ScoringSystemController } from './scoring-system.controller';
 import { ScoringSystemService } from './scoring-system.service';
-import { ScoringCacheService } from './scoring-cache.service';
 import { ProfileModule } from '../profile/profile.module';
+import { SharedCacheModule } from '../../shared/cache/cache.module';
+import { UserModule } from '../user/user.module';
 
 @Module({
     imports: [
-        CacheModule.register(),
         forwardRef(() => ProfileModule),
+        SharedCacheModule,
+        UserModule,
     ],
     controllers: [ScoringSystemController],
-    providers: [ScoringSystemService, ScoringCacheService],
+    providers: [ScoringSystemService],
     exports: [ScoringSystemService],
 })
 export class ScoringSystemModule { }
