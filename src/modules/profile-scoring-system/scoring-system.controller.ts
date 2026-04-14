@@ -12,7 +12,7 @@ import { ScoringSystemService } from './scoring-system.service';
 export class ScoringSystemController {
     constructor(private readonly scoringService: ScoringSystemService) { }
 
-    @Get('profile')
+    @Get('profile-score')
     @ApiOperation({ summary: 'Get provider profile completion score' })
     async getProfileScore(@Request() req: { user: UserInfoResponseWithTokensDto }) {
         return await this.scoringService.getScore(req.user.userId);
