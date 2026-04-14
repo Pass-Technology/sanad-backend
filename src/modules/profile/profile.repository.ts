@@ -36,7 +36,8 @@ export class ProfileRepository {
                 selectedServices: {
                     category: true,
                     children: true
-                }
+                },
+                languages: true
             }
         });
         if (!profile) {
