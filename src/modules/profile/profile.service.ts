@@ -2,6 +2,8 @@ import {
     Injectable,
     NotFoundException,
     BadRequestException,
+    Inject,
+    forwardRef,
     // HttpException,
     // HttpStatus,
 } from '@nestjs/common';
@@ -33,6 +35,7 @@ import { PaymentService } from '../payment/payment.service';
 import { LOOKUP_IDS } from '../../shared/constants/lookup-ids';
 import { UpdatePaymentDto } from '../payment/dto/update-payment.dto';
 import { CreateBranchDto } from './dto/step-3-branches.dto';
+import { ScoringSystemService } from '../scoring-system/scoring-system.service';
 
 @Injectable()
 export class ProfileService {
@@ -49,6 +52,8 @@ export class ProfileService {
         private readonly servingAreaRepo: Repository<ServingAreaEntity>,
         private readonly userRepo: UserRepository,
         private readonly dataSource: DataSource,
+        @Inject(forwardRef(() => ScoringSystemService))
+        private readonly scoringService: ScoringSystemService,
     ) { }
 
 
@@ -71,6 +76,9 @@ export class ProfileService {
 
             // 3. Mark user profile as complete
             await this.userRepo.updateProfileCompletionStatus(userId, true, manager);
+
+            // 4. Trigger initial score calculation
+            await this.scoringService.recalculate(userId);
 
             return profileData;
         });
@@ -114,7 +122,9 @@ export class ProfileService {
         }
 
         Object.assign(profile, updateCompanyInfoDto);
-        return await this.dataSource.manager.save(ProviderProfileEntity, profile);
+        const updated = await this.dataSource.manager.save(ProviderProfileEntity, profile);
+        await this.scoringService.recalculate(userId);
+        return updated;
     }
 
     async updateUserInfo(userId: string, updateUserInfoInfoDto: UpdateUserInfoDto) {
@@ -122,7 +132,9 @@ export class ProfileService {
         const userInfo = profile.userInfo;
 
         Object.assign(userInfo, updateUserInfoInfoDto);
-        return await this.userInfoRepo.save(userInfo);
+        const updated = await this.userInfoRepo.save(userInfo);
+        await this.scoringService.recalculate(userId);
+        return updated;
     }
 
     async updateServices(userId: string, updateServiceDto: UpdateServicesDto) {
@@ -133,7 +145,9 @@ export class ProfileService {
             profile.selectedServices = updateServiceDto.selectedServiceIds.map(id => ({ id } as any));
         }
 
-        return await this.dataSource.manager.save(ProviderProfileEntity, profile);
+        const updated = await this.dataSource.manager.save(ProviderProfileEntity, profile);
+        await this.scoringService.recalculate(userId);
+        return updated;
     }
 
     async updateCompliance(userId: string, updateComplianceDto: UpdateComplianceDto) {
@@ -141,11 +155,15 @@ export class ProfileService {
         const compliance = profile.compliance;
 
         Object.assign(compliance, updateComplianceDto);
-        return await this.dataSource.manager.save(ProviderComplianceEntity, compliance);
+        const updated = await this.dataSource.manager.save(ProviderComplianceEntity, compliance);
+        await this.scoringService.recalculate(userId);
+        return updated;
     }
 
     async updatePayment(userId: string, updatePaymentDto: UpdatePaymentDto) {
-        return await this.paymentService.syncPayment(userId, updatePaymentDto);
+        const updated = await this.paymentService.syncPayment(userId, updatePaymentDto);
+        await this.scoringService.recalculate(userId);
+        return updated;
     }
 
     async updateBranch(
@@ -160,6 +178,7 @@ export class ProfileService {
         Object.assign(branch, updatedData);
 
         const updatedBranch = await this.dataSource.manager.save(BranchEntity, branch);
+        await this.scoringService.recalculate(userId);
 
         return {
             status: 'updated',
@@ -172,7 +191,9 @@ export class ProfileService {
         const newBranch = this.buildBranchEntity(addBranchDto);
         newBranch.providerProfile = profile;
 
-        return await this.dataSource.manager.save(BranchEntity, newBranch);
+        const updated = await this.dataSource.manager.save(BranchEntity, newBranch);
+        await this.scoringService.recalculate(userId);
+        return updated;
     }
 
     async deleteBranch(
@@ -188,6 +209,8 @@ export class ProfileService {
 
         await this.profileRepo.deleteServingAreasByBranchId(branchId);
         await this.profileRepo.deleteBranch(branchId);
+
+        await this.scoringService.recalculate(userId);
 
         return { message: 'Branch deleted successfully' };
     }

@@ -12,6 +12,7 @@ import { ServiceManagementModule } from './modules/service-management/service-ma
 import { PaymentModule } from './modules/payment/payment.module';
 import { MailModule } from './modules/mail/mail.module';
 import { TemplateModule } from './modules/template/template.module';
+import { ScoringSystemModule } from './modules/scoring-system/scoring-system.module';
 
 @Module({
   imports: [
@@ -27,6 +28,7 @@ import { TemplateModule } from './modules/template/template.module';
     PaymentModule,
     MailModule,
     TemplateModule,
+    ScoringSystemModule,
   ],
   controllers: [HealthController],
 })
