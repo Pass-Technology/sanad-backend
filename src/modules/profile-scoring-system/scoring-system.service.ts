@@ -1,5 +1,6 @@
 import { Injectable, Logger, Inject, forwardRef } from '@nestjs/common';
-import { SCORING_CONFIG, ScoringSectionConfig, ScoringFieldConfig } from './scoring.config';
+import { SCORING_CONFIG } from './scoring.config';
+import { ScoringSectionConfig, ScoringFieldConfig } from './interfaces/scoring-system.interfaces';
 import { SharedCacheService } from '../../shared/cache/shared-cache.service';
 import { ProfileRepository } from '../profile/profile.repository';
 

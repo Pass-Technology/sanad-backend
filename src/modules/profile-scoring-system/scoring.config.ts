@@ -1,21 +1,8 @@
-
-export interface ScoringFieldConfig {
-    key: string;
-    label: string;
-    required: boolean;
-    type: 'string' | 'number' | 'array' | 'document' | 'boolean';
-    expiryKey?: string;
-}
-
-export interface ScoringSectionConfig {
-    id: string;
-    title: string;
-    fields: ScoringFieldConfig[];
-}
+import { ScoringSectionConfig, ScoringSectionId } from './interfaces/scoring-system.interfaces';
 
 export const SCORING_CONFIG: ScoringSectionConfig[] = [
     {
-        id: 'basicInfo',
+        id: ScoringSectionId.BASIC_INFO,
         title: 'Basic Information',
         fields: [
             { key: 'userInfo.fullName', label: 'Full Name', required: true, type: 'string' },
@@ -32,7 +19,7 @@ export const SCORING_CONFIG: ScoringSectionConfig[] = [
         ],
     },
     {
-        id: 'location',
+        id: ScoringSectionId.LOCATION,
         title: 'Location & Coverage',
         fields: [
             { key: 'branches', label: 'Branches', required: true, type: 'array' },
@@ -40,14 +27,14 @@ export const SCORING_CONFIG: ScoringSectionConfig[] = [
         ],
     },
     {
-        id: 'services',
+        id: ScoringSectionId.SERVICES,
         title: 'Services',
         fields: [
             { key: 'selectedServices', label: 'Selected Services', required: true, type: 'array' },
         ],
     },
     {
-        id: 'compliance',
+        id: ScoringSectionId.COMPLIANCE,
         title: 'Compliance & Documents',
         fields: [
             {
