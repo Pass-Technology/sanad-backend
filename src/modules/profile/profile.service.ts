@@ -166,16 +166,20 @@ export class ProfileService {
         return updated;
     }
 
-    async updateBranch(
-        userId: string,
-        branchId: string,
-        dto: UpdateBranchDto,
-    ) {
+    async updateBranch(userId: string, branchId: string, dto: UpdateBranchDto) {
         const branch = await this.profileRepo.findBranchById(branchId);
         if (!branch) throw new NotFoundException('Branch not found');
 
-        const updatedData = this.buildBranchEntity(dto);
-        Object.assign(branch, updatedData);
+        const { servingAreas, ...basicInfo } = dto;
+
+        Object.assign(branch, basicInfo);
+
+        if (servingAreas) {
+            await this.profileRepo.deleteServingAreasByBranchId(branchId);
+            branch.servingAreas = servingAreas.map(area =>
+                this.servingAreaRepo.create({ ...area, branch })
+            );
+        }
 
         const updatedBranch = await this.dataSource.manager.save(BranchEntity, branch);
         await this.scoringService.recalculate(userId);
@@ -188,12 +192,14 @@ export class ProfileService {
 
     async addBranch(userId: string, addBranchDto: CreateBranchDto) {
         const profile = await this.profileRepo.findProfileByUserId(userId);
+
         const newBranch = this.buildBranchEntity(addBranchDto);
         newBranch.providerProfile = profile;
 
-        const updated = await this.dataSource.manager.save(BranchEntity, newBranch);
+        const savedBranch = await this.dataSource.manager.save(BranchEntity, newBranch);
         await this.scoringService.recalculate(userId);
-        return updated;
+
+        return savedBranch;
     }
 
     async deleteBranch(
