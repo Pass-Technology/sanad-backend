@@ -40,7 +40,6 @@ export class ScoringSystemService {
         const results = {
             overall: 0,
             sections: [] as any[],
-            missingFields: [] as string[],
         };
 
         let totalWeight = 0;
@@ -51,13 +50,12 @@ export class ScoringSystemService {
             results.sections.push({
                 id: section.id,
                 title: section.title,
-                percentage: sectionalResult.percentage,
+                score: sectionalResult.percentage,
                 missingFields: sectionalResult.missingFields,
             });
 
             totalWeight += sectionalResult.totalWeight;
             earnedWeight += sectionalResult.earnedWeight;
-            results.missingFields.push(...sectionalResult.missingFields);
         }
 
         results.overall = Math.round((earnedWeight / totalWeight) * 100);
@@ -93,6 +91,16 @@ export class ScoringSystemService {
     private isFieldFilled(field: ScoringFieldConfig, data: any): boolean {
         const value = this.getNestedValue(data, field.key);
 
+        if (field.type === 'at-least-one' && field.keysToCheck) {
+            return field.keysToCheck.some(key => {
+                const subValue = this.getNestedValue(data, key);
+                if (subValue === null || subValue === undefined || subValue === '') return false;
+                if (Array.isArray(subValue)) return subValue.length > 0;
+                if (typeof subValue === 'object' && 'isEnabled' in subValue) return (subValue as any).isEnabled === true;
+                return !!subValue;
+            });
+        }
+
         if (value === null || value === undefined || value === '') return false;
 
         if (field.type === 'array') {
@@ -101,13 +109,12 @@ export class ScoringSystemService {
 
         if (field.type === 'document') {
             if (!value) return false;
-            // If it has an expiry key, check if it's expired
             if (field.expiryKey) {
                 const expiryValue = this.getNestedValue(data, field.expiryKey);
                 if (expiryValue) {
                     const expiryDate = new Date(expiryValue);
                     if (expiryDate < new Date()) {
-                        return false; // Document expired
+                        return false;
                     }
                 }
             }
@@ -127,10 +134,9 @@ export class ScoringSystemService {
             sections: SCORING_CONFIG.map(s => ({
                 id: s.id,
                 title: s.title,
-                percentage: 0,
+                score: 0,
                 missingFields: s.fields.map(f => f.label)
             })),
-            missingFields: SCORING_CONFIG.flatMap(s => s.fields.map(f => f.label)),
         };
     }
 }
