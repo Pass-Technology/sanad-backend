@@ -132,9 +132,9 @@ export class ProfileService {
         const userInfo = profile.userInfo;
 
         Object.assign(userInfo, updateUserInfoInfoDto);
-        const updated = await this.userInfoRepo.save(userInfo);
+        await this.userInfoRepo.save(userInfo);
         await this.scoringService.recalculate(userId);
-        return updated;
+        return await this.profileRepo.findProfileByUserId(userId);
     }
 
     async updateServices(userId: string, updateServiceDto: UpdateServicesDto) {
@@ -145,9 +145,9 @@ export class ProfileService {
             profile.selectedServices = updateServiceDto.selectedServiceIds.map(id => ({ id } as any));
         }
 
-        const updated = await this.dataSource.manager.save(ProviderProfileEntity, profile);
+        await this.dataSource.manager.save(ProviderProfileEntity, profile);
         await this.scoringService.recalculate(userId);
-        return updated;
+        return await this.profileRepo.findProfileByUserId(userId);
     }
 
     async updateCompliance(userId: string, updateComplianceDto: UpdateComplianceDto) {
@@ -155,15 +155,15 @@ export class ProfileService {
         const compliance = profile.compliance;
 
         Object.assign(compliance, updateComplianceDto);
-        const updated = await this.dataSource.manager.save(ProviderComplianceEntity, compliance);
+        await this.dataSource.manager.save(ProviderComplianceEntity, compliance);
         await this.scoringService.recalculate(userId);
-        return updated;
+        return await this.profileRepo.findProfileByUserId(userId);
     }
 
     async updatePayment(userId: string, updatePaymentDto: UpdatePaymentDto) {
-        const updated = await this.paymentService.syncPayment(userId, updatePaymentDto);
+        await this.paymentService.syncPayment(userId, updatePaymentDto);
         await this.scoringService.recalculate(userId);
-        return updated;
+        return await this.profileRepo.findProfileByUserId(userId);
     }
 
     async updateBranch(userId: string, branchId: string, dto: UpdateBranchDto) {
@@ -181,13 +181,10 @@ export class ProfileService {
             );
         }
 
-        const updatedBranch = await this.dataSource.manager.save(BranchEntity, branch);
+        await this.dataSource.manager.save(BranchEntity, branch);
         await this.scoringService.recalculate(userId);
 
-        return {
-            status: 'updated',
-            data: updatedBranch,
-        };
+        return await this.profileRepo.findProfileByUserId(userId);
     }
 
     async addBranch(userId: string, addBranchDto: CreateBranchDto) {
@@ -196,16 +193,16 @@ export class ProfileService {
         const newBranch = this.buildBranchEntity(addBranchDto);
         newBranch.providerProfile = profile;
 
-        const savedBranch = await this.dataSource.manager.save(BranchEntity, newBranch);
+        await this.dataSource.manager.save(BranchEntity, newBranch);
         await this.scoringService.recalculate(userId);
 
-        return savedBranch;
+        return await this.profileRepo.findProfileByUserId(userId);
     }
 
     async deleteBranch(
         userId: string,
         branchId: string,
-    ): Promise<{ message: string }> {
+    ) {
         const profile = await this.profileRepo.findProfileByUserId(userId);
         const branch = await this.profileRepo.findBranchById(branchId);
 
@@ -218,7 +215,7 @@ export class ProfileService {
 
         await this.scoringService.recalculate(userId);
 
-        return { message: 'Branch deleted successfully' };
+        return await this.profileRepo.findProfileByUserId(userId);
     }
 
 

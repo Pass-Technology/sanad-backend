@@ -138,7 +138,7 @@ export class ProfileController {
     async deleteBranch(
         @Request() req: { user: UserInfoResponseWithTokensDto },
         @Param('id') branchId: string,
-    ): Promise<{ message: string }> {
+    ) {
         return await this.profileService.deleteBranch(req.user.userId, branchId);
     }
 }
