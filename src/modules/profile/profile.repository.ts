@@ -32,7 +32,15 @@ export class ProfileRepository {
                     servingAreas: true
                 },
                 compliance: true,
-                payment: true,
+                payment: {
+                    cash: true,
+                    bankTransfer: { bankAccount: true },
+                    paymentLink: true,
+                    sanad: { bankAccount: true },
+                    pos: true,
+                    cheque: true,
+                    bankAccounts: true,
+                },
                 selectedServices: {
                     category: true,
                     children: true
