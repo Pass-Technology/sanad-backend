@@ -20,6 +20,7 @@ import {
     UpdateComplianceDto,
     UpdateServicesDto,
     UpdateBranchDto,
+    UpdateBranchesDto,
 } from './dto/update-profile.dto';
 
 import { ProviderProfileEntity } from './entities/provider-profile.entity';
@@ -162,6 +163,46 @@ export class ProfileService {
 
     async updatePayment(userId: string, updatePaymentDto: UpdatePaymentDto) {
         await this.paymentService.syncPayment(userId, updatePaymentDto);
+        await this.scoringService.recalculate(userId);
+        return await this.profileRepo.findProfileByUserId(userId);
+    }
+
+    async syncBranches(userId: string, updateBranchesDto: UpdateBranchesDto) {
+        await this.dataSource.transaction(async (manager) => {
+            const profile = await this.profileRepo.findProfileByUserId(userId, manager);
+
+            for (const branchDto of updateBranchesDto.branches) {
+                if (branchDto.id) {
+                    // Update or Delete
+                    const existingBranch = profile.branches.find(b => b.id === branchDto.id);
+                    if (!existingBranch) continue;
+
+                    if (branchDto.isAvailable === false) {
+                        // Delete Branch and its serving areas
+                        await this.profileRepo.deleteServingAreasByBranchId(existingBranch.id, manager);
+                        await manager.remove(existingBranch);
+                    } else if (branchDto.isAvailable === true) {
+                        // Update Branch info
+                        const { servingAreas, ...basicInfo } = branchDto;
+                        Object.assign(existingBranch, basicInfo);
+
+                        if (servingAreas) {
+                            await this.profileRepo.deleteServingAreasByBranchId(existingBranch.id, manager);
+                            existingBranch.servingAreas = servingAreas.map(area =>
+                                this.servingAreaRepo.create({ ...area, branch: existingBranch })
+                            );
+                        }
+                        await manager.save(existingBranch);
+                    }
+                } else if (branchDto.isAvailable === true) {
+                    // Add new branch
+                    const newBranch = this.buildBranchEntity(branchDto);
+                    newBranch.providerProfile = profile;
+                    await manager.save(newBranch);
+                }
+            }
+        });
+
         await this.scoringService.recalculate(userId);
         return await this.profileRepo.findProfileByUserId(userId);
     }

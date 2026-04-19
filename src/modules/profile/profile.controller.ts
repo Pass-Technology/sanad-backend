@@ -28,6 +28,7 @@ import {
     UpdateComplianceDto,
     UpdateServicesDto,
     UpdateBranchDto,
+    UpdateBranchesDto,
 } from './dto/update-profile.dto';
 import { CreateBranchDto } from './dto/step-3-branches.dto';
 // import { CurrentUser } from 'src/shared/decorators/current-user.decorator';
@@ -93,12 +94,21 @@ export class ProfileController {
     }
 
     @Patch('update/payment')
-    @ApiOperation({ summary: 'Update payment methods and details' })
+    @ApiOperation({ summary: 'Sync all payment methods (Add, Update, Delete)' })
     async updatePayment(
         @Request() req: { user: UserInfoResponseWithTokensDto },
-        @Body() dto: UpdatePaymentDto,
+        @Body() updatePaymentDto: UpdatePaymentDto,
     ) {
-        return await this.profileService.updatePayment(req.user.userId, dto);
+        return await this.profileService.updatePayment(req.user.userId, updatePaymentDto);
+    }
+
+    @Patch('update/branches')
+    @ApiOperation({ summary: 'Sync all branches (Add, Update, Delete)' })
+    async syncBranches(
+        @Request() req: { user: UserInfoResponseWithTokensDto },
+        @Body() updateBranchesDto: UpdateBranchesDto,
+    ) {
+        return await this.profileService.syncBranches(req.user.userId, updateBranchesDto);
     }
 
     @Patch('update/branches/:id')

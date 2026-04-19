@@ -66,7 +66,12 @@ export class ProfileRepository {
         const repo = manager ? manager.getRepository(BranchEntity) : this.branchRepo;
         return await repo.findOne({
             where: { id },
-            relations: ['servingAreas', 'providerProfile'],
+            relations: {
+                servingAreas: true,
+                providerProfile: true
+            }
+
+            // ['servingAreas', 'providerProfile'],
         });
     }
 
@@ -76,7 +81,12 @@ export class ProfileRepository {
         await repo.update(id, data);
         return await repo.findOneOrFail({
             where: { id },
-            relations: ['servingAreas'],
+            relations: {
+                servingAreas: true,
+                providerProfile: true
+            }
+
+            // ['servingAreas'],
         });
     }
 
