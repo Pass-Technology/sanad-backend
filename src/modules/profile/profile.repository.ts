@@ -92,7 +92,7 @@ export class ProfileRepository {
 
     async deleteBranch(id: string, manager?: EntityManager): Promise<void> {
         const repo = manager ? manager.getRepository(BranchEntity) : this.branchRepo;
-        await repo.softDelete(id);
+        await repo.delete(id);
     }
 
     async deleteServingAreasByBranchId(branchId: string, manager?: EntityManager): Promise<void> {
