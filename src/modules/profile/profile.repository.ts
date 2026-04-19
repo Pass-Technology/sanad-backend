@@ -39,7 +39,7 @@ export class ProfileRepository {
                     sanad: { bankAccount: true },
                     pos: true,
                     cheque: true,
-                    bankAccounts: true,
+                    // bankAccounts: true, // no need to show this but TODO: check how to remove dead records
                 },
                 selectedServices: {
                     category: true,
