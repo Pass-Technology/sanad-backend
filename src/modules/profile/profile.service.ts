@@ -21,7 +21,7 @@ import {
     UpdateServicesDto,
     UpdateBranchDto,
     UpdateBranchesDto,
-} from './dto/update-profile.dto';
+} from './dto/update-full-profile.dto';
 
 import { ProviderProfileEntity } from './entities/provider-profile.entity';
 import { ProviderUserInfoEntity } from './entities/provider-user-info.entity';
@@ -35,7 +35,7 @@ import { ServiceManagementService } from '../service-management/service-manageme
 import { PaymentService } from '../payment/payment.service';
 import { LOOKUP_IDS } from '../../shared/constants/lookup-ids';
 import { UpdatePaymentDto } from '../payment/dto/update-payment.dto';
-import { CreateBranchDto } from './dto/step-3-branches.dto';
+import { CreateBranchDto } from './dto/create-branches.dto';
 import { ScoringSystemService } from '../profile-scoring-system/scoring-system.service';
 
 @Injectable()

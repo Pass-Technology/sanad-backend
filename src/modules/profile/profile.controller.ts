@@ -29,8 +29,8 @@ import {
     UpdateServicesDto,
     UpdateBranchDto,
     UpdateBranchesDto,
-} from './dto/update-profile.dto';
-import { CreateBranchDto } from './dto/step-3-branches.dto';
+} from './dto/update-full-profile.dto';
+import { CreateBranchDto } from './dto/create-branches.dto';
 // import { CurrentUser } from 'src/shared/decorators/current-user.decorator';
 import { UpdatePaymentDto } from '../payment/dto/update-payment.dto';
 

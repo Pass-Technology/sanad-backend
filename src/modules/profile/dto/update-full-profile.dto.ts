@@ -1,9 +1,9 @@
 import { PartialType, OmitType, ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
-import { CreateCompanyInfoDto } from './step-1-company-info.dto';
-import { CreateUserInfoDto } from './step-2-user-info.dto';
-import { CreateComplianceDto } from './step-5-compliance.dto';
-import { CreateServicesDto } from './step-4-services.dto';
-import { CreateBranchDto } from './step-3-branches.dto';
+import { CreateCompanyInfoDto } from './create-company-info.dto';
+import { CreateUserInfoDto } from './create-user-info.dto';
+import { CreateComplianceDto } from './create-compliance.dto';
+import { CreateServicesDto } from './create-services.dto';
+import { CreateBranchDto } from './create-branches.dto';
 import { IsOptional, IsUUID, IsBoolean, IsArray, ValidateNested } from 'class-validator';
 import { Type } from 'class-transformer';
 

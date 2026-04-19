@@ -1,11 +1,11 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { Type } from 'class-transformer';
 import { ValidateNested } from 'class-validator';
-import { CreateCompanyInfoDto } from './step-1-company-info.dto';
-import { CreateUserInfoDto } from './step-2-user-info.dto';
-import { CreateBranchesDto } from './step-3-branches.dto';
-import { CreateServicesDto } from './step-4-services.dto';
-import { CreateComplianceDto } from './step-5-compliance.dto';
+import { CreateCompanyInfoDto } from './create-company-info.dto';
+import { CreateUserInfoDto } from './create-user-info.dto';
+import { CreateBranchesDto } from './create-branches.dto';
+import { CreateServicesDto } from './create-services.dto';
+import { CreateComplianceDto } from './create-compliance.dto';
 import { CreatePaymentDto } from '../../payment/dto/create-payment.dto';
 
 export class CreateFullProfileDto {
