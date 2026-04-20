@@ -16,10 +16,10 @@ import {
 
 export class ServingAreaDto {
 
-    // @ApiPropertyOptional()
-    // @IsOptional()
-    // @IsUUID()
-    // id?: string;
+    @ApiPropertyOptional()
+    @IsOptional()
+    @IsUUID()
+    areaId?: string;
 
     @ApiProperty({ example: 10, minimum: 1 })
     @IsNumber()

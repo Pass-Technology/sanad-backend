@@ -170,41 +170,89 @@ export class ProfileService {
     async syncBranches(userId: string, updateBranchesDto: UpdateBranchesDto) {
         await this.dataSource.transaction(async (manager) => {
             const profile = await this.profileRepo.findProfileByUserId(userId, manager);
+            const activeBranchIds: string[] = [];
 
             for (const branchDto of updateBranchesDto.branches) {
                 if (branchDto.id) {
-                    // Update or Delete
+                    // Update Branch
                     const existingBranch = profile.branches.find(b => b.id === branchDto.id);
                     if (!existingBranch) continue;
 
-                    if (branchDto.isAvailable === false) {
-                        // Delete Branch and its serving areas
-                        await this.profileRepo.deleteServingAreasByBranchId(existingBranch.id, manager);
-                        await manager.remove(existingBranch);
-                    } else if (branchDto.isAvailable === true) {
-                        // Update Branch info
-                        const { servingAreas, ...basicInfo } = branchDto;
-                        Object.assign(existingBranch, basicInfo);
+                    activeBranchIds.push(branchDto.id);
 
-                        if (servingAreas) {
-                            await this.profileRepo.deleteServingAreasByBranchId(existingBranch.id, manager);
-                            existingBranch.servingAreas = servingAreas.map(area =>
-                                this.servingAreaRepo.create({ ...area, branch: existingBranch })
-                            );
-                        }
-                        await manager.save(existingBranch);
+                    const { servingAreas, ...basicInfo } = branchDto;
+                    Object.assign(existingBranch, basicInfo);
+
+                    if (servingAreas) {
+                        await this.syncServingAreas(manager, existingBranch, servingAreas);
                     }
-                } else if (branchDto.isAvailable === true) {
+                    await manager.save(existingBranch);
+                } else if (branchDto.isAvailable !== false) {
                     // Add new branch
                     const newBranch = this.buildBranchEntity(branchDto);
                     newBranch.providerProfile = profile;
-                    await manager.save(newBranch);
+                    const saved = await manager.save(newBranch);
+                    activeBranchIds.push(saved.id);
+                }
+            }
+
+            // Implicit Deletion: Remove branches not in the incoming list
+            const branchesToDelete = profile.branches.filter(b => !activeBranchIds.includes(b.id));
+            if (branchesToDelete.length > 0) {
+                for (const branch of branchesToDelete) {
+                    await this.profileRepo.deleteServingAreasByBranchId(branch.id, manager);
+                    await manager.remove(branch);
                 }
             }
         });
 
         await this.scoringService.recalculate(userId);
         return await this.profileRepo.findProfileByUserId(userId);
+    }
+
+    private async syncServingAreas(manager: EntityManager, branch: BranchEntity, dtos: any[]) {
+        const activeAreaIds: string[] = [];
+        
+        // Ensure the array is initialized to avoid push errors and correctly handle cascades
+        if (!branch.servingAreas) {
+            branch.servingAreas = [];
+        }
+
+        const updatedAreas: ServingAreaEntity[] = [];
+
+        for (const dto of dtos) {
+            const incomingId = dto.areaId || dto.id;
+
+            if (incomingId) {
+                // UPDATE: Match by ID (using string comparison for robustness)
+                const existingArea = branch.servingAreas.find(a => String(a.id) === String(incomingId));
+                
+                if (existingArea) {
+                    Object.assign(existingArea, dto);
+                    await manager.save(existingArea);
+                    activeAreaIds.push(String(existingArea.id));
+                    updatedAreas.push(existingArea);
+                }
+            } else {
+                // CREATE: No ID provided
+                const newArea = manager.create(ServingAreaEntity, {
+                    ...dto,
+                    branch: { id: branch.id }
+                } as any);
+                const saved = await manager.save(newArea);
+                activeAreaIds.push(String(saved.id));
+                updatedAreas.push(saved);
+            }
+        }
+
+        // Implicit Deletion: Remove areas belonging to this branch that were not in the incoming list
+        const areasToDelete = branch.servingAreas.filter(a => !activeAreaIds.includes(String(a.id)));
+        if (areasToDelete.length > 0) {
+            await manager.remove(areasToDelete);
+        }
+
+        // Update the branch's in-memory array so the upcoming branch save sees the correct state
+        branch.servingAreas = updatedAreas;
     }
 
     async updateBranch(userId: string, branchId: string, dto: UpdateBranchDto) {
