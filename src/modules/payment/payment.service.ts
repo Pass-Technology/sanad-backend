@@ -1,7 +1,15 @@
 import { Injectable, BadRequestException, NotFoundException } from '@nestjs/common';
 import { DataSource, EntityManager } from 'typeorm';
 import { CreatePaymentDto } from './dto/create-payment.dto';
-import { UpdatePaymentDto } from './dto/update-payment.dto';
+import {
+    UpdatePaymentDto,
+    UpdateBankTransferMethodDto,
+    UpdateSanadMethodDto,
+    UpdateCashMethodDto,
+    UpdateChequeMethodDto,
+    UpdatePosMethodDto,
+    UpdatePaymentLinkMethodDto
+} from './dto/update-payment.dto';
 import { ProviderPaymentEntity } from './entities/provider-payment.entity';
 import { PaymentCashEntity } from './entities/payment-cash.entity';
 import { PaymentBankTransferEntity } from './entities/payment-bank-transfer.entity';
@@ -10,8 +18,6 @@ import { PaymentSanadEntity } from './entities/payment-sanad.entity';
 import { PaymentPosEntity } from './entities/payment-pos.entity';
 import { PaymentChequeEntity } from './entities/payment-cheque.entity';
 import { BankAccountEntity } from './entities/bank-account.entity';
-import { BankTransferMethodDto } from './dto/bank-transfer-method.dto';
-import { SanadMethodDto } from './dto/sanad-method.dto';
 
 @Injectable()
 export class PaymentService {
@@ -135,130 +141,280 @@ export class PaymentService {
     }
 
     async syncPayment(userId: string, updatePaymentDto: UpdatePaymentDto) {
-        return await this.dataSource.transaction(async (manager) => {
-            const payment = await manager.findOne(ProviderPaymentEntity, {
-                where: { providerProfile: { user: { id: userId } } },
-                relations: {
-                    cash: true,
-                    bankTransfer: { bankAccount: true },
-                    paymentLink: true,
-                    sanad: { bankAccount: true },
-                    pos: true,
-                    cheque: true,
-                    bankAccounts: true,
-                }
-            });
+        return this.dataSource.transaction(async (manager) => {
+            const payment = await this.loadPayment(manager, userId);
 
-            if (!payment) throw new NotFoundException('Payment configuration not found');
+            await this.syncCash(manager, payment, updatePaymentDto.cash);
+            await this.syncCheque(manager, payment, updatePaymentDto.cheque);
 
-            // Singleton Sync
-            await this.syncRecords(manager, payment, 'cash', updatePaymentDto.cash, PaymentCashEntity);
-            await this.syncRecords(manager, payment, 'cheque', updatePaymentDto.cheque, PaymentChequeEntity);
+            await this.syncBankTransfers(manager, payment, updatePaymentDto.bankTransfer);
+            await this.syncSanad(manager, payment, updatePaymentDto.sanad);
 
-            // Collection Sync
-            await this.syncRecords(manager, payment, 'bankTransfer', updatePaymentDto.bankTransfer, PaymentBankTransferEntity,
-                async (e, d) => this.handleBankDetails(manager, payment, e, d));
+            await this.syncPos(manager, payment, updatePaymentDto.pos);
+            await this.syncPaymentLinks(manager, payment, updatePaymentDto.paymentLink);
 
-            await this.syncRecords(manager, payment, 'sanad', updatePaymentDto.sanad, PaymentSanadEntity,
-                async (e, d) => this.handleBankDetails(manager, payment, e, d));
-
-            await this.syncRecords(manager, payment, 'pos', updatePaymentDto.pos, PaymentPosEntity);
-            await this.syncRecords(manager, payment, 'paymentLink', updatePaymentDto.paymentLink, PaymentLinkEntity);
-
-            return await manager.save(ProviderPaymentEntity, payment);
+            return payment;
         });
     }
 
-    /**
-     * Core logic for synchronizing any payment method (Singleton or Collection).
-     * Handles Create, Update, and Delete based on ID and isEnabled status.
-     */
-    private async syncRecords<T extends { id?: string; isEnabled?: boolean }>(
+    private async loadPayment(manager: EntityManager, userId: string): Promise<ProviderPaymentEntity> {
+        const payment = await manager.findOne(ProviderPaymentEntity, {
+            where: { providerProfile: { user: { id: userId } } },
+            relations: {
+                cash: true,
+                cheque: true,
+                bankTransfer: { bankAccount: true },
+                sanad: { bankAccount: true },
+                pos: true,
+                paymentLink: true,
+                bankAccounts: true,
+            }
+        });
+
+        if (!payment) throw new NotFoundException('Payment configuration not found');
+        return payment;
+    }
+
+    private async syncCash(manager: EntityManager, payment: ProviderPaymentEntity, dto?: UpdateCashMethodDto) {
+        if (!dto) return;
+
+        if (dto.id) {
+            if (dto.isEnabled === false) {
+                if (payment.cash) {
+                    await manager.remove(payment.cash);
+                    payment.cash = null as any;
+                }
+                return;
+            }
+
+            if (payment.cash) {
+                Object.assign(payment.cash, dto);
+                await manager.save(payment.cash);
+            }
+            return;
+        }
+
+        if (dto.isEnabled === true) {
+            const entity = manager.create(PaymentCashEntity, dto);
+            entity.providerPayment = payment;
+
+            payment.cash = await manager.save(entity);
+        }
+    }
+
+    private async syncCheque(manager: EntityManager, payment: ProviderPaymentEntity, dto?: UpdateChequeMethodDto) {
+        if (!dto) return;
+
+        if (dto.id) {
+            if (dto.isEnabled === false) {
+                if (payment.cheque) {
+                    await manager.remove(payment.cheque);
+                    payment.cheque = null as any;
+                }
+                return;
+            }
+
+            if (payment.cheque) {
+                Object.assign(payment.cheque, dto);
+                await manager.save(payment.cheque);
+            }
+            return;
+        }
+
+        if (dto.isEnabled === true) {
+            const entity = manager.create(PaymentChequeEntity, dto);
+            entity.providerPayment = payment;
+
+            payment.cheque = await manager.save(entity);
+        }
+    }
+
+    private async syncBankTransfers(
         manager: EntityManager,
         payment: ProviderPaymentEntity,
-        key: keyof ProviderPaymentEntity,
-        dtos: T | T[] | undefined,
-        entityClass: any,
-        extraLogic?: (entity: any, dto: T) => Promise<void>,
+        dtos?: UpdateBankTransferMethodDto[],
     ) {
         if (!dtos) return;
-        const items = Array.isArray(dtos) ? dtos : [dtos];
-        const currentData = (payment as any)[key];
 
-        for (const dto of items) {
+        for (const dto of dtos) {
+            // DELETE
+            if (dto.id && dto.isEnabled === false) {
+                await manager.delete(PaymentBankTransferEntity, dto.id);
+                continue;
+            }
+
+            // UPDATE
             if (dto.id) {
-                const existing = Array.isArray(currentData)
-                    ? (currentData as any[]).find((i) => i.id === dto.id)
-                    : currentData;
+                const entity = await manager.findOne(PaymentBankTransferEntity, {
+                    where: { id: dto.id },
+                    relations: ['bankAccount'],
+                });
 
-                if (existing && (existing as any).id === dto.id) {
-                    if (dto.isEnabled === false) {
-                        await manager.remove(existing as any);
-                        if (Array.isArray(currentData)) {
-                            currentData.splice(currentData.indexOf(existing), 1);
-                        } else {
-                            (payment as any)[key] = null;
-                        }
-                        if ((existing as any).bankAccount) {
-                            await this.safeDeleteBankAccount(manager, payment, (existing as any).bankAccount.id);
-                        }
-                    } else {
-                        Object.assign(existing, dto);
-                        if (extraLogic) await extraLogic(existing, dto);
+                if (entity) {
+                    Object.assign(entity, dto);
+                    entity.bankAccount = await this.resolveBankAccount(manager, payment, dto, entity.bankAccount);
+                    await manager.save(entity);
+                }
+                continue;
+            }
+
+            // CREATE
+            if (dto.isEnabled === true) {
+                const entity = manager.create(PaymentBankTransferEntity, dto);
+                entity.bankAccount = await this.resolveBankAccount(manager, payment, dto);
+                entity.providerPayment = payment;
+                await manager.save(entity);
+            }
+        }
+    }
+
+    private async syncSanad(
+        manager: EntityManager,
+        payment: ProviderPaymentEntity,
+        dtos?: UpdateSanadMethodDto[],
+    ) {
+        if (!dtos) return;
+
+        for (const dto of dtos) {
+            if (dto.id && dto.isEnabled === false) {
+                await manager.delete(PaymentSanadEntity, dto.id);
+                continue;
+            }
+
+            if (dto.id) {
+                const entity = await manager.findOne(PaymentSanadEntity, {
+                    where: { id: dto.id },
+                    relations: {
+                        bankAccount: true
                     }
-                }
-            } else if (dto.isEnabled === true) {
-                const entity = manager.create(entityClass, { ...dto, providerPayment: { id: payment.id } });
-                if (extraLogic) await extraLogic(entity, dto);
+                });
 
-                if (Array.isArray(currentData)) {
-                    currentData.push(entity);
-                } else {
-                    (payment as any)[key] = entity;
+                if (entity) {
+                    Object.assign(entity, dto);
+                    entity.bankAccount = await this.resolveBankAccount(manager, payment, dto, entity.bankAccount);
+                    await manager.save(entity);
                 }
+                continue;
+            }
+
+            if (dto.isEnabled === true) {
+                const entity = manager.create(PaymentSanadEntity, dto);
+                entity.bankAccount = await this.resolveBankAccount(manager, payment, dto);
+                entity.providerPayment = payment;
+                await manager.save(entity);
             }
         }
     }
 
-    /**
-     * Logic for methods that require bank account handling (Bank Transfer & Sanad).
-     */
-    private async handleBankDetails(manager: EntityManager, payment: ProviderPaymentEntity, entity: any, dto: any) {
-        const oldBankAccountId = entity.bankAccount?.id;
+    private async syncPos(
+        manager: EntityManager,
+        payment: ProviderPaymentEntity,
+        dtos?: UpdatePosMethodDto[],
+    ) {
+        if (!dtos) return;
 
+        for (const dto of dtos) {
+            if (dto.id && dto.isEnabled === false) {
+                await manager.delete(PaymentPosEntity, dto.id);
+                continue;
+            }
+
+            if (dto.id) {
+                const entity = await manager.findOne(PaymentPosEntity, { where: { id: dto.id } });
+                if (entity) {
+                    Object.assign(entity, dto);
+                    await manager.save(entity);
+                }
+                continue;
+            }
+
+            if (dto.isEnabled === true) {
+                const entity = manager.create(PaymentPosEntity, dto);
+                entity.providerPayment = payment;
+                await manager.save(entity);
+            }
+        }
+    }
+
+    private async syncPaymentLinks(
+        manager: EntityManager,
+        payment: ProviderPaymentEntity,
+        dtos?: UpdatePaymentLinkMethodDto[],
+    ) {
+        if (!dtos) return;
+
+        for (const dto of dtos) {
+            if (dto.id && dto.isEnabled === false) {
+                await manager.delete(PaymentLinkEntity, dto.id);
+                continue;
+            }
+
+            if (dto.id) {
+                const entity = await manager.findOne(PaymentLinkEntity, { where: { id: dto.id } });
+                if (entity) {
+                    Object.assign(entity, dto);
+                    await manager.save(entity);
+                }
+                continue;
+            }
+
+            if (dto.isEnabled === true) {
+                const entity = manager.create(PaymentLinkEntity, dto);
+                entity.providerPayment = payment;
+                await manager.save(entity);
+            }
+        }
+    }
+
+
+    private async resolveBankAccount(
+        manager: EntityManager,
+        payment: ProviderPaymentEntity,
+        dto: any,
+        existingAccount?: BankAccountEntity,
+    ): Promise<BankAccountEntity> {
+
+        //use shared bank transfer account
         if (dto.isUsingBankTransferData === true) {
-            // JOIN: Switch to using shared bank transfer data
-            const firstBt = payment.bankTransfer.find(bt => bt.isEnabled);
-            if (!firstBt) throw new BadRequestException('No enabled bank transfer found to use for Sanad');
+            const shared = payment.bankTransfer?.find(bt => bt.isEnabled);
 
-            const sharedBankAccountId = firstBt.bankAccount.id;
-            entity.bankAccount = firstBt.bankAccount;
-
-            // Cleanup old private account if it was switched out
-            if (oldBankAccountId && oldBankAccountId !== sharedBankAccountId) {
-                await this.safeDeleteBankAccount(manager, payment, oldBankAccountId);
+            if (!shared) {
+                throw new BadRequestException('No enabled bank transfer found');
             }
-        } else if (dto.isUsingBankTransferData === false || dto.bankName || dto.iban) {
-            // FORK/UPDATE: Use private bank account
-            const isCurrentlyShared = payment.bankTransfer.some(bt => bt.bankAccount?.id === oldBankAccountId);
 
-            if (isCurrentlyShared || !entity.bankAccount) {
-                // Create a NEW private account to avoid mutating shared ones
-                entity.bankAccount = this.createBankAccount(dto, manager);
-                entity.bankAccount.providerPayment = { id: payment.id } as any;
-            } else {
-                // Update the already existing private account
-                Object.assign(entity.bankAccount, dto);
-            }
+            return shared.bankAccount;
         }
+
+        //update existing account
+        if (existingAccount) {
+            this.applyBankDetails(existingAccount, dto);
+            return await manager.save(existingAccount);
+        }
+
+        //create new account
+        if (dto.bankName || dto.iban) {
+            const account = manager.create(BankAccountEntity, {
+                bankName: dto.bankName,
+                accountHolderName: dto.accountHolderName,
+                accountNumber: dto.accountNumber,
+                iban: dto.iban,
+                swiftCode: dto.swiftCode,
+            });
+
+            account.providerPayment = payment;
+
+            return await manager.save(account);
+        }
+
+        throw new BadRequestException('Invalid bank data');
     }
 
-    private async safeDeleteBankAccount(manager: EntityManager, payment: ProviderPaymentEntity, bankAccountId: string) {
-        const isUsedByBT = payment.bankTransfer.some(bt => bt.bankAccount?.id === bankAccountId);
-        const isUsedBySanad = payment.sanad.some(s => s.bankAccount?.id === bankAccountId);
-
-        if (!isUsedByBT && !isUsedBySanad) {
-            await manager.delete(BankAccountEntity, bankAccountId);
-        }
+    private applyBankDetails(bank: BankAccountEntity, dto: any) {
+        if (dto.bankName !== undefined) bank.bankName = dto.bankName;
+        if (dto.accountHolderName !== undefined) bank.accountHolderName = dto.accountHolderName;
+        if (dto.accountNumber !== undefined) bank.accountNumber = dto.accountNumber;
+        if (dto.iban !== undefined) bank.iban = dto.iban;
+        if (dto.swiftCode !== undefined) bank.swiftCode = dto.swiftCode;
     }
 }
+
