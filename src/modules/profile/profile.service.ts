@@ -196,7 +196,7 @@ export class ProfileService {
                 }
             }
 
-            // Implicit Deletion: Remove branches not in the incoming list
+            //Remove branches not in the incoming list
             const branchesToDelete = profile.branches.filter(b => !activeBranchIds.includes(b.id));
             if (branchesToDelete.length > 0) {
                 for (const branch of branchesToDelete) {
@@ -212,8 +212,7 @@ export class ProfileService {
 
     private async syncServingAreas(manager: EntityManager, branch: BranchEntity, dtos: any[]) {
         const activeAreaIds: string[] = [];
-        
-        // Ensure the array is initialized to avoid push errors and correctly handle cascades
+
         if (!branch.servingAreas) {
             branch.servingAreas = [];
         }
@@ -224,13 +223,13 @@ export class ProfileService {
             const incomingId = dto.areaId || dto.id;
 
             if (incomingId) {
-                // UPDATE: Match by ID (using string comparison for robustness)
-                const existingArea = branch.servingAreas.find(a => String(a.id) === String(incomingId));
-                
+                // UPDATE: Match by ID
+                const existingArea = branch.servingAreas.find(a => (a.id) === (incomingId));
+
                 if (existingArea) {
                     Object.assign(existingArea, dto);
                     await manager.save(existingArea);
-                    activeAreaIds.push(String(existingArea.id));
+                    activeAreaIds.push((existingArea.id));
                     updatedAreas.push(existingArea);
                 }
             } else {
@@ -240,18 +239,17 @@ export class ProfileService {
                     branch: { id: branch.id }
                 } as any);
                 const saved = await manager.save(newArea);
-                activeAreaIds.push(String(saved.id));
+                activeAreaIds.push((saved.id));
                 updatedAreas.push(saved);
             }
         }
 
-        // Implicit Deletion: Remove areas belonging to this branch that were not in the incoming list
-        const areasToDelete = branch.servingAreas.filter(a => !activeAreaIds.includes(String(a.id)));
+        //Remove areas belonging to this branch that were not in the incoming list
+        const areasToDelete = branch.servingAreas.filter(a => !activeAreaIds.includes((a.id)));
         if (areasToDelete.length > 0) {
             await manager.remove(areasToDelete);
         }
 
-        // Update the branch's in-memory array so the upcoming branch save sees the correct state
         branch.servingAreas = updatedAreas;
     }
 
