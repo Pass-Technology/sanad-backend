@@ -19,7 +19,7 @@ export class ServingAreaDto {
     @ApiPropertyOptional()
     @IsOptional()
     @IsUUID()
-    areaId?: string;
+    id?: string;
 
     @ApiProperty({ example: 10, minimum: 1 })
     @IsNumber()

@@ -35,7 +35,7 @@ import { ServiceManagementService } from '../service-management/service-manageme
 import { PaymentService } from '../payment/payment.service';
 import { LOOKUP_IDS } from '../../shared/constants/lookup-ids';
 import { UpdatePaymentDto } from '../payment/dto/update-payment.dto';
-import { CreateBranchDto } from './dto/create-branches.dto';
+import { CreateBranchDto, CreateBranchesDto, ServingAreaDto } from './dto/create-branches.dto';
 import { ScoringSystemService } from '../profile-scoring-system/scoring-system.service';
 
 @Injectable()
@@ -119,7 +119,7 @@ export class ProfileService {
 
         if (updateCompanyInfoDto.languageIds) {
             profile.languages = updateCompanyInfoDto.languageIds.map(id => ({ id } as any));
-            delete updateCompanyInfoDto.languageIds;
+            delete (updateCompanyInfoDto as any).languageIds;
         }
 
         Object.assign(profile, updateCompanyInfoDto);
@@ -210,7 +210,7 @@ export class ProfileService {
         return await this.profileRepo.findProfileByUserId(userId);
     }
 
-    private async syncServingAreas(manager: EntityManager, branch: BranchEntity, dtos: any[]) {
+    private async syncServingAreas(manager: EntityManager, branch: BranchEntity, dtos: ServingAreaDto[]) {
         const activeAreaIds: string[] = [];
 
         if (!branch.servingAreas) {
@@ -220,16 +220,14 @@ export class ProfileService {
         const updatedAreas: ServingAreaEntity[] = [];
 
         for (const dto of dtos) {
-            const incomingId = dto.areaId || dto.id;
-
-            if (incomingId) {
+            if (dto.id) {
                 // UPDATE: Match by ID
-                const existingArea = branch.servingAreas.find(a => (a.id) === (incomingId));
+                const existingArea = branch.servingAreas.find(a => (a.id) === (dto.id));
 
                 if (existingArea) {
                     Object.assign(existingArea, dto);
                     await manager.save(existingArea);
-                    activeAreaIds.push((existingArea.id));
+                    activeAreaIds.push(existingArea.id);
                     updatedAreas.push(existingArea);
                 }
             } else {
@@ -244,8 +242,8 @@ export class ProfileService {
             }
         }
 
-        //Remove areas belonging to this branch that were not in the incoming list
-        const areasToDelete = branch.servingAreas.filter(a => !activeAreaIds.includes((a.id)));
+        // Remove areas belonging to this branch that were not in the incoming list
+        const areasToDelete = branch.servingAreas.filter(a => !activeAreaIds.includes(String(a.id)));
         if (areasToDelete.length > 0) {
             await manager.remove(areasToDelete);
         }
@@ -253,11 +251,11 @@ export class ProfileService {
         branch.servingAreas = updatedAreas;
     }
 
-    async updateBranch(userId: string, branchId: string, dto: UpdateBranchDto) {
+    async updateBranch(userId: string, branchId: string, updateBranchDto: UpdateBranchDto) {
         const branch = await this.profileRepo.findBranchById(branchId);
         if (!branch) throw new NotFoundException('Branch not found');
 
-        const { servingAreas, ...basicInfo } = dto;
+        const { servingAreas, ...basicInfo } = updateBranchDto;
 
         Object.assign(branch, basicInfo);
 
@@ -321,12 +319,13 @@ export class ProfileService {
         return prefix + result;
     }
     // check if company has valid provider type and company type
-    private async validateCompanyInfo(companyInfo: any) {
-        const isValidProvider = await this.lookupService.isProviderTypeExist(companyInfo.providerTypeId);
+    private async validateCompanyInfo(companyInfo: UpdateCompanyInfoDto | any) {
+        const info = companyInfo as any;
+        const isValidProvider = await this.lookupService.isProviderTypeExist(info.providerTypeId);
         if (!isValidProvider) throw new BadRequestException('Invalid provider type id');
 
-        if (companyInfo.companyTypeId) {
-            const isValidCompany = await this.lookupService.isCompanyTypeExist(companyInfo.companyTypeId);
+        if (info.companyTypeId) {
+            const isValidCompany = await this.lookupService.isCompanyTypeExist(info.companyTypeId);
             if (!isValidCompany) throw new BadRequestException('Invalid company type id');
         }
     }
@@ -344,12 +343,12 @@ export class ProfileService {
     }
 
     // build branch entities
-    private buildBranchEntities(branchesData: any): BranchEntity[] {
-        return branchesData.branches.map((branchDto: any) => this.buildBranchEntity(branchDto));
+    private buildBranchEntities(branchesData: UpdateBranchesDto | CreateBranchesDto): BranchEntity[] {
+        return (branchesData.branches as any[]).map((branchDto) => this.buildBranchEntity(branchDto));
     }
 
-    private buildBranchEntity(branchDto: any): BranchEntity {
-        const servingAreas = (branchDto.servingAreas ?? []).map((area: any) =>
+    private buildBranchEntity(branchDto: CreateBranchDto | UpdateBranchDto | any): BranchEntity {
+        const servingAreas = (branchDto.servingAreas ?? []).map((area: ServingAreaDto) =>
             this.servingAreaRepo.create({
                 radiusKm: area.radiusKm,
                 phone: area.phone ?? null,
