@@ -187,7 +187,7 @@ export class ProfileService {
                         await this.syncServingAreas(manager, existingBranch, servingAreas);
                     }
                     await manager.save(existingBranch);
-                } else if (branchDto.isAvailable !== false) {
+                } else {
                     // Add new branch
                     const newBranch = this.buildBranchEntity(branchDto);
                     newBranch.providerProfile = profile;
@@ -367,6 +367,7 @@ export class ProfileService {
             managerPhone: branchDto.managerPhone ?? null,
             googleMapsLink: branchDto.googleMapsLink ?? null,
             socialMediaLink: branchDto.socialMediaLink ?? null,
+            isAvailable: branchDto.isAvailable ?? true,
             servingAreas,
         });
     }

@@ -3,6 +3,7 @@ import { Type } from 'class-transformer';
 import {
     ArrayMinSize,
     IsArray,
+    IsBoolean,
     IsNotEmpty,
     IsNumber,
     IsOptional,
@@ -90,6 +91,11 @@ export class CreateBranchDto {
     @IsOptional()
     @IsUrl({}, { message: 'socialMediaLink must be a valid URL' })
     socialMediaLink?: string;
+
+    @ApiPropertyOptional({ example: true })
+    @IsOptional()
+    @IsBoolean()
+    isAvailable?: boolean;
 
     @ApiPropertyOptional({ type: [ServingAreaDto] })
     @IsOptional()
