@@ -153,6 +153,8 @@ export class PaymentService {
             await this.syncPos(manager, payment, updatePaymentDto.pos);
             await this.syncPaymentLinks(manager, payment, updatePaymentDto.paymentLink);
 
+            await this.cleanupBankAccounts(manager, payment);
+
             return payment;
         });
     }
@@ -235,25 +237,32 @@ export class PaymentService {
         dtos?: UpdateBankTransferMethodDto[],
     ) {
         if (!dtos) return;
+        payment.bankTransfer = payment.bankTransfer || [];
 
         for (const dto of dtos) {
             // DELETE
             if (dto.id && dto.isEnabled === false) {
                 await manager.delete(PaymentBankTransferEntity, dto.id);
+                payment.bankTransfer = payment.bankTransfer.filter(bt => bt.id !== dto.id);
                 continue;
             }
 
             // UPDATE
             if (dto.id) {
-                const entity = await manager.findOne(PaymentBankTransferEntity, {
-                    where: { id: dto.id },
-                    relations: ['bankAccount'],
-                });
+                const entity = payment.bankTransfer.find(bt => bt.id === dto.id)
+                    || await manager.findOne(PaymentBankTransferEntity, {
+                        where: { id: dto.id },
+                        relations: ['bankAccount'],
+                    });
 
                 if (entity) {
                     Object.assign(entity, dto);
                     entity.bankAccount = await this.resolveBankAccount(manager, payment, dto, entity.bankAccount);
                     await manager.save(entity);
+
+                    if (!payment.bankTransfer.some(bt => bt.id === entity.id)) {
+                        payment.bankTransfer.push(entity);
+                    }
                 }
                 continue;
             }
@@ -263,7 +272,8 @@ export class PaymentService {
                 const entity = manager.create(PaymentBankTransferEntity, dto);
                 entity.bankAccount = await this.resolveBankAccount(manager, payment, dto);
                 entity.providerPayment = payment;
-                await manager.save(entity);
+                const saved = await manager.save(entity);
+                payment.bankTransfer.push(saved);
             }
         }
     }
@@ -274,25 +284,32 @@ export class PaymentService {
         dtos?: UpdateSanadMethodDto[],
     ) {
         if (!dtos) return;
+        payment.sanad = payment.sanad || [];
 
         for (const dto of dtos) {
             if (dto.id && dto.isEnabled === false) {
                 await manager.delete(PaymentSanadEntity, dto.id);
+                payment.sanad = payment.sanad.filter(s => s.id !== dto.id);
                 continue;
             }
 
             if (dto.id) {
-                const entity = await manager.findOne(PaymentSanadEntity, {
-                    where: { id: dto.id },
-                    relations: {
-                        bankAccount: true
-                    }
-                });
+                const entity = payment.sanad.find(s => s.id === dto.id)
+                    || await manager.findOne(PaymentSanadEntity, {
+                        where: { id: dto.id },
+                        relations: {
+                            bankAccount: true
+                        }
+                    });
 
                 if (entity) {
                     Object.assign(entity, dto);
                     entity.bankAccount = await this.resolveBankAccount(manager, payment, dto, entity.bankAccount);
                     await manager.save(entity);
+
+                    if (!payment.sanad.some(s => s.id === entity.id)) {
+                        payment.sanad.push(entity);
+                    }
                 }
                 continue;
             }
@@ -301,7 +318,8 @@ export class PaymentService {
                 const entity = manager.create(PaymentSanadEntity, dto);
                 entity.bankAccount = await this.resolveBankAccount(manager, payment, dto);
                 entity.providerPayment = payment;
-                await manager.save(entity);
+                const saved = await manager.save(entity);
+                payment.sanad.push(saved);
             }
         }
     }
@@ -312,18 +330,25 @@ export class PaymentService {
         dtos?: UpdatePosMethodDto[],
     ) {
         if (!dtos) return;
+        payment.pos = payment.pos || [];
 
         for (const dto of dtos) {
             if (dto.id && dto.isEnabled === false) {
                 await manager.delete(PaymentPosEntity, dto.id);
+                payment.pos = payment.pos.filter(p => p.id !== dto.id);
                 continue;
             }
 
             if (dto.id) {
-                const entity = await manager.findOne(PaymentPosEntity, { where: { id: dto.id } });
+                const entity = payment.pos.find(p => p.id === dto.id)
+                    || await manager.findOne(PaymentPosEntity, { where: { id: dto.id } });
                 if (entity) {
                     Object.assign(entity, dto);
                     await manager.save(entity);
+
+                    if (!payment.pos.some(p => p.id === entity.id)) {
+                        payment.pos.push(entity);
+                    }
                 }
                 continue;
             }
@@ -331,7 +356,8 @@ export class PaymentService {
             if (dto.isEnabled === true) {
                 const entity = manager.create(PaymentPosEntity, dto);
                 entity.providerPayment = payment;
-                await manager.save(entity);
+                const saved = await manager.save(entity);
+                payment.pos.push(saved);
             }
         }
     }
@@ -342,18 +368,25 @@ export class PaymentService {
         dtos?: UpdatePaymentLinkMethodDto[],
     ) {
         if (!dtos) return;
+        payment.paymentLink = payment.paymentLink || [];
 
         for (const dto of dtos) {
             if (dto.id && dto.isEnabled === false) {
                 await manager.delete(PaymentLinkEntity, dto.id);
+                payment.paymentLink = payment.paymentLink.filter(pl => pl.id !== dto.id);
                 continue;
             }
 
             if (dto.id) {
-                const entity = await manager.findOne(PaymentLinkEntity, { where: { id: dto.id } });
+                const entity = payment.paymentLink.find(pl => pl.id === dto.id)
+                    || await manager.findOne(PaymentLinkEntity, { where: { id: dto.id } });
                 if (entity) {
                     Object.assign(entity, dto);
                     await manager.save(entity);
+
+                    if (!payment.paymentLink.some(pl => pl.id === entity.id)) {
+                        payment.paymentLink.push(entity);
+                    }
                 }
                 continue;
             }
@@ -361,7 +394,8 @@ export class PaymentService {
             if (dto.isEnabled === true) {
                 const entity = manager.create(PaymentLinkEntity, dto);
                 entity.providerPayment = payment;
-                await manager.save(entity);
+                const saved = await manager.save(entity);
+                payment.paymentLink.push(saved);
             }
         }
     }
@@ -403,10 +437,34 @@ export class PaymentService {
 
             account.providerPayment = payment;
 
-            return await manager.save(account);
+            const saved = await manager.save(account);
+            payment.bankAccounts = payment.bankAccounts || [];
+            payment.bankAccounts.push(saved);
+            return saved;
         }
 
         throw new BadRequestException('Invalid bank data');
+    }
+
+    private async cleanupBankAccounts(manager: EntityManager, payment: ProviderPaymentEntity) {
+        const usedAccountIds = new Set<string>();
+
+        // Collect all bank account IDs currently referenced by payment methods
+        payment.bankTransfer?.forEach(bt => {
+            if (bt.bankAccount?.id) usedAccountIds.add(bt.bankAccount.id);
+        });
+
+        payment.sanad?.forEach(s => {
+            if (s.bankAccount?.id) usedAccountIds.add(s.bankAccount.id);
+        });
+
+        // Identify accounts that are no longer referenced
+        const accountsToDelete = (payment.bankAccounts || []).filter(ba => !usedAccountIds.has(ba.id));
+
+        if (accountsToDelete.length > 0) {
+            await manager.remove(accountsToDelete);
+            payment.bankAccounts = payment.bankAccounts.filter(ba => usedAccountIds.has(ba.id));
+        }
     }
 
     private applyBankDetails(bank: BankAccountEntity, dto: any) {
