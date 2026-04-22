@@ -14,6 +14,7 @@ import { MailModule } from './modules/mail/mail.module';
 import { TemplateModule } from './modules/template/template.module';
 import { ScoringSystemModule } from './modules/profile-scoring-system/scoring-system.module';
 import { SharedCacheModule } from './shared/cache/cache.module';
+import { UploadAssetsModule } from './modules/upload-assets/upload-assets.module';
 
 @Module({
   imports: [
@@ -31,6 +32,7 @@ import { SharedCacheModule } from './shared/cache/cache.module';
     TemplateModule,
     ScoringSystemModule,
     SharedCacheModule,
+    UploadAssetsModule
   ],
   controllers: [HealthController],
 })
