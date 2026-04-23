@@ -9,6 +9,8 @@ import { ProviderUserInfoEntity } from './entities/provider-user-info.entity';
 import { BranchEntity } from './entities/branch.entity';
 import { ServingAreaEntity } from './entities/serving-area.entity';
 import { ProviderComplianceEntity } from './entities/provider-compliance.entity';
+import { ProviderServiceEntity } from '../service-management/entities/provider-service.entity';
+import { ProviderServicePricingEntity } from '../service-management/entities/provider-service-pricing.entity';
 import { ServiceManagementModule } from '../service-management/service-management.module';
 
 import { UserModule } from '../user/user.module';
@@ -26,13 +28,8 @@ import { ScoringSystemModule } from '../profile-scoring-system/scoring-system.mo
             ServingAreaEntity,
             ProviderComplianceEntity,
             ProviderPaymentEntity,
-            // PaymentCashEntity,
-            // PaymentBankTransferEntity,
-            // PaymentLinkEntity,
-            // PaymentSanadEntity,
-            // PaymentPosEntity,
-            // PaymentChequeEntity,
-            // BankAccountEntity,
+            ProviderServiceEntity,
+            ProviderServicePricingEntity,
         ]),
         UserModule,
         ServiceManagementModule,

@@ -41,9 +41,12 @@ export class ProfileRepository {
                     cheque: true,
                     // bankAccounts: true, // no need to show this but TODO: check how to remove dead records
                 },
-                selectedServices: {
-                    category: true,
-                    children: true
+                providerServices: {
+                    service: {
+                        category: true,
+                        children: true
+                    },
+                    pricingDetails: true
                 },
                 languages: true
             }

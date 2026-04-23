@@ -7,10 +7,11 @@ import { CreateBranchDto } from './create-branches.dto';
 import { IsOptional, IsUUID, IsBoolean, IsArray, ValidateNested } from 'class-validator';
 import { Type } from 'class-transformer';
 
+import { UpdateDetailedServicesDto } from './update-provider-service.dto';
+
 export class UpdateCompanyInfoDto extends PartialType(OmitType(CreateCompanyInfoDto, ['providerTypeId', 'companyTypeId'] as const)) { }
 export class UpdateUserInfoDto extends PartialType(CreateUserInfoDto) { }
 export class UpdateComplianceDto extends PartialType(CreateComplianceDto) { }
-export class UpdateServicesDto extends PartialType(CreateServicesDto) { }
 export class UpdateBranchDto extends PartialType(CreateBranchDto) {
     @ApiProperty({
         required: false,

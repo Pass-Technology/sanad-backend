@@ -1,7 +1,7 @@
 import { Entity, Column, ManyToOne, OneToMany, ManyToMany, JoinColumn } from 'typeorm';
 import { BaseEntity } from '../../../database/base-entity';
 import { CategoryEntity } from './category.entity';
-import { ProviderProfileEntity } from '../../profile/entities/provider-profile.entity';
+import { ProviderServiceEntity } from './provider-service.entity';
 
 @Entity('services')
 export class ServiceEntity extends BaseEntity {
@@ -34,6 +34,6 @@ export class ServiceEntity extends BaseEntity {
     @OneToMany(() => ServiceEntity, (child) => child.parent)
     children: ServiceEntity[];
 
-    @ManyToMany(() => ProviderProfileEntity, (profile) => profile.selectedServices)
-    profiles: ProviderProfileEntity[];
+    @OneToMany(() => ProviderServiceEntity, (providerService) => providerService.service)
+    providerServices: ProviderServiceEntity[];
 }

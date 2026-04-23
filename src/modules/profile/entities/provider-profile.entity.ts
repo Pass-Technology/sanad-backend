@@ -16,9 +16,9 @@ import { LookUpProviderTypeEntity } from '../../lookups/entities/lookup-provider
 import { LookUpCompanyTypeEntity } from '../../lookups/entities/lookup-company-type.entity';
 import { BaseEntity } from '../../../database/base-entity';
 import { UserEntity } from '../../user/entities/user.entity';
-import { ServiceEntity } from '../../service-management/entities/service.entity';
-import { LookupLanguagesEntity } from '../../lookups/entities/lookup-languages.entity';
 import { ProviderPaymentEntity } from '../../payment/entities/provider-payment.entity';
+import { ProviderServiceEntity } from '../../service-management/entities/provider-service.entity';
+import { LookupLanguagesEntity } from '../../lookups/entities/lookup-languages.entity';
 
 @Entity('provider_profiles')
 export class ProviderProfileEntity extends BaseEntity {
@@ -57,13 +57,8 @@ export class ProviderProfileEntity extends BaseEntity {
     websiteLink: string | null;
 
 
-    @ManyToMany(() => ServiceEntity, (service) => service.profiles)
-    @JoinTable({
-        name: 'provider_profile_services',
-        joinColumn: { name: 'profile_id', referencedColumnName: 'id' },
-        inverseJoinColumn: { name: 'service_id', referencedColumnName: 'id' }
-    })
-    selectedServices: ServiceEntity[];
+    @OneToMany(() => ProviderServiceEntity, (providerService) => providerService.profile, { cascade: true })
+    providerServices: ProviderServiceEntity[];
 
 
     @OneToOne(() => ProviderUserInfoEntity, (info) => info.providerProfile, {

@@ -26,10 +26,11 @@ import {
     UpdateCompanyInfoDto,
     UpdateUserInfoDto,
     UpdateComplianceDto,
-    UpdateServicesDto,
+    // UpdateServicesDto,
     UpdateBranchDto,
     UpdateBranchesDto,
 } from './dto/update-full-profile.dto';
+import { UpdateProviderServiceDto } from './dto/update-provider-service.dto';
 import { CreateBranchDto } from './dto/create-branches.dto';
 // import { CurrentUser } from 'src/shared/decorators/current-user.decorator';
 import { UpdatePaymentDto } from '../payment/dto/update-payment.dto';
@@ -73,15 +74,6 @@ export class ProfileController {
         @Body() dto: UpdateUserInfoDto,
     ) {
         return await this.profileService.updateUserInfo(req.user.userId, dto);
-    }
-
-    @Patch('update/services')
-    @ApiOperation({ summary: 'Update selected services' })
-    async updateServices(
-        @Request() req: { user: UserInfoResponseWithTokensDto },
-        @Body() dto: UpdateServicesDto,
-    ) {
-        return await this.profileService.updateServices(req.user.userId, dto);
     }
 
     @Patch('update/compliance')
@@ -141,6 +133,36 @@ export class ProfileController {
     // ) {
     //     return await this.profileService.updateBranch(req.user.userId, branchId, dto);
     // }
+
+    @Post('add-service')
+    @ApiOperation({ summary: 'Add a new service to the profile with details' })
+    async addService(
+        @Request() req: { user: UserInfoResponseWithTokensDto },
+        @Body() dto: UpdateProviderServiceDto,
+    ) {
+        return await this.profileService.addService(req.user.userId, dto);
+    }
+
+    @Patch('update/services/:id')
+    @ApiOperation({ summary: 'Update a specific provider service (one-by-one)' })
+    @ApiParam({ name: 'id', description: 'Provider Service UUID (the link ID, not global service ID)' })
+    async updateService(
+        @Request() req: { user: UserInfoResponseWithTokensDto },
+        @Param('id') id: string,
+        @Body() dto: UpdateProviderServiceDto,
+    ) {
+        return await this.profileService.updateService(req.user.userId, id, dto);
+    }
+
+    @Delete('delete-service/:id')
+    @ApiOperation({ summary: 'Remove a service from the profile' })
+    @ApiParam({ name: 'id', description: 'Provider Service UUID' })
+    async deleteService(
+        @Request() req: { user: UserInfoResponseWithTokensDto },
+        @Param('id') id: string,
+    ) {
+        return await this.profileService.deleteService(req.user.userId, id);
+    }
 
     @Delete('delete-branch/:id')
     @ApiOperation({ summary: 'Delete a branch' })

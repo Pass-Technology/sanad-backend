@@ -6,11 +6,20 @@ import { ServiceManagementController } from './service-management.controller';
 import { ServiceManagementService } from './service-management.service';
 import { ProviderProfileEntity } from '../profile/entities/provider-profile.entity';
 import { RequestServiceEntity } from './entities/request-service.entity';
+import { ProviderServiceEntity } from './entities/provider-service.entity';
+import { ProviderServicePricingEntity } from './entities/provider-service-pricing.entity';
 import { UserModule } from '../user/user.module';
 
 @Module({
     imports: [
-        TypeOrmModule.forFeature([CategoryEntity, ServiceEntity, ProviderProfileEntity, RequestServiceEntity]),
+        TypeOrmModule.forFeature([
+            CategoryEntity,
+            ServiceEntity,
+            ProviderProfileEntity,
+            RequestServiceEntity,
+            ProviderServiceEntity,
+            ProviderServicePricingEntity
+        ]),
         UserModule
     ],
     controllers: [ServiceManagementController],

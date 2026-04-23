@@ -18,7 +18,6 @@ import {
     UpdateCompanyInfoDto,
     UpdateUserInfoDto,
     UpdateComplianceDto,
-    UpdateServicesDto,
     UpdateBranchDto,
     UpdateBranchesDto,
 } from './dto/update-full-profile.dto';
@@ -28,7 +27,8 @@ import { ProviderUserInfoEntity } from './entities/provider-user-info.entity';
 import { BranchEntity } from './entities/branch.entity';
 import { ProviderComplianceEntity } from './entities/provider-compliance.entity';
 import { ServingAreaEntity } from './entities/serving-area.entity';
-// import { ServiceEntity } from '../service-management/entities/service.entity';
+import { ProviderServiceEntity } from '../service-management/entities/provider-service.entity';
+import { ProviderServicePricingEntity } from '../service-management/entities/provider-service-pricing.entity';
 import { LookUpService } from '../lookups/lookup.service';
 import { ServiceManagementService } from '../service-management/service-management.service';
 // import { CreateServicesDto } from './dto/step-4-services.dto';
@@ -36,6 +36,7 @@ import { PaymentService } from '../payment/payment.service';
 import { LOOKUP_IDS } from '../../shared/constants/lookup-ids';
 import { UpdatePaymentDto } from '../payment/dto/update-payment.dto';
 import { CreateBranchDto, CreateBranchesDto, ServingAreaDto } from './dto/create-branches.dto';
+import { UpdateProviderServiceDto } from './dto/update-provider-service.dto';
 import { ScoringSystemService } from '../profile-scoring-system/scoring-system.service';
 
 @Injectable()
@@ -101,7 +102,7 @@ export class ProfileService {
             socialMediaLink: companyInfo.socialMediaLink,
             websiteLink: companyInfo.websiteLink,
             languages: companyInfo.languageIds ? companyInfo.languageIds.map(id => ({ id })) : [],
-            selectedServices: services.selectedServiceIds.map(id => ({ id })),
+            providerServices: services.selectedServiceIds.map(id => ({ service: { id } })),
             userInfo: manager.create(ProviderUserInfoEntity, userInfo),
             branches: this.buildBranchEntities(branches),
             payment: this.paymentService.buildPaymentEntity(payment, manager),
@@ -138,17 +139,101 @@ export class ProfileService {
         return await this.profileRepo.findProfileByUserId(userId);
     }
 
-    async updateServices(userId: string, updateServiceDto: UpdateServicesDto) {
-        const profile = await this.profileRepo.findProfileByUserId(userId);
+    async addService(userId: string, dto: UpdateProviderServiceDto) {
+        return await this.dataSource.transaction(async (manager) => {
+            const profile = await this.profileRepo.findProfileByUserId(userId, manager);
 
-        if (updateServiceDto.selectedServiceIds) {
-            await this.validateServiceIds(updateServiceDto.selectedServiceIds);
-            profile.selectedServices = updateServiceDto.selectedServiceIds.map(id => ({ id } as any));
+            // Check if already exists
+            const existing = profile.providerServices.find(ps => ps.service.id === dto.serviceId);
+            if (existing) {
+                throw new BadRequestException('Service already added to profile');
+            }
+
+            const newProviderService = manager.create(ProviderServiceEntity, {
+                profile: { id: profile.id },
+                service: { id: dto.serviceId },
+                description: dto.description,
+            });
+
+            const saved = await manager.save(newProviderService);
+
+            if (dto.pricingDetails && dto.pricingDetails.length > 0) {
+                await this.syncPricingDetails(manager, saved, dto.pricingDetails);
+            }
+
+            await this.scoringService.recalculate(userId);
+            return await this.profileRepo.findProfileByUserId(userId, manager);
+        });
+    }
+
+    async updateService(userId: string, providerServiceId: string, dto: UpdateProviderServiceDto) {
+        return await this.dataSource.transaction(async (manager) => {
+            const providerService = await manager.findOne(ProviderServiceEntity, {
+                where: { id: providerServiceId, profile: { user: { id: userId } } },
+                relations: { pricingDetails: true }
+            });
+
+            if (!providerService) {
+                throw new NotFoundException('Provider service not found');
+            }
+
+            providerService.description = dto.description ?? providerService.description;
+
+            if (dto.pricingDetails) {
+                await this.syncPricingDetails(manager, providerService, dto.pricingDetails);
+            }
+
+            await manager.save(providerService);
+            await this.scoringService.recalculate(userId);
+            return await this.profileRepo.findProfileByUserId(userId, manager);
+        });
+    }
+
+    async deleteService(userId: string, providerServiceId: string) {
+        return await this.dataSource.transaction(async (manager) => {
+            const providerService = await manager.findOne(ProviderServiceEntity, {
+                where: { id: providerServiceId, profile: { user: { id: userId } } }
+            });
+
+            if (!providerService) {
+                throw new NotFoundException('Provider service not found');
+            }
+
+            await manager.remove(providerService);
+            await this.scoringService.recalculate(userId);
+            return await this.profileRepo.findProfileByUserId(userId, manager);
+        });
+    }
+
+    private async syncPricingDetails(manager: EntityManager, providerService: ProviderServiceEntity, pricingDtos: any[]) {
+        const activePricingIds: string[] = [];
+
+        if (!providerService.pricingDetails) {
+            providerService.pricingDetails = [];
         }
 
-        await this.dataSource.manager.save(ProviderProfileEntity, profile);
-        await this.scoringService.recalculate(userId);
-        return await this.profileRepo.findProfileByUserId(userId);
+        for (const dto of pricingDtos) {
+            if (dto.id) {
+                const existingPricing = providerService.pricingDetails.find(p => p.id === dto.id);
+                if (existingPricing) {
+                    Object.assign(existingPricing, dto);
+                    await manager.save(existingPricing);
+                    activePricingIds.push(existingPricing.id);
+                }
+            } else {
+                const newPricing = manager.create(ProviderServicePricingEntity, {
+                    ...dto,
+                    providerService: { id: providerService.id }
+                });
+                const saved = await manager.save(newPricing);
+                activePricingIds.push(saved.id);
+            }
+        }
+
+        const pricingToDelete = providerService.pricingDetails.filter(p => !activePricingIds.includes(p.id));
+        if (pricingToDelete.length > 0) {
+            await manager.remove(pricingToDelete);
+        }
     }
 
     async updateCompliance(userId: string, updateComplianceDto: UpdateComplianceDto) {
