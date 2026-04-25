@@ -33,4 +33,11 @@ export class AppConfigService {
     get mail() {
         return this.configService.get('mail', { infer: true })!;
     }
+
+    /**
+     * AWS configuration
+     */
+    get aws() {
+        return this.configService.get('aws', { infer: true })!;
+    }
 }

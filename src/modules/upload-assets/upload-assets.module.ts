@@ -4,6 +4,7 @@ import { UploadAssetsService } from "./upload-assets.service";
 import { AssetEntity } from "./entities/asset.entity";
 import { AssetTypeEntity } from "./entities/asset-type.entity";
 import { STORAGE_PROVIDER } from "./interfaces/storage-provider.interface";
+import { S3StorageProvider } from "./providers/s3.provider";
 
 
 @Global()
@@ -15,8 +16,7 @@ import { STORAGE_PROVIDER } from "./interfaces/storage-provider.interface";
     providers: [UploadAssetsService,
         {
             provide: STORAGE_PROVIDER,
-            useValue: {},
-            // useClass with the future provider
+            useClass: S3StorageProvider,
         }
     ],
     exports: [UploadAssetsService, STORAGE_PROVIDER]

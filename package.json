@@ -28,6 +28,7 @@
     "kill:port": "lsof -ti :3000,3001 | xargs kill -9"
   },
   "dependencies": {
+    "@aws-sdk/client-s3": "^3.1037.0",
     "@nestjs-modules/mailer": "^2.3.4",
     "@nestjs/cache-manager": "^3.1.0",
     "@nestjs/common": "^11.0.1",
