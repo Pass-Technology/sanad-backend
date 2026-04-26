@@ -1,6 +1,6 @@
 import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository, ILike, DataSource } from 'typeorm';
+import { Repository, ILike, DataSource, In } from 'typeorm';
 import { CategoryEntity } from './entities/category.entity';
 import { ServiceEntity } from './entities/service.entity';
 
@@ -61,6 +61,13 @@ export class ServiceManagementService {
         });
 
         return this.localize(service, lang);
+    }
+
+    async findServicesByIds(serviceIds: string[]) {
+        if (!serviceIds || serviceIds.length === 0) return [];
+        return await this.serviceRepo.find({
+            where: { id: In(serviceIds), isActive: true }
+        });
     }
 
     // get all services of provider insdie profile page (search and pagination)

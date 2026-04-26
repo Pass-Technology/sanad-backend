@@ -111,7 +111,7 @@ export class LookUpService {
 
 
     async isProviderTypeExist(id: string): Promise<boolean> {
-        return this.providerTypeRepo.exists({ where: { id } })
+        return this.validateProviderTypeId(id);
     }
 
     async validateCompanyTypeId(id: string): Promise<boolean> {
@@ -120,7 +120,7 @@ export class LookUpService {
     }
 
     async isCompanyTypeExist(id: string): Promise<boolean> {
-        return this.companyTypeRepo.exists({ where: { id } })
+        return this.validateCompanyTypeId(id);
     }
 
 

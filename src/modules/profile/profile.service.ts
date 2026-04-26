@@ -417,11 +417,11 @@ export class ProfileService {
 
     // check if services are valid and active
     private async validateServiceIds(serviceIds: string[]) {
-        const invalidIds: string[] = [];
-        for (const serviceId of serviceIds) {
-            const service = await this.serviceManagement.findServiceById(serviceId);
-            if (!service) invalidIds.push(serviceId);
-        }
+        if (!serviceIds || serviceIds.length === 0) return;
+        const validServices = await this.serviceManagement.findServicesByIds(serviceIds);
+        const validIds = new Set(validServices.map(s => s.id));
+        
+        const invalidIds = serviceIds.filter(id => !validIds.has(id));
         if (invalidIds.length > 0) {
             throw new BadRequestException('Some service IDs are invalid or inactive');
         }
