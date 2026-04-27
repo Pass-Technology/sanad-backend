@@ -14,6 +14,7 @@ import { UserRepository } from '../user/user.repository';
 // import { UserEntity } from '../user/entities/user.entity';
 // import { CreateBranchDto } from './dto/step-3-branches.dto';
 import { CreateFullProfileDto } from './dto/create-full-profile.dto';
+import { CreateCompanyInfoDto } from './dto/create-company-info.dto';
 import {
     UpdateCompanyInfoDto,
     UpdateUserInfoDto,
@@ -36,8 +37,9 @@ import { PaymentService } from '../payment/payment.service';
 import { LOOKUP_IDS } from '../../shared/constants/lookup-ids';
 import { UpdatePaymentDto } from '../payment/dto/update-payment.dto';
 import { CreateBranchDto, CreateBranchesDto, ServingAreaDto } from './dto/create-branches.dto';
-import { UpdateProviderServiceDto } from './dto/update-provider-service.dto';
+import { UpdateProviderServiceDto, UpdateProviderServicePricingDto } from './dto/update-provider-service.dto';
 import { ScoringSystemService } from '../profile-scoring-system/scoring-system.service';
+// import { PricingDto } from '../service-management/Dto/pricing.dto';
 
 @Injectable()
 export class ProfileService {
@@ -118,12 +120,13 @@ export class ProfileService {
     async updateCompanyInfo(userId: string, updateCompanyInfoDto: UpdateCompanyInfoDto) {
         const profile = await this.profileRepo.findProfileByUserId(userId);
 
-        if (updateCompanyInfoDto.languageIds) {
-            profile.languages = updateCompanyInfoDto.languageIds.map(id => ({ id } as any));
-            delete (updateCompanyInfoDto as any).languageIds;
+        const { languageIds, ...basicInfo } = updateCompanyInfoDto;
+
+        if (languageIds) {
+            profile.languages = languageIds.map(id => ({ id } as any));
         }
 
-        Object.assign(profile, updateCompanyInfoDto);
+        Object.assign(profile, basicInfo);
         const updated = await this.dataSource.manager.save(ProviderProfileEntity, profile);
         await this.scoringService.recalculate(userId);
         return updated;
@@ -205,35 +208,33 @@ export class ProfileService {
         });
     }
 
-    private async syncPricingDetails(manager: EntityManager, providerService: ProviderServiceEntity, pricingDtos: any[]) {
-        const activePricingIds: string[] = [];
-
+    private async syncPricingDetails(manager: EntityManager, providerService: ProviderServiceEntity, pricingDtos: UpdateProviderServicePricingDto[]) {
         if (!providerService.pricingDetails) {
             providerService.pricingDetails = [];
         }
 
+        const entitiesToSave: ProviderServicePricingEntity[] = [];
+
         for (const dto of pricingDtos) {
             if (dto.id) {
                 const existingPricing = providerService.pricingDetails.find(p => p.id === dto.id);
-                if (existingPricing) {
-                    Object.assign(existingPricing, dto);
-                    await manager.save(existingPricing);
-                    activePricingIds.push(existingPricing.id);
-                }
+                if (!existingPricing) throw new NotFoundException('Pricing not found');
+
+                Object.assign(existingPricing, dto);
+                entitiesToSave.push(existingPricing);
             } else {
                 const newPricing = manager.create(ProviderServicePricingEntity, {
-                    ...dto,
+                    description: dto.description,
+                    price: dto.price,
                     providerService: { id: providerService.id }
                 });
-                const saved = await manager.save(newPricing);
-                activePricingIds.push(saved.id);
+
+                providerService.pricingDetails.push(newPricing);
+                entitiesToSave.push(newPricing);
             }
         }
 
-        const pricingToDelete = providerService.pricingDetails.filter(p => !activePricingIds.includes(p.id));
-        if (pricingToDelete.length > 0) {
-            await manager.remove(pricingToDelete);
-        }
+        return await manager.save(ProviderServicePricingEntity, entitiesToSave);
     }
 
     async updateCompliance(userId: string, updateComplianceDto: UpdateComplianceDto) {
@@ -320,7 +321,7 @@ export class ProfileService {
                 const newArea = manager.create(ServingAreaEntity, {
                     ...dto,
                     branch: { id: branch.id }
-                } as any);
+                });
                 const saved = await manager.save(newArea);
                 activeAreaIds.push((saved.id));
                 updatedAreas.push(saved);
@@ -404,13 +405,12 @@ export class ProfileService {
         return prefix + result;
     }
     // check if company has valid provider type and company type
-    private async validateCompanyInfo(companyInfo: UpdateCompanyInfoDto | any) {
-        const info = companyInfo as any;
-        const isValidProvider = await this.lookupService.isProviderTypeExist(info.providerTypeId);
+    private async validateCompanyInfo(companyInfo: CreateCompanyInfoDto) {
+        const isValidProvider = await this.lookupService.isProviderTypeExist(companyInfo.providerTypeId);
         if (!isValidProvider) throw new BadRequestException('Invalid provider type id');
 
-        if (info.companyTypeId) {
-            const isValidCompany = await this.lookupService.isCompanyTypeExist(info.companyTypeId);
+        if (companyInfo.companyTypeId) {
+            const isValidCompany = await this.lookupService.isCompanyTypeExist(companyInfo.companyTypeId);
             if (!isValidCompany) throw new BadRequestException('Invalid company type id');
         }
     }
@@ -429,10 +429,10 @@ export class ProfileService {
 
     // build branch entities
     private buildBranchEntities(branchesData: UpdateBranchesDto | CreateBranchesDto): BranchEntity[] {
-        return (branchesData.branches as any[]).map((branchDto) => this.buildBranchEntity(branchDto));
+        return branchesData.branches.map((branchDto) => this.buildBranchEntity(branchDto));
     }
 
-    private buildBranchEntity(branchDto: CreateBranchDto | UpdateBranchDto | any): BranchEntity {
+    private buildBranchEntity(branchDto: CreateBranchDto | UpdateBranchDto): BranchEntity {
         const servingAreas = (branchDto.servingAreas ?? []).map((area: ServingAreaDto) =>
             this.servingAreaRepo.create({
                 radiusKm: area.radiusKm,

@@ -10,11 +10,13 @@ export class UpdateProviderServicePricingDto {
 
     @ApiProperty({ example: 'Standard Cleaning' })
     @IsString()
-    description: string;
+    @IsOptional()
+    description?: string;
 
     @ApiProperty({ example: 30.00 })
     @IsNumber()
-    price: number;
+    @IsOptional()
+    price?: number;
 }
 
 export class UpdateProviderServiceDto {
