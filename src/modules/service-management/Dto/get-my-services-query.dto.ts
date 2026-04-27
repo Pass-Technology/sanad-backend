@@ -7,4 +7,9 @@ export class GetMyServicesQueryDto extends PaginationQueryDto {
     @IsOptional()
     @IsString()
     searchString?: string;
+
+    @ApiPropertyOptional({ description: 'Filter services by category ID' })
+    @IsOptional()
+    @IsString()
+    categoryId?: string;
 }

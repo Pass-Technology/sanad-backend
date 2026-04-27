@@ -71,8 +71,8 @@ export class ServiceManagementService {
     }
 
     // get all services of provider insdie profile page (search and pagination)
-    async getMyServices(userId: string, query: GetMyServicesQueryDto, lang: string = 'en', categoryId?: string): Promise<PaginatedResponseDto<any>> {
-        const { page = 1, limit = 10, searchString } = query;
+    async getMyServices(userId: string, query: GetMyServicesQueryDto, lang: string = 'en'): Promise<PaginatedResponseDto<any>> {
+        const { page = 1, limit = 10, searchString, categoryId } = query;
         const skip = (page - 1) * limit;
 
         const baseWhere: any = {
