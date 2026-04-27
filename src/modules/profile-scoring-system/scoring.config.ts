@@ -26,7 +26,7 @@ export const SCORING_CONFIG: ScoringSectionConfig[] = [
         id: ScoringSectionId.SERVICES,
         title: 'Services',
         fields: [
-            { key: 'selectedServices', label: 'Services Selection', required: true, type: 'array' },
+            { key: 'providerServices', label: 'Services Selection', required: true, type: 'array' },
         ],
     },
     {
