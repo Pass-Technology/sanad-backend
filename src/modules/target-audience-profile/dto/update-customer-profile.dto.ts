@@ -1,5 +1,5 @@
 import { ApiPropertyOptional } from '@nestjs/swagger';
-import { IsEnum, IsOptional, IsString } from 'class-validator';
+import { IsArray, IsEnum, IsOptional, IsString } from 'class-validator';
 import { Categories, DominantGender, CustomerAgeRange, DeliveryLocations, IncomeLevel, LeadSources } from '../types/target-audience-profile-sections.types';
 
 export class UpdateCustomerProfileDto {
@@ -18,10 +18,11 @@ export class UpdateCustomerProfileDto {
     @IsOptional()
     age_range?: CustomerAgeRange;
 
-    @ApiPropertyOptional({ example: 'Saudi' })
-    @IsString()
+    @ApiPropertyOptional({ example: ['Saudi'] })
+    @IsArray()
+    @IsString({ each: true })
     @IsOptional()
-    nationalities?: string;
+    nationalities?: string[];
 
     @ApiPropertyOptional({ enum: DeliveryLocations })
     @IsEnum(DeliveryLocations)
@@ -33,10 +34,11 @@ export class UpdateCustomerProfileDto {
     @IsOptional()
     income_level?: IncomeLevel;
 
-    @ApiPropertyOptional({ example: 'Riyadh' })
-    @IsString()
+    @ApiPropertyOptional({ example: ['Riyadh'] })
+    @IsArray()
+    @IsString({ each: true })
     @IsOptional()
-    highest_demand_cities?: string;
+    highest_demand_cities?: string[];
 
     @ApiPropertyOptional({ enum: LeadSources })
     @IsEnum(LeadSources)

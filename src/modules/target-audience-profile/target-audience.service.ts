@@ -8,7 +8,8 @@ import { UpdateServicesDto } from "./dto/update-services.dto";
 import { UpdateOperationsDto } from "./dto/update-operations.dto";
 import { UpdateCustomerProfileDto } from "./dto/update-customer-profile.dto";
 import { UpdatePurchasingDto } from "./dto/update-purchasing.dto";
-import { BasicInfo, CustomerProfile, Operations, PurchasingBehavior, Services, NumericRange } from "./types/target-audience-profile-sections.types";
+import { BasicInfo, CustomerProfile, NumericRange, Operations, PurchasingBehavior, Services, Strategy } from "./types/target-audience-profile-sections.types";
+import { UpdateTargetAudienceDto } from "./dto/UpdateTargetAudience.dto";
 
 @Injectable()
 export class TargetAudienceService {
@@ -20,14 +21,12 @@ export class TargetAudienceService {
     ) { }
 
     private async getOrCreateProfile(userId: string): Promise<TargetAudienceProfile> {
-        const profile = await this.targetAudienceProfileRepository.findOne({
+        const targetAudienceProfile = await this.targetAudienceProfileRepository.findOne({
             where: { providerProfile: { user: { id: userId } } },
-            relations: {
-                providerProfile: true
-            }
+            relations: ['providerProfile']
         });
 
-        if (profile) return profile;
+        if (targetAudienceProfile) return targetAudienceProfile;
 
         const providerProfile = await this.profileRepository.findProfileByUserId(userId);
         if (!providerProfile) {
@@ -36,82 +35,86 @@ export class TargetAudienceService {
 
         const newProfile = this.targetAudienceProfileRepository.create({
             providerProfile,
-            basicInfo: {} as any,
-            services: {} as any,
-            operations: {} as any,
-            customer: {} as any,
-            purchasing: {} as any,
-            strategy: {} as any,
+            basicInfo: {} as BasicInfo,
+            services: {} as Services,
+            operations: {} as Operations,
+            customer: {} as CustomerProfile,
+            purchasing: {} as PurchasingBehavior,
+            strategy: { status: 'Later' } as Strategy,
         });
 
         return await this.targetAudienceProfileRepository.save(newProfile);
     }
 
     async getProfile(userId: string) {
-        const profile = await this.getOrCreateProfile(userId);
-        return {
-            ...profile,
-            completionPercentage: this.calculateCompletion(profile)
-        };
+        return await this.getOrCreateProfile(userId);
     }
 
-    async updateBasicInfo(userId: string, dto: UpdateBasicInfoDto) {
+    async updateProfile(userId: string, dto: UpdateTargetAudienceDto) {
         const profile = await this.getOrCreateProfile(userId);
+
+        if (dto.basicInfo) this.updateBasicInfoSection(profile, dto.basicInfo);
+        if (dto.services) this.updateServicesSection(profile, dto.services);
+        if (dto.operations) this.updateOperationsSection(profile, dto.operations);
+        if (dto.customer) this.updateCustomerSection(profile, dto.customer);
+        if (dto.purchasing) this.updatePurchasingSection(profile, dto.purchasing);
+        if (dto.strategy) {
+            profile.strategy = {
+                ...profile.strategy,
+                ...dto.strategy
+            };
+        }
+        return await this.targetAudienceProfileRepository.save(profile);
+    }
+
+
+    private updateBasicInfoSection(profile: TargetAudienceProfile, dto: UpdateBasicInfoDto) {
         profile.basicInfo = {
             ...profile.basicInfo,
-            ageGroups: { 
-                from: dto.age_from !== undefined ? dto.age_from : (profile.basicInfo?.ageGroups?.from || 0), 
-                to: dto.age_to !== undefined ? dto.age_to : (profile.basicInfo?.ageGroups?.to || 0) 
+            ageGroups: {
+                from: dto.age_from !== undefined ? dto.age_from : (profile.basicInfo?.ageGroups?.from || 0),
+                to: dto.age_to !== undefined ? dto.age_to : (profile.basicInfo?.ageGroups?.to || 0)
             },
-            ...(dto.gender !== undefined && { gender: dto.gender as any }),
-            ...(dto.residency_status !== undefined && { residencyStatus: dto.residency_status as any }),
-            ...(dto.education_level !== undefined && { educationLevel: dto.education_level as any }),
-            ...(dto.income_level !== undefined && { incomeLevel: dto.income_level as any })
+            ...(dto.gender !== undefined && { gender: dto.gender }),
+            ...(dto.residency_status !== undefined && { residencyStatus: dto.residency_status }),
+            ...(dto.education_level !== undefined && { educationLevel: dto.education_level }),
+            ...(dto.income_level !== undefined && { incomeLevel: dto.income_level })
         };
-        return await this.saveAndCalculateCompletion(profile);
     }
 
-    async updateServices(userId: string, dto: UpdateServicesDto) {
-        const profile = await this.getOrCreateProfile(userId);
+    private updateServicesSection(profile: TargetAudienceProfile, dto: UpdateServicesDto) {
         profile.services = {
             ...profile.services,
             ...(dto.home_service !== undefined && { homeService: dto.home_service }),
             ...(dto.product_delivery !== undefined && { productDelivery: dto.product_delivery })
         };
-        return await this.saveAndCalculateCompletion(profile);
     }
 
-    async updateOperations(userId: string, dto: UpdateOperationsDto) {
-        const profile = await this.getOrCreateProfile(userId);
+    private updateOperationsSection(profile: TargetAudienceProfile, dto: UpdateOperationsDto) {
         profile.operations = {
             ...profile.operations,
             ...(dto.daily_capacity !== undefined && { dailyCapacity: dto.daily_capacity }),
-            ...(dto.working_hours !== undefined && { workingHours: dto.working_hours as any }),
-            ...(dto.work_structure !== undefined && { workStructure: dto.work_structure as any }),
+            ...(dto.working_hours !== undefined && { workingHours: dto.working_hours }),
+            ...(dto.work_structure !== undefined && { workStructure: dto.work_structure }),
             ...(dto.has_transportation !== undefined && { hasTransportation: dto.has_transportation })
         };
-        return await this.saveAndCalculateCompletion(profile);
     }
 
-    async updateCustomerProfile(userId: string, dto: UpdateCustomerProfileDto) {
-        const profile = await this.getOrCreateProfile(userId);
+    private updateCustomerSection(profile: TargetAudienceProfile, dto: UpdateCustomerProfileDto) {
         profile.customer = {
             ...profile.customer,
-            ...(dto.categories !== undefined && { categories: dto.categories as any }),
-            ...(dto.dominant_gender !== undefined && { dominantGender: dto.dominant_gender as any }),
-            ...(dto.age_range !== undefined && { ageRange: dto.age_range as any }),
-            ...(dto.nationalities !== undefined && { nationalities: dto.nationalities as any }),
-            ...(dto.delivery_locations !== undefined && { deliveryLocations: dto.delivery_locations as any }),
-            ...(dto.income_level !== undefined && { incomeLevel: dto.income_level as any }),
-            ...(dto.highest_demand_cities !== undefined && { highestDemandCities: dto.highest_demand_cities as any }),
-            ...(dto.lead_sources !== undefined && { leadSources: dto.lead_sources as any })
+            ...(dto.categories !== undefined && { categories: dto.categories }),
+            ...(dto.dominant_gender !== undefined && { dominantGender: dto.dominant_gender }),
+            ...(dto.age_range !== undefined && { ageRange: dto.age_range }),
+            ...(dto.nationalities !== undefined && { nationalities: dto.nationalities }),
+            ...(dto.delivery_locations !== undefined && { deliveryLocations: dto.delivery_locations }),
+            ...(dto.income_level !== undefined && { incomeLevel: dto.income_level }),
+            ...(dto.highest_demand_cities !== undefined && { highestDemandCities: dto.highest_demand_cities }),
+            ...(dto.lead_sources !== undefined && { leadSources: dto.lead_sources })
         };
-        return await this.saveAndCalculateCompletion(profile);
     }
 
-    async updatePurchasing(userId: string, dto: UpdatePurchasingDto) {
-        const profile = await this.getOrCreateProfile(userId);
-
+    private updatePurchasingSection(profile: TargetAudienceProfile, dto: UpdatePurchasingDto) {
         let avgOrderValueRange: NumericRange | undefined;
         if (dto.avg_order_value) {
             const mappings: Record<string, NumericRange> = {
@@ -126,33 +129,11 @@ export class TargetAudienceService {
         profile.purchasing = {
             ...profile.purchasing,
             ...(avgOrderValueRange && { avgOrderValue: avgOrderValueRange }),
-            ...(dto.reason_for_choosing !== undefined && { reasonsForChoosing: dto.reason_for_choosing as any }),
-            ...(dto.peak_demand_time !== undefined && { peakDemandTime: dto.peak_demand_time as any }),
+            ...(dto.reason_for_choosing !== undefined && { reasonsForChoosing: dto.reason_for_choosing }),
+            ...(dto.peak_demand_time !== undefined && { peakDemandTime: dto.peak_demand_time }),
             ...(dto.is_seasonal !== undefined && { isSeasonal: dto.is_seasonal }),
-            ...(dto.customer_retention !== undefined && { customerRetention: dto.customer_retention as any }),
-            ...(dto.response_to_price_increase !== undefined && { responseToPriceIncrease: dto.response_to_price_increase as any })
+            ...(dto.customer_retention !== undefined && { customerRetention: dto.customer_retention }),
+            ...(dto.response_to_price_increase !== undefined && { responseToPriceIncrease: dto.response_to_price_increase })
         };
-        return await this.saveAndCalculateCompletion(profile);
-    }
-
-    private async saveAndCalculateCompletion(profile: TargetAudienceProfile) {
-        const savedProfile = await this.targetAudienceProfileRepository.save(profile);
-        return {
-            ...savedProfile,
-            completionPercentage: this.calculateCompletion(savedProfile)
-        };
-    }
-
-    private calculateCompletion(profile: TargetAudienceProfile): number {
-        const sections = [
-            profile.basicInfo,
-            profile.services,
-            profile.operations,
-            profile.customer,
-            profile.purchasing
-        ];
-
-        const filledSections = sections.filter(s => s && Object.keys(s).length > 0).length;
-        return Math.round((filledSections / sections.length) * 100);
     }
 }

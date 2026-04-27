@@ -15,6 +15,7 @@ import { TemplateModule } from './modules/template/template.module';
 import { ScoringSystemModule } from './modules/profile-scoring-system/scoring-system.module';
 import { SharedCacheModule } from './shared/cache/cache.module';
 import { UploadAssetsModule } from './modules/upload-assets/upload-assets.module';
+import { TargetAudienceModule } from './modules/target-audience-profile/target-audience.module';
 
 @Module({
   imports: [
@@ -32,7 +33,8 @@ import { UploadAssetsModule } from './modules/upload-assets/upload-assets.module
     TemplateModule,
     ScoringSystemModule,
     SharedCacheModule,
-    UploadAssetsModule
+    UploadAssetsModule,
+    TargetAudienceModule
   ],
   controllers: [HealthController],
 })

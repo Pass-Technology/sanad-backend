@@ -131,10 +131,10 @@ export interface CustomerProfile {
     categories: Categories;
     dominantGender: DominantGender;
     ageRange: CustomerAgeRange;
-    nationalities: string;
+    nationalities: string[];
     deliveryLocations: DeliveryLocations;
     incomeLevel: IncomeLevel;
-    highestDemandCities: string;
+    highestDemandCities: string[];
     leadSources: LeadSources;
 }
 
@@ -147,11 +147,6 @@ export interface PurchasingBehavior {
     responseToPriceIncrease: ResponseToPriceIncrease;
 }
 
-export interface TargetAudienceProfileSections {
-    basicInfo: BasicInfo;
-    services: Services;
-    operations: Operations;
-    customer: CustomerProfile;
-    purchasing: PurchasingBehavior;
-    strategy: boolean | 'Later';
+export interface Strategy {
+    status: boolean | 'Later';
 }
