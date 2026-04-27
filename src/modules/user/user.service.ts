@@ -179,19 +179,30 @@ export class UserService {
 
 
   async changePassword(
-    userId: string,
+    user: UserInfoResponseWithTokensDto,
     dto: ChangePasswordDto,
   ): Promise<{ message: string }> {
     // JWT guard already validates user exists, so this is safe
-    const authenticatedUser = (await this.userRepository.findById(userId))!;
+    const { userId } = user;
+    const authenticatedUser = await this.userRepository.findUserWithPasswordById(userId);
+
+    if (!authenticatedUser) {
+      throw new UnauthorizedException('User not found');
+    }
+
+    console.log(authenticatedUser.password);
 
     // Check if the provided identifier matches the authenticated user
     const matches = authenticatedUser.identifier === dto.identifier;
 
     if (!matches) {
       throw new UnauthorizedException(
-        'Identifier does not match authenticated user',
+        'Identifier doesn\'t match!',
       );
+    }
+
+    if (!authenticatedUser.password) {
+      throw new UnauthorizedException('No Password Found For This User!');
     }
 
     const isOldPasswordValid = await bcrypt.compare(

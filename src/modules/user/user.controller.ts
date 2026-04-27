@@ -86,7 +86,7 @@ export class UserController {
     @CurrentUser() user: UserInfoResponseWithTokensDto,
     @Body() dto: ChangePasswordDto,
   ): Promise<{ message: string }> {
-    return await this.userService.changePassword(user.userId, dto);
+    return await this.userService.changePassword(user, dto);
   }
 
   @Post('forgot-password')

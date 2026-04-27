@@ -73,6 +73,17 @@ export class UserRepository extends BaseRepository<UserEntity> {
     })
   }
 
+  async findUserWithPasswordById(userId: string) {
+    return await this.userRepository.findOne({
+      //       "identifier": "mstwalasss@gmail.com",
+      // "identifierType": "email",
+      // "isVerified": true,
+      // "isProfileCompleted": false
+      select: { id: true, identifier: true, identifierType: true, isVerified: true, isProfileCompleted: true, password: true },
+      where: { id: userId }
+    })
+  }
+
   async findUserRefreshTokenByUserId(userId: string) {
     return await this.userRepository.findOne({
       select: { id: true, identifier: true, identifierType: true, isVerified: true, isProfileCompleted: true, refreshToken: true },
