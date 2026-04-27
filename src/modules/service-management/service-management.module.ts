@@ -8,8 +8,6 @@ import { ProviderProfileEntity } from '../profile/entities/provider-profile.enti
 import { RequestServiceEntity } from './entities/request-service.entity';
 import { ProviderServiceEntity } from './entities/provider-service.entity';
 import { ProviderServicePricingEntity } from './entities/provider-service-pricing.entity';
-import { UserModule } from '../user/user.module';
-
 @Module({
     imports: [
         TypeOrmModule.forFeature([
@@ -20,7 +18,6 @@ import { UserModule } from '../user/user.module';
             ProviderServiceEntity,
             ProviderServicePricingEntity
         ]),
-        UserModule
     ],
     controllers: [ServiceManagementController],
     providers: [ServiceManagementService],

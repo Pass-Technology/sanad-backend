@@ -1,5 +1,4 @@
 import { Injectable, UnauthorizedException, ForbiddenException, Inject, forwardRef } from '@nestjs/common';
-import { JwtService } from '@nestjs/jwt';
 import * as bcrypt from 'bcrypt';
 import { UserRepository } from './user.repository';
 import { RegisterDto } from './dto/register.dto';
@@ -11,24 +10,24 @@ import { AppConfigService } from '../../config/config.service';
 import { UserIdentifierType } from './enums/user-identifier-type.enum';
 import { OtpPurposeEnum } from '../otp/enum/otp-purpose.enum';
 import { ResetPasswordDto } from './dto/reset-password.dto';
-import { SendOtpDto } from '../otp/dto/send-otp.dto';
 import { OtpService } from '../otp/otp.service';
 import { OtpRepository } from '../otp/otp.repository';
 import { MailService } from '../mail/mail.service';
 import { UserInfoResponseWithTokensDto } from './dto/user-info-response.dto';
 import { OtpAuthDto } from './dto/auth-otp.dto';
-import { UserPayloadType } from './types/user-payload.type';
-import { AuthTokensResponse, JwtPayloadType } from './types/user-token.type';
+import { AuthTokensResponse, JwtPayloadType, UserPayloadType } from '../auth/types/auth.types';
 import { ForgetPasswordDto } from './dto/forget-password.dto';
+import { AuthService } from '../auth/auth.service';
+import { JwtService } from '@nestjs/jwt';
 
 
 @Injectable()
 export class UserService {
   constructor(
     private readonly userRepository: UserRepository,
+    private readonly authService: AuthService,
     private readonly jwtService: JwtService,
     private readonly config: AppConfigService,
-    @Inject(forwardRef(() => OtpService))
     private readonly otpService: OtpService,
     private readonly otpRepository: OtpRepository,
     private readonly mailService: MailService,
@@ -145,36 +144,14 @@ export class UserService {
     }
   }
 
-  private async generateTokens(userPaylpad: UserPayloadType): Promise<AuthTokensResponse> {
-    const { id, identifier, identifierType, isVerified, isProfileCompleted } = userPaylpad;
-    const payload = {
-      sub: id,
-      identifier: identifier,
-      identifierType: identifierType,
-      isVerified: isVerified,
-      isProfileCompleted: isProfileCompleted,
-    };
-
-    const accessToken = await this.jwtService.signAsync(payload, {
-      secret: this.config.auth.jwtSecret,
-      expiresIn: this.config.auth.accessExpiration as any,
-    });
-
-    const refreshToken = await this.jwtService.signAsync(payload, {
-      secret: this.config.auth.jwtRefreshSecret,
-      expiresIn: this.config.auth.refreshExpiration as any,
-    });
-
+  private async generateTokens(userPayload: UserPayloadType): Promise<AuthTokensResponse> {
+    const tokens = await this.authService.generateTokens(userPayload);
 
     // Hash refresh token before saving
-    const hashedRefreshToken = await bcrypt.hash(refreshToken, 10);
-    await this.userRepository.updateRefreshToken(id, hashedRefreshToken);
+    const hashedRefreshToken = await bcrypt.hash(tokens.refreshToken, 10);
+    await this.userRepository.updateRefreshToken(userPayload.id, hashedRefreshToken);
 
-    return {
-      accessToken,
-      refreshToken,
-      user: payload
-    };
+    return tokens;
   }
 
 

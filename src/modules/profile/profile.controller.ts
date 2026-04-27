@@ -18,7 +18,7 @@ import {
     ApiParam,
     ApiTags,
 } from '@nestjs/swagger';
-import { JwtAuthGuard } from '../user/guards/jwt-auth.guard';
+import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { UserInfoResponseWithTokensDto } from '../user/dto/user-info-response.dto';
 import { ProfileService } from './profile.service';
 import { CreateFullProfileDto } from './dto/create-full-profile.dto';

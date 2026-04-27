@@ -22,10 +22,10 @@ import { ChangePasswordDto } from './dto/change-password.dto';
 import { ResetPasswordDto } from './dto/reset-password.dto';
 import { SendOtpDto } from '../otp/dto/send-otp.dto';
 import { RegisterResponseDto } from './dto/register-response.dto';
-import { AuthTokensResponse, JwtPayloadType } from './types/user-token.type';
+import { AuthTokensResponse, JwtPayloadType } from '../auth/types/auth.types';
 import { UserInfoResponseWithTokensDto } from './dto/user-info-response.dto';
 import { RefreshDto } from './dto/refresh.dto';
-import { JwtAuthGuard } from './guards/jwt-auth.guard';
+import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { OtpAuthDto } from './dto/auth-otp.dto';
 import { ForgetPasswordDto } from './dto/forget-password.dto';
 

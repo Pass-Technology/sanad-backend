@@ -1,7 +1,7 @@
 import { Body, Controller, Get, Post, Put, UseGuards, Request } from "@nestjs/common";
 import { ApiBearerAuth, ApiOperation, ApiTags } from "@nestjs/swagger";
 import { TargetAudienceService } from "./target-audience.service";
-import { JwtAuthGuard } from "../user/guards/jwt-auth.guard";
+import { JwtAuthGuard } from "../auth/guards/jwt-auth.guard";
 import { UpdateBasicInfoDto } from "./dto/update-basic-info.dto";
 import { UpdateServicesDto } from "./dto/update-services.dto";
 import { UpdateOperationsDto } from "./dto/update-operations.dto";

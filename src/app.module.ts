@@ -14,6 +14,8 @@ import { MailModule } from './modules/mail/mail.module';
 import { TemplateModule } from './modules/template/template.module';
 import { ScoringSystemModule } from './modules/profile-scoring-system/scoring-system.module';
 import { SharedCacheModule } from './shared/cache/cache.module';
+import { TargetAudienceModule } from './modules/target-audience-profile/target-audience.module';
+import { AuthModule } from './modules/auth/auth.module';
 import { UploadAssetsModule } from './modules/upload-assets/upload-assets.module';
 
 @Module({
@@ -21,6 +23,7 @@ import { UploadAssetsModule } from './modules/upload-assets/upload-assets.module
     AppConfigModule,
     EventEmitterModule.forRoot(),
     DatabaseModule,
+    AuthModule,
     UserModule,
     OtpModule,
     ProfileModule,
@@ -32,7 +35,8 @@ import { UploadAssetsModule } from './modules/upload-assets/upload-assets.module
     TemplateModule,
     ScoringSystemModule,
     SharedCacheModule,
-    UploadAssetsModule
+    UploadAssetsModule,
+    TargetAudienceModule
   ],
   controllers: [HealthController],
 })

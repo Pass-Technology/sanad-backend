@@ -8,7 +8,7 @@ import { UserEntity } from '../user/entities/user.entity';
 import { UserModule } from '../user/user.module';
 
 @Module({
-  imports: [TypeOrmModule.forFeature([OtpEntity, UserEntity]), forwardRef(() => UserModule)],
+  imports: [TypeOrmModule.forFeature([OtpEntity, UserEntity])],
   controllers: [OtpController],
   providers: [
     OtpService,

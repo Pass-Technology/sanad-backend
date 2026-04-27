@@ -1,6 +1,7 @@
-import { BadRequestException, Injectable, Inject, forwardRef } from '@nestjs/common';
+import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
+import * as bcrypt from 'bcrypt';
 import { OtpRepository } from './otp.repository';
 import { ValidateOtpDto } from './dto/validate-otp.dto';
 import { SendOtpDto } from './dto/send-otp.dto';
@@ -8,8 +9,8 @@ import { AppConfigService } from '../../config/config.service';
 import { UserEntity } from '../user/entities/user.entity';
 import { UserInfoResponseWithTokensDto } from '../user/dto/user-info-response.dto';
 import { OtpPurposeEnum } from './enum/otp-purpose.enum';
-import { UserService } from '../user/user.service';
 import { OtpEntity } from './entities/otp.entity';
+import { AuthService } from '../auth/auth.service';
 
 
 @Injectable()
@@ -19,8 +20,7 @@ export class OtpService {
     private readonly userRepository: Repository<UserEntity>,
     private readonly otpRepository: OtpRepository,
     private readonly appConfig: AppConfigService,
-    @Inject(forwardRef(() => UserService))
-    private readonly userService: UserService,
+    private readonly authService: AuthService,
   ) { }
 
   private getDefaultOtp(): string {
@@ -59,39 +59,52 @@ export class OtpService {
   }
 
   async validateOtp(validateOtpDto: ValidateOtpDto): Promise<UserInfoResponseWithTokensDto> {
-
     const { identifier, otp } = validateOtpDto;
     const defaultOtp = this.getDefaultOtp();
 
-    if (defaultOtp && Number(otp) === Number(defaultOtp)) {
-      await this.otpRepository.deleteByIdentifier(identifier);
-
-      const user = await this.userRepository.findOne({ where: { identifier } });
-      if (user) {
-        await this.userRepository.update(user.id, { isVerified: true });
-      }
-
-      return await this.userService.getUserInfoWithTokensByIdentifier(identifier);
+    const user = await this.userRepository.findOne({ where: { identifier } });
+    if (!user) {
+      throw new NotFoundException('User not found');
     }
 
-    const otpRecord = await this.otpRepository.findValidOtp(
-      identifier,
-      otp
-    );
+    if (defaultOtp && Number(otp) === Number(defaultOtp)) {
+      await this.otpRepository.deleteByIdentifier(identifier);
+      await this.userRepository.update(user.id, { isVerified: true });
+      return this.generateUserTokens({ ...user, isVerified: true });
+    }
 
+    const otpRecord = await this.otpRepository.findValidOtp(identifier, otp);
     if (!otpRecord) {
       throw new BadRequestException('Invalid OTP');
     }
 
-
     await this.otpRepository.markAsVerified(otpRecord.id);
+    await this.userRepository.update(user.id, { isVerified: true });
 
-    const user = await this.userRepository.findOne({ where: { identifier } });
-    if (user) {
-      await this.userRepository.update(user.id, { isVerified: true });
-    }
+    return this.generateUserTokens({ ...user, isVerified: true });
+  }
 
-    return await this.userService.getUserInfoWithTokensByIdentifier(identifier);
+  private async generateUserTokens(user: UserEntity): Promise<UserInfoResponseWithTokensDto> {
+    const tokens = await this.authService.generateTokens({
+      id: user.id,
+      identifier: user.identifier,
+      identifierType: user.identifierType,
+      isVerified: user.isVerified,
+      isProfileCompleted: user.isProfileCompleted,
+    });
+
+    const hashedRefreshToken = await bcrypt.hash(tokens.refreshToken, 10);
+    await this.userRepository.update(user.id, { refreshToken: hashedRefreshToken });
+
+    return {
+      accessToken: tokens.accessToken,
+      refreshToken: tokens.refreshToken,
+      userId: user.id,
+      isProfileCompleted: user.isProfileCompleted,
+      isVerified: user.isVerified,
+      identifier: user.identifier,
+      identifierType: user.identifierType,
+    };
   }
 
   private generateOtp(length = 5): number {

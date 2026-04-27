@@ -6,8 +6,7 @@ import {
 import { AuthGuard } from '@nestjs/passport';
 import { JwtService } from '@nestjs/jwt';
 import { Request } from 'express';
-import { JwtPayload } from '../../../shared/types/jwt-payload.type';
-
+import { JwtPayloadType } from '../types/auth.types';
 import { AppConfigService } from '../../../config/config.service';
 
 @Injectable()
@@ -30,7 +29,7 @@ export class JwtAuthGuard extends AuthGuard('jwt') {
     }
 
     try {
-      const payload = this.jwtService.verify<JwtPayload>(token, {
+      const payload = this.jwtService.verify<JwtPayloadType>(token, {
         secret: this.config.auth.jwtSecret,
       });
       request.user = {
