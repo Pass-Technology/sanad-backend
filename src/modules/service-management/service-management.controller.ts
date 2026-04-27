@@ -69,7 +69,8 @@ export class ServiceManagementController {
         @Request() req: { user: UserInfoResponseWithTokensDto },
         @Query() query: GetMyServicesQueryDto,
         @Headers('accept-language') lang: string = 'en',
+        @Query('categoryId') categoryId?: string
     ) {
-        return await this.serviceManagementService.getMyServices(req.user.userId, query, lang);
+        return await this.serviceManagementService.getMyServices(req.user.userId, query, lang, categoryId);
     }
 }

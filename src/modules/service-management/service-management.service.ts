@@ -64,19 +64,27 @@ export class ServiceManagementService {
     }
 
     // get all services of provider insdie profile page (search and pagination)
-    async getMyServices(userId: string, query: GetMyServicesQueryDto, lang: string = 'en'): Promise<PaginatedResponseDto<any>> {
+    async getMyServices(userId: string, query: GetMyServicesQueryDto, lang: string = 'en', categoryId?: string): Promise<PaginatedResponseDto<any>> {
         const { page = 1, limit = 10, searchString } = query;
         const skip = (page - 1) * limit;
 
-        const whereCondition: any = {
+        const baseWhere: any = {
             profile: { user: { id: userId } }
         };
 
+        let whereCondition: any;
+
         if (searchString) {
-            whereCondition.service = [
-                { nameEn: ILike(`%${searchString}%`) },
-                { nameAr: ILike(`%${searchString}%`) }
+            const serviceBase = categoryId ? { category: { id: categoryId } } : {};
+            whereCondition = [
+                { ...baseWhere, service: { ...serviceBase, nameEn: ILike(`%${searchString}%`) } },
+                { ...baseWhere, service: { ...serviceBase, nameAr: ILike(`%${searchString}%`) } }
             ];
+        } else {
+            whereCondition = baseWhere;
+            if (categoryId) {
+                whereCondition.service = { category: { id: categoryId } };
+            }
         }
 
         const [items, totalItems] = await this.dataSource.manager.findAndCount(ProviderServiceEntity, {
