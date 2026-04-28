@@ -9,6 +9,9 @@ export class ProviderServiceEntity extends BaseEntity {
     @Column({ type: 'text', nullable: true })
     description: string | null;
 
+    @Column({ default: true, name: 'is_active' })
+    isActive: boolean;
+
     @ManyToOne(() => ProviderProfileEntity, (profile) => profile.providerServices, { onDelete: 'CASCADE' })
     @JoinColumn({ name: 'profile_id' })
     profile: ProviderProfileEntity;

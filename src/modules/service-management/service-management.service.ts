@@ -20,6 +20,8 @@ export class ServiceManagementService {
         private readonly serviceRepo: Repository<ServiceEntity>,
         @InjectRepository(RequestServiceEntity)
         private readonly requestServiceRepo: Repository<RequestServiceEntity>,
+        @InjectRepository(ProviderServiceEntity)
+        private readonly providerServiceRepo: Repository<ProviderServiceEntity>,
         private readonly dataSource: DataSource,
     ) { }
 
@@ -146,6 +148,16 @@ export class ServiceManagementService {
                 currentPage: page
             }
         };
+    }
+
+    // toggle activation status for a provider's service
+    async serviceToggleStatus(providerServiceId: string) {
+        const providerService = await this.providerServiceRepo.findOneBy({ id: providerServiceId });
+        if (!providerService) {
+            throw new NotFoundException('Provider service not found');
+        }
+        providerService.isActive = !providerService.isActive;
+        return await this.providerServiceRepo.save(providerService);
     }
 
     // request service endpoints

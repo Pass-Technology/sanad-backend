@@ -23,7 +23,11 @@ export class TargetAudienceService {
     private async getOrCreateProfile(userId: string): Promise<TargetAudienceProfile> {
         const targetAudienceProfile = await this.targetAudienceProfileRepository.findOne({
             where: { providerProfile: { user: { id: userId } } },
-            relations: ['providerProfile']
+            relations: {
+                providerProfile: {
+                    user: true
+                }
+            }
         });
 
         if (targetAudienceProfile) return targetAudienceProfile;

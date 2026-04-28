@@ -4,6 +4,7 @@ import { ServiceManagementService } from './service-management.service';
 import { RequestServiceDto } from './Dto/request-service.dto';
 import { JwtAuthGuard } from '../user/guards/jwt-auth.guard';
 import { UserInfoResponseWithTokensDto } from '../user/dto/user-info-response.dto';
+import { ToggleServiceDto } from './Dto/toggle-service.dto';
 import { GetMyServicesQueryDto } from './Dto/get-my-services-query.dto';
 
 @ApiTags('Service Management')
@@ -71,5 +72,15 @@ export class ServiceManagementController {
         @Headers('accept-language') lang: string = 'en'
     ) {
         return await this.serviceManagementService.getMyServices(req.user.userId, query, lang);
+    }
+
+    // toggle button for service activate/deactivate
+    @Post('service-toggle-status')
+    @UseGuards(JwtAuthGuard)
+    @ApiBearerAuth()
+    @ApiOperation({ summary: 'Toggle activation status of a provider service' })
+    async toggleStatus(
+        @Body() toggleServiceDto: ToggleServiceDto) {
+        return await this.serviceManagementService.serviceToggleStatus(toggleServiceDto.id);
     }
 }
