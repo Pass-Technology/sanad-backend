@@ -73,9 +73,21 @@ export class ServiceManagementService {
     }
 
     // get all services of provider insdie profile page (search and pagination)
-    async getMyServices(userId: string, query: GetMyServicesQueryDto, lang: string = 'en'): Promise<PaginatedResponseDto<any>> {
+    async getMyServices(userId: string, query: GetMyServicesQueryDto, lang: string = 'en'): Promise<any> {
         const { page = 1, limit = 10, searchString, categoryId } = query;
         const skip = (page - 1) * limit;
+
+        // Get all unique categories the provider has services in
+        const allCategories = await this.categoryRepo
+            .createQueryBuilder('category')
+            .innerJoin('category.services', 'service')
+            .innerJoin('service.providerServices', 'ps')
+            .innerJoin('ps.profile', 'profile')
+            .innerJoin('profile.user', 'user')
+            .where('user.id = :userId', { userId })
+            .select(['category.id', 'category.name', 'category.nameAr', 'category.icon'])
+            .distinct(true)
+            .getMany();
 
         const baseWhere: any = {
             profile: { user: { id: userId } }
@@ -146,7 +158,8 @@ export class ServiceManagementService {
                 itemsPerPage: limit,
                 totalPages,
                 currentPage: page
-            }
+            },
+            providerCategories: localize(allCategories, lang)
         };
     }
 
