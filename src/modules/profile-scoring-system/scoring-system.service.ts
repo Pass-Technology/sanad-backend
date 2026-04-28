@@ -1,4 +1,5 @@
 import { Injectable, Logger, Inject, forwardRef } from '@nestjs/common';
+import { EntityManager } from 'typeorm';
 import { SCORING_CONFIG } from './scoring.config';
 import { ScoringSectionConfig, ScoringFieldConfig } from './interfaces/scoring-system.interfaces';
 import { SharedCacheService } from '../../shared/cache/shared-cache.service';
@@ -24,9 +25,9 @@ export class ScoringSystemService {
         return score;
     }
 
-    async recalculate(userId: string) {
+    async recalculate(userId: string, manager?: EntityManager) {
         try {
-            const profile = await this.profileRepo.findProfileByUserId(userId);
+            const profile = await this.profileRepo.findProfileByUserId(userId, manager);
             const score = this.calculate(profile);
             await this.cacheService.set(this.CACHE_PREFIX, userId, score);
             return score;

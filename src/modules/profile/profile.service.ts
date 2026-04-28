@@ -82,7 +82,7 @@ export class ProfileService {
             await this.userRepo.updateProfileCompletionStatus(userId, true, manager);
 
             // 4. Trigger initial score calculation
-            await this.scoringService.recalculate(userId);
+            await this.scoringService.recalculate(userId, manager);
 
             return profileData;
         });
@@ -164,7 +164,7 @@ export class ProfileService {
                 await this.syncPricingDetails(manager, saved, dto.pricingDetails);
             }
 
-            await this.scoringService.recalculate(userId);
+            await this.scoringService.recalculate(userId, manager);
             return await this.profileRepo.findProfileByUserId(userId, manager);
         });
     }
@@ -187,7 +187,7 @@ export class ProfileService {
             }
 
             await manager.save(providerService);
-            await this.scoringService.recalculate(userId);
+            await this.scoringService.recalculate(userId, manager);
             return await this.profileRepo.findProfileByUserId(userId, manager);
         });
     }
@@ -203,7 +203,7 @@ export class ProfileService {
             }
 
             await manager.remove(providerService);
-            await this.scoringService.recalculate(userId);
+            await this.scoringService.recalculate(userId, manager);
             return await this.profileRepo.findProfileByUserId(userId, manager);
         });
     }
