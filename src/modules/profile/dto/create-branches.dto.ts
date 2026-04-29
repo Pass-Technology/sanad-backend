@@ -14,6 +14,7 @@ import {
     Min,
     ValidateNested,
 } from 'class-validator';
+import { IsMobilePhoneNumber } from '../../validator/decorators/is-mobile-phone.decorator';
 
 export class ServingAreaDto {
 
@@ -30,7 +31,8 @@ export class ServingAreaDto {
     @ApiPropertyOptional({ example: '+971501234567' })
     @IsOptional()
     @IsString()
-    @Matches(/^\+[1-9]\d{6,14}$/)
+    @IsMobilePhoneNumber()
+    // @Matches(/^\+[1-9]\d{6,14}$/)
     phone?: string;
 
     @ApiPropertyOptional({ example: 'https://maps.google.com/...' })
@@ -73,13 +75,13 @@ export class CreateBranchDto {
     @ApiPropertyOptional({ example: '+97141234567' })
     @IsOptional()
     @IsString()
-    @Matches(/^\+[1-9]\d{6,14}$/)
+    @IsMobilePhoneNumber()
     branchPhone?: string;
 
     @ApiPropertyOptional({ example: '+971501234567' })
     @IsOptional()
     @IsString()
-    @Matches(/^\+[1-9]\d{6,14}$/)
+    @IsMobilePhoneNumber()
     managerPhone?: string;
 
     @ApiPropertyOptional({ example: 'https://maps.google.com/...' })

@@ -16,6 +16,7 @@ import { ScoringSystemModule } from './modules/profile-scoring-system/scoring-sy
 import { SharedCacheModule } from './shared/cache/cache.module';
 import { UploadAssetsModule } from './modules/upload-assets/upload-assets.module';
 import { TargetAudienceModule } from './modules/target-audience-profile/target-audience.module';
+import { ValidatorModule } from './modules/validator/validator.module';
 
 @Module({
   imports: [
@@ -34,7 +35,8 @@ import { TargetAudienceModule } from './modules/target-audience-profile/target-a
     ScoringSystemModule,
     SharedCacheModule,
     UploadAssetsModule,
-    TargetAudienceModule
+    TargetAudienceModule,
+    ValidatorModule
   ],
   controllers: [HealthController],
 })
