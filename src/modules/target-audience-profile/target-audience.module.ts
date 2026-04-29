@@ -1,4 +1,4 @@
-import { Module } from "@nestjs/common";
+import { forwardRef, Module } from "@nestjs/common";
 import { TypeOrmModule } from "@nestjs/typeorm";
 import { TargetAudienceController } from "./target-audience.controller";
 import { TargetAudienceService } from "./target-audience.service";
@@ -9,11 +9,11 @@ import { UserModule } from "../user/user.module";
 @Module({
     imports: [
         TypeOrmModule.forFeature([TargetAudienceProfile]),
-        ProfileModule,
-        UserModule
+        forwardRef(() => ProfileModule),
+        UserModule,
     ],
     controllers: [TargetAudienceController],
     providers: [TargetAudienceService],
-    exports: [TargetAudienceService,],
+    exports: [TargetAudienceService],
 })
-export class TargetAudienceModule { }
+export class TargetAudienceModule { }

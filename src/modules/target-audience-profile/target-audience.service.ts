@@ -54,6 +54,14 @@ export class TargetAudienceService {
         return await this.getOrCreateProfile(userId);
     }
 
+    async getCompleteScore(userId: string): Promise<number> {
+        const profile = await this.targetAudienceProfileRepository.findOne({
+            where: { providerProfile: { user: { id: userId } } },
+            relations: { providerProfile: { user: true } },
+        });
+        return profile?.targetAudienceProfileCompleteScore ?? 0;
+    }
+
     async updateProfile(userId: string, dto: UpdateTargetAudienceDto) {
         const profile = await this.getOrCreateProfile(userId);
 
@@ -67,6 +75,9 @@ export class TargetAudienceService {
                 ...profile.strategy,
                 ...dto.strategy
             };
+        }
+        if (dto.targetAudienceProfileCompleteScore !== undefined) {
+            profile.targetAudienceProfileCompleteScore = dto.targetAudienceProfileCompleteScore;
         }
         return await this.targetAudienceProfileRepository.save(profile);
     }

@@ -1,6 +1,6 @@
 import { ApiPropertyOptional } from "@nestjs/swagger";
 import { Type } from "class-transformer";
-import { ValidateNested } from "class-validator";
+import { IsNumber, IsOptional, Min, Max, ValidateNested } from "class-validator";
 import { UpdateBasicInfoDto } from "./update-basic-info.dto";
 import { UpdateServicesDto } from "./update-services.dto";
 import { UpdateOperationsDto } from "./update-operations.dto";
@@ -38,4 +38,11 @@ export class UpdateTargetAudienceDto {
     @ValidateNested()
     @Type(() => UpdateStrategyDto)
     strategy?: UpdateStrategyDto;
+
+    @ApiPropertyOptional({ description: 'Target audience profile completion score (0-100), calculated and sent by the frontend', minimum: 0, maximum: 100 })
+    @IsOptional()
+    @IsNumber()
+    @Min(0)
+    @Max(100)
+    targetAudienceProfileCompleteScore?: number;
 }

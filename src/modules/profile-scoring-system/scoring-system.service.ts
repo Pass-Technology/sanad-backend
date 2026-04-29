@@ -4,6 +4,7 @@ import { SCORING_CONFIG } from './scoring.config';
 import { ScoringSectionConfig, ScoringFieldConfig } from './interfaces/scoring-system.interfaces';
 import { SharedCacheService } from '../../shared/cache/shared-cache.service';
 import { ProfileRepository } from '../profile/profile.repository';
+import { TargetAudienceService } from '../target-audience-profile/target-audience.service';
 
 @Injectable()
 export class ScoringSystemService {
@@ -14,6 +15,7 @@ export class ScoringSystemService {
         private readonly cacheService: SharedCacheService,
         @Inject(forwardRef(() => ProfileRepository))
         private readonly profileRepo: ProfileRepository,
+        private readonly targetAudienceService: TargetAudienceService,
     ) { }
 
     async getScore(userId: string) {
@@ -22,7 +24,8 @@ export class ScoringSystemService {
             this.logger.log(`Cache miss for user ${userId}. Recalculating...`);
             score = await this.recalculate(userId);
         }
-        return score;
+        const targetAudienceProfileCompleteScore = await this.targetAudienceService.getCompleteScore(userId);
+        return { score, targetAudienceProfileCompleteScore };
     }
 
     async recalculate(userId: string, manager?: EntityManager) {

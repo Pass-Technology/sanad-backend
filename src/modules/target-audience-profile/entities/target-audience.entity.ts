@@ -27,4 +27,6 @@ export class TargetAudienceProfile extends BaseEntity {
     @Column({ type: "jsonb", default: {} })
     strategy: Strategy;
 
+    @Column({ type: 'float', nullable: true, default: 0 })
+    targetAudienceProfileCompleteScore: number | null;
 }
