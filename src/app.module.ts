@@ -17,6 +17,7 @@ import { SharedCacheModule } from './shared/cache/cache.module';
 import { UploadAssetsModule } from './modules/upload-assets/upload-assets.module';
 import { TargetAudienceModule } from './modules/target-audience-profile/target-audience.module';
 import { ValidatorModule } from './modules/validator/validator.module';
+import { LegalModule } from './modules/legal/legal.module';
 
 @Module({
   imports: [
@@ -36,7 +37,8 @@ import { ValidatorModule } from './modules/validator/validator.module';
     SharedCacheModule,
     UploadAssetsModule,
     TargetAudienceModule,
-    ValidatorModule
+    ValidatorModule,
+    LegalModule
   ],
   controllers: [HealthController],
 })
