@@ -10,6 +10,9 @@ import { servicesSeed } from './profile-management/services.seed';
 import { langsSeed } from './lookup-seeds/languages/langs.seed';
 import { paymentLookupSeed } from './lookup-seeds/payment/payment.seed';
 import { assetTypeSeed } from './lookup-seeds/asset-type.seed';
+import { nationalitiesSeed } from './lookup-seeds/nationalities.seed';
+import { citiesSeed } from './lookup-seeds/cities.seed';
+
 
 async function runSeed() {
     const dataSource = await AppDataSource.initialize();
@@ -23,6 +26,8 @@ async function runSeed() {
     await langsSeed(dataSource);
     await paymentLookupSeed(dataSource);
     await assetTypeSeed(dataSource);
+    await nationalitiesSeed(dataSource);
+    await citiesSeed(dataSource);
 
     console.log('Plans starting to seed');
 

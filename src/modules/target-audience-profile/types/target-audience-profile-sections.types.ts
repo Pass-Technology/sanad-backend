@@ -1,3 +1,5 @@
+import { NationalityStaticCode, CityStaticCode } from "src/modules/lookups/enums/lookup-static-codes.enum";
+
 export enum Gender {
     MALE = "Male",
     FEMALE = "Female",
@@ -131,10 +133,10 @@ export interface CustomerProfile {
     categories: Categories;
     dominantGender: DominantGender;
     ageRange: CustomerAgeRange;
-    nationalities: string[];
+    nationalities: NationalityStaticCode[];
     deliveryLocations: DeliveryLocations;
     incomeLevel: IncomeLevel;
-    highestDemandCities: string[];
+    highestDemandCities: CityStaticCode[];
     leadSources: LeadSources;
 }
 

@@ -42,6 +42,18 @@ export class LookUpController {
     ) {
         return await this.lookUpService.getPaymentLookups(lang)
     }
+
+    @Get('nationalities')
+    @ApiOperation({ summary: 'get nationalities' })
+    async getNationalities(@Headers('accept-language') lang: string = 'en') {
+        return await this.lookUpService.getNationalities(lang)
+    }
+
+    @Get('cities')
+    @ApiOperation({ summary: 'get UAE cities' })
+    async getCities(@Headers('accept-language') lang: string = 'en') {
+        return await this.lookUpService.getCities(lang)
+    }
 }
 
 // shared lookup table

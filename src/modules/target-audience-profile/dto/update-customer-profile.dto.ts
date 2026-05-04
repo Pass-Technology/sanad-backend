@@ -1,6 +1,7 @@
 import { ApiPropertyOptional } from '@nestjs/swagger';
 import { IsArray, IsEnum, IsOptional, IsString } from 'class-validator';
 import { Categories, DominantGender, CustomerAgeRange, DeliveryLocations, IncomeLevel, LeadSources } from '../types/target-audience-profile-sections.types';
+import { NationalityStaticCode, CityStaticCode } from '../../lookups/enums/lookup-static-codes.enum';
 
 export class UpdateCustomerProfileDto {
     @ApiPropertyOptional({ enum: Categories })
@@ -18,11 +19,11 @@ export class UpdateCustomerProfileDto {
     @IsOptional()
     age_range?: CustomerAgeRange;
 
-    @ApiPropertyOptional({ example: ['Saudi'] })
+    @ApiPropertyOptional({ enum: NationalityStaticCode, isArray: true })
     @IsArray()
-    @IsString({ each: true })
+    @IsEnum(NationalityStaticCode, { each: true })
     @IsOptional()
-    nationalities?: string[];
+    nationalities?: NationalityStaticCode[];
 
     @ApiPropertyOptional({ enum: DeliveryLocations })
     @IsEnum(DeliveryLocations)
@@ -34,11 +35,11 @@ export class UpdateCustomerProfileDto {
     @IsOptional()
     income_level?: IncomeLevel;
 
-    @ApiPropertyOptional({ example: ['Riyadh'] })
+    @ApiPropertyOptional({ enum: CityStaticCode, isArray: true })
     @IsArray()
-    @IsString({ each: true })
+    @IsEnum(CityStaticCode, { each: true })
     @IsOptional()
-    highest_demand_cities?: string[];
+    highest_demand_cities?: CityStaticCode[];
 
     @ApiPropertyOptional({ enum: LeadSources })
     @IsEnum(LeadSources)

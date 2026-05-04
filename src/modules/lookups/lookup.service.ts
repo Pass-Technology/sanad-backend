@@ -7,6 +7,8 @@ import { LookUpCompanyTypeEntity } from "./entities/lookup-company-type.entity";
 import { LookupLanguagesEntity } from "./entities/lookup-languages.entity";
 import { LookUpPaymentEntity } from "./entities/lookup-payment.entity";
 import { LookUpPaymentCategoryEntity } from "./entities/lookup-payment-category.entity";
+import { LookupNationalityEntity } from "./entities/lookup-nationality.entity";
+import { LookupCityEntity } from "./entities/lookup-city.entity";
 import { SharedCacheService } from "../../shared/cache/shared-cache.service";
 import { localize } from '../../shared/localization.util'
 
@@ -25,6 +27,10 @@ export class LookUpService {
         private readonly paymentRepo: Repository<LookUpPaymentEntity>,
         @InjectRepository(LookUpPaymentCategoryEntity)
         private readonly paymentCategoryRepo: Repository<LookUpPaymentCategoryEntity>,
+        @InjectRepository(LookupNationalityEntity)
+        private readonly nationalityRepo: Repository<LookupNationalityEntity>,
+        @InjectRepository(LookupCityEntity)
+        private readonly cityRepo: Repository<LookupCityEntity>,
         private readonly cacheService: SharedCacheService,
     ) { }
 
@@ -97,6 +103,34 @@ export class LookUpService {
         }
 
         return localize(data, lang);
+    }
+
+    async getNationalities(lang: string = 'en') {
+        const cached = await this.cacheService.get<LookupNationalityEntity[]>('lookup:', 'nationalities');
+        let data: LookupNationalityEntity[];
+
+        if (cached) {
+            data = cached;
+        } else {
+            data = await this.nationalityRepo.find();
+            await this.cacheService.set('lookup:', 'nationalities', data);
+        }
+
+        return data.map(item => this.localize(item, lang));
+    }
+
+    async getCities(lang: string = 'en') {
+        const cached = await this.cacheService.get<LookupCityEntity[]>('lookup:', 'cities');
+        let data: LookupCityEntity[];
+
+        if (cached) {
+            data = cached;
+        } else {
+            data = await this.cityRepo.find();
+            await this.cacheService.set('lookup:', 'cities', data);
+        }
+
+        return data.map(item => this.localize(item, lang));
     }
 
 
