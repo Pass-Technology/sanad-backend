@@ -23,14 +23,12 @@ export class TargetAudienceService {
     private async getOrCreateProfile(userId: string): Promise<TargetAudienceProfile> {
         const targetAudienceProfile = await this.targetAudienceProfileRepository.findOne({
             where: { providerProfile: { user: { id: userId } } },
-            relations: {
-                providerProfile: {
-                    user: true
-                }
-            }
         });
 
-        if (targetAudienceProfile) return targetAudienceProfile;
+        if (targetAudienceProfile) {
+            const { providerProfile, ...rest } = targetAudienceProfile;
+            return rest as TargetAudienceProfile;
+        }
 
         const providerProfile = await this.profileRepository.findProfileByUserId(userId);
         if (!providerProfile) {
@@ -47,7 +45,9 @@ export class TargetAudienceService {
             strategy: { status: 'Later' } as Strategy,
         });
 
-        return await this.targetAudienceProfileRepository.save(newProfile);
+        const savedProfile = await this.targetAudienceProfileRepository.save(newProfile);
+        const { providerProfile: _, ...result } = savedProfile;
+        return result as TargetAudienceProfile;
     }
 
     async getProfile(userId: string) {
@@ -57,7 +57,6 @@ export class TargetAudienceService {
     async getCompleteScore(userId: string): Promise<number> {
         const profile = await this.targetAudienceProfileRepository.findOne({
             where: { providerProfile: { user: { id: userId } } },
-            relations: { providerProfile: { user: true } },
         });
         return profile?.targetAudienceProfileCompleteScore ?? 0;
     }
@@ -79,7 +78,9 @@ export class TargetAudienceService {
         if (dto.targetAudienceProfileCompleteScore !== undefined) {
             profile.targetAudienceProfileCompleteScore = dto.targetAudienceProfileCompleteScore;
         }
-        return await this.targetAudienceProfileRepository.save(profile);
+        const savedProfile = await this.targetAudienceProfileRepository.save(profile);
+        const { providerProfile: _, ...result } = savedProfile;
+        return result as TargetAudienceProfile;
     }
 
 
