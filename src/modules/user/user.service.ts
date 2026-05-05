@@ -99,9 +99,11 @@ export class UserService {
       throw new UnauthorizedException('Invalid credentials');
     }
 
-    if (!user.isVerified) {
-      throw new ForbiddenException('Please verify your account first');
-    }
+
+    // if (!user.isVerified) {
+    //   throw new ForbiddenException('Please verify your account first');
+    // }
+
 
     return this.generateTokens(user as UserPayloadType);
   }
@@ -123,9 +125,11 @@ export class UserService {
         throw new UnauthorizedException('Invalid refresh token');
       }
 
-      if (!user.isVerified) {
-        throw new ForbiddenException('Please verify your account first');
-      }
+
+      // if (!user.isVerified) {
+      //   throw new ForbiddenException('Please verify your account first');
+      // }
+
 
 
       // Verify the refresh token with the secret

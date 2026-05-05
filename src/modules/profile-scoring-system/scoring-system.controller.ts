@@ -1,12 +1,13 @@
 import { Controller, Get, UseGuards, Request, UseInterceptors, ClassSerializerInterceptor } from '@nestjs/common';
 import { ApiBearerAuth, ApiOperation, ApiTags } from '@nestjs/swagger';
 import { JwtAuthGuard } from '../user/guards/jwt-auth.guard';
+import { VerificationGuard } from '../user/guards/verification.guard';
 import { UserInfoResponseWithTokensDto } from '../user/dto/user-info-response.dto';
 import { ScoringSystemService } from './scoring-system.service';
 
 @ApiTags('scoring-system')
 @ApiBearerAuth()
-@UseGuards(JwtAuthGuard)
+@UseGuards(JwtAuthGuard, VerificationGuard)
 @UseInterceptors(ClassSerializerInterceptor)
 @Controller('scoring')
 export class ScoringSystemController {

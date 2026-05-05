@@ -26,6 +26,7 @@ import { AuthTokensResponse, JwtPayloadType } from './types/user-token.type';
 import { UserInfoResponseWithTokensDto } from './dto/user-info-response.dto';
 import { RefreshDto } from './dto/refresh.dto';
 import { JwtAuthGuard } from './guards/jwt-auth.guard';
+import { VerificationGuard } from './guards/verification.guard';
 import { OtpAuthDto } from './dto/auth-otp.dto';
 import { ForgetPasswordDto } from './dto/forget-password.dto';
 
@@ -69,7 +70,7 @@ export class UserController {
 
 
   @Get('me')
-  @UseGuards(JwtAuthGuard)
+  @UseGuards(JwtAuthGuard, VerificationGuard)
   @ApiBearerAuth()
   @ApiOperation({ summary: 'Get current user info from token' })
   getInfo(@CurrentUser() user: JwtPayloadType) {
@@ -79,7 +80,7 @@ export class UserController {
   }
 
   @Post('change-password')
-  @UseGuards(JwtAuthGuard)
+  @UseGuards(JwtAuthGuard, VerificationGuard)
   @ApiBearerAuth()
   @ApiOperation({ summary: 'Change user password (requires authentication)' })
   async changePassword(
@@ -102,7 +103,7 @@ export class UserController {
   }
 
   @Delete('delete:id')
-  @UseGuards(JwtAuthGuard)
+  @UseGuards(JwtAuthGuard, VerificationGuard)
   @ApiBearerAuth()
   @ApiOperation({ summary: 'Delete user (requires authentication)' })
   async delete(@Param('id') id: string): Promise<{ message: string }> {

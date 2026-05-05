@@ -19,6 +19,7 @@ import {
     ApiTags,
 } from '@nestjs/swagger';
 import { JwtAuthGuard } from '../user/guards/jwt-auth.guard';
+import { VerificationGuard } from '../user/guards/verification.guard';
 import { UserInfoResponseWithTokensDto } from '../user/dto/user-info-response.dto';
 import { ProfileService } from './profile.service';
 import { CreateFullProfileDto } from './dto/create-full-profile.dto';
@@ -37,7 +38,7 @@ import { UpdatePaymentDto } from '../payment/dto/update-payment.dto';
 
 @ApiTags('profile')
 @ApiBearerAuth()
-@UseGuards(JwtAuthGuard)
+@UseGuards(JwtAuthGuard, VerificationGuard)
 @UseInterceptors(ClassSerializerInterceptor)
 @Controller('profile')
 export class ProfileController {

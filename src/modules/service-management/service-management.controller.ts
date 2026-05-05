@@ -3,6 +3,7 @@ import { ApiOperation, ApiTags, ApiParam, ApiQuery, ApiBearerAuth } from '@nestj
 import { ServiceManagementService } from './service-management.service';
 import { RequestServiceDto } from './Dto/request-service.dto';
 import { JwtAuthGuard } from '../user/guards/jwt-auth.guard';
+import { VerificationGuard } from '../user/guards/verification.guard';
 import { UserInfoResponseWithTokensDto } from '../user/dto/user-info-response.dto';
 import { ToggleServiceDto } from './Dto/toggle-service.dto';
 import { GetMyServicesQueryDto } from './Dto/get-my-services-query.dto';
@@ -43,7 +44,7 @@ export class ServiceManagementController {
     }
 
     @Post('request-service')
-    @UseGuards(JwtAuthGuard)
+    @UseGuards(JwtAuthGuard, VerificationGuard)
     @ApiBearerAuth()
     @ApiOperation({ summary: 'Request a new service' })
     async requestService(
@@ -54,7 +55,7 @@ export class ServiceManagementController {
     }
 
     @Get('requested-services')
-    @UseGuards(JwtAuthGuard)
+    @UseGuards(JwtAuthGuard, VerificationGuard)
     @ApiBearerAuth()
     @ApiOperation({ summary: 'Get all requested services by user' })
     async getRequestedServices(@Request() req: { user: UserInfoResponseWithTokensDto }) {
@@ -63,7 +64,7 @@ export class ServiceManagementController {
 
     // get the services of the provider inside the profile
     @Get('my-services')
-    @UseGuards(JwtAuthGuard)
+    @UseGuards(JwtAuthGuard, VerificationGuard)
     @ApiBearerAuth()
     @ApiOperation({ summary: 'Get paginated provider services with search' })
     async getMyServices(
