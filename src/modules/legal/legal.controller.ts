@@ -15,4 +15,11 @@ export class LegalController {
     return await this.legalService.getDocument(LegalDocumentType.PRIVACY_POLICY, language);
   }
 
+  @Get('terms-of-service')
+  @ApiOperation({ summary: 'Get terms and conditions' })
+  async getTermsOfService(@Headers('accept-language') lang: string = 'en') {
+    const language = lang.split('-')[0] || 'en';
+    return await this.legalService.getDocument(LegalDocumentType.TERMS_OF_SERVICE, language);
+  }
+
 }

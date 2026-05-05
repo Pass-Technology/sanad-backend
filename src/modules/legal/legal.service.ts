@@ -18,19 +18,33 @@ export class LegalService implements OnModuleInit {
   ) { }
 
   async onModuleInit() {
-    const count = await this.legalRepository.count();
-    if (count === 0) {
-      const dataPath = path.join(process.cwd(), 'src', 'modules', 'legal', 'data');
-      const languages = ['en', 'ar'];
+    const dataPath = path.join(process.cwd(), 'src', 'modules', 'legal', 'data');
+    const languages = ['en', 'ar'];
+    const types = Object.values(LegalDocumentType);
 
-      for (const lang of languages) {
-        const filePath = path.join(dataPath, `${lang}.json`);
+    for (const lang of languages) {
+      for (const type of types) {
+        // Convert camelCase to kebab-case for filename
+        const filename = type.replace(/([a-z])([A-Z])/g, '$1-$2').toLowerCase();
+        const filePath = path.join(dataPath, `${filename}.${lang}.json`);
+
         if (fs.existsSync(filePath)) {
-          const content = JSON.parse(fs.readFileSync(filePath, 'utf8'));
-          await this.legalRepository.save({
-            language: lang,
-            content,
+          const existing = await this.legalRepository.findOne({
+            where: { language: lang, type },
           });
+
+          const content = JSON.parse(fs.readFileSync(filePath, 'utf8'));
+
+          if (existing) {
+            existing.content = content;
+            await this.legalRepository.save(existing);
+          } else {
+            await this.legalRepository.save({
+              language: lang,
+              type,
+              content,
+            });
+          }
         }
       }
     }
@@ -44,18 +58,14 @@ export class LegalService implements OnModuleInit {
     if (cached) return cached;
 
     const doc = await this.legalRepository.findOne({
-      where: { language: lang },
+      where: { language: lang, type },
     });
 
     if (!doc) {
-      throw new NotFoundException(`Legal page in language '${language}' not found.`);
+      throw new NotFoundException(`Legal document '${type}' in language '${language}' not found.`);
     }
 
-    const result = doc.content[type];
-
-    if (!result) {
-      throw new NotFoundException(`Legal section '${type}' not found in language '${language}'.`);
-    }
+    const result = doc.content;
 
     await this.cacheService.set(this.cachePrefix, cacheKey, result);
 

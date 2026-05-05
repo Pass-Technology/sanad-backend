@@ -1,0 +1,291 @@
+{
+  "pageTitle": "Terms of Service",
+  "pageDescription": "Terms of service and usage agreement for Sanad platform.",
+  "title": "Terms of Service",
+  "subtitle": "Comprehensive Legal Documentation for Sanad Platform",
+  "lastUpdated": "Last Updated: January 2025",
+  "sections": {
+    "owner": {
+      "title": "Owner",
+      "content": "This platform is owned and operated by: PASS TECHNOLOGY. Economic License No.: CN-2797749. Registered in Abu Dhabi – United Arab Emirates. It is referred to in this document as \"Sanad\" or \"the Platform\" or \"we\"."
+    },
+    "definitions": {
+      "title": "Definitions",
+      "item1": "\"Sanad\" or \"the Platform\": The Sanad platform owned by PASS TECHNOLOGY – License No. CN-2797749.",
+      "item2": "\"User\": Any individual or entity using the Platform, providing data, or creating a service request.",
+      "item3": "\"Service Provider\": Any individual or entity connected to the User via the Platform to perform the requested service.",
+      "item4": "\"Service\": Any service requested or performed through the Platform.",
+      "item5": "\"Request\": Any service request created via the Platform or WhatsApp.",
+      "item6": "\"Fees\": All costs arising from the service, including service price, taxes, cancellation fees, and no-show fees.",
+      "item7": "\"Content\": Any data, images, correspondence, or materials provided by the User or Provider to the Platform.",
+      "item8": "\"Third Party\": Any entity other than the User, Provider, and Platform, such as payment gateways or government authorities.",
+      "item9": "\"Service Credit\": A sum or value granted by the Platform to the User in specified cases, not transferable or redeemable for cash."
+    },
+    "scope": {
+      "title": "Scope of Agreement",
+      "intro": "This agreement governs your use of the Sanad platform via:",
+      "item1": "WhatsApp",
+      "item2": "Website",
+      "item3": "Any affiliated application",
+      "item4": "Provider system (Dashboard + App)"
+    },
+    "amendments": {
+      "title": "Amendments to Terms",
+      "content": "Sanad may amend the terms at any time; the page will be updated with the last update date. Continued use constitutes acceptance."
+    },
+    "natureOfService": {
+      "title": "Nature of Service and Sanad's Role",
+      "content": "Sanad is a technology platform connecting customers with service providers. Sanad does not provide services itself nor is it an employer of providers. Sanad's role: technical mediation + order management + support + ratings. Direct responsibility for service delivery lies with the service provider."
+    },
+    "accountCreation": {
+      "title": "Account Creation / Use",
+      "intro": "Using certain features may require:",
+      "item1": "Identity verification",
+      "item2": "Consent to share location",
+      "item3": "Consent to payment terms",
+      "outro": "You must provide accurate data and update it when it changes."
+    },
+    "ordersPricing": {
+      "title": "Orders and Pricing",
+      "item1": "Prices may be: indicative, dynamic, inspection-based, or depend on time / distance / materials",
+      "item2": "Final price is shown before confirmation whenever possible",
+      "item3": "Some services may require: prepayment, visit fees, urgent-service fees"
+    },
+    "acceptableUse": {
+      "title": "Acceptable Use Policy",
+      "intro": "This policy aims to ensure lawful, safe, and responsible use of the Sanad platform.",
+      "sub81": "Prohibited Uses:",
+      "item81a": "a) Illegal activities: requesting or providing services that violate UAE law, using the Platform for fraud, attempting to circumvent government authorities",
+      "item81b": "b) Abuse or verbal violence: threats, insults, racism, harassment, bullying",
+      "item81c": "c) Technical misuse: hacking the Platform, distributing malware, using bots for automated requests, disrupting servers",
+      "item81d": "d) Prohibited content: sharing illegal images, sensitive information without permission, third-party personal data",
+      "item81e": "e) Provider misuse: requesting work outside the agreement, forcing lower prices, non-payment of dues",
+      "sub82": "Sanctions: Sanad may take any of the following actions:",
+      "item82a": "Temporary account suspension",
+      "item82b": "Permanent account termination",
+      "item82c": "Placement on a \"blacklist\"",
+      "item82d": "Reporting to government authorities",
+      "item82e": "Claiming financial compensation"
+    },
+    "paymentRefund": {
+      "title": "Payment and Refund Policy",
+      "sub91": "Payment Methods:",
+      "item91a": "Cash",
+      "item91b": "Card / Apple Pay / Google Pay (when available)",
+      "item91c": "Payment links",
+      "item91d": "Bank transfer",
+      "item91e": "(PASS TECHNOLOGY does not store any credit card information)",
+      "sub92": "Cancellation Policy:",
+      "item92a": "Cancellation before provider acceptance: no fees; cancellation is immediate",
+      "item92b": "Cancellation after provider acceptance: service fees may apply, including travel, waiting time, materials purchased",
+      "item92c": "Cancellation upon provider arrival: if the customer is not available at the service location → \"no-show\" fees apply",
+      "sub93": "Refunds:",
+      "item93a": "Users may request a refund when: provider did not arrive, proven damages, service not provided, technical error by the Platform",
+      "item93b": "Refund is not available when: late cancellation, non-cooperation with provider, denying provider access, false information to provider, fully consumed services",
+      "item93c": "Refund process: review takes 3–7 business days; response via WhatsApp or email; transfer to same payment method",
+      "p94": "Financial Disputes: Any financial dispute is subject to the \"Dispute Resolution\" policy in the Terms of Service.",
+      "sub95": "Financial Escrow and Payment Withholding",
+      "item95a": "Sanad may, at its sole discretion, withhold part of the order value as temporary security upon completion, for a period it determines, to settle any disputes or complaints regarding service quality.",
+      "item95b": "Sanad may withhold payments due to the provider when: (a) a complaint is under investigation, (b) suspected fraud or breach of terms, (c) upon request by a judicial or regulatory authority.",
+      "item95c": "Final payments are transferred to the provider after the security period and fulfillment of all Platform requirements; Sanad is not liable for any losses from this delay.",
+      "item95d": "Sanad is not a financial institution; withheld funds are for procedural purposes only to ensure performance of the contract between customer and provider."
+    },
+    "providerPolicy": {
+      "title": "Provider Responsibility and Compliance Policy",
+      "intro": "This policy applies to all service providers operating via the Sanad platform.",
+      "sub101": "Qualifications and Requirements: The provider must:",
+      "item101a": "Hold a valid commercial license (when required)",
+      "item101b": "Submit identity documents",
+      "item101c": "Submit certificates related to the nature of the service (if legally required)",
+      "item101d": "Pass background checks",
+      "item101e": "Provide accurate and up-to-date information",
+      "sub102": "Operational Responsibilities: The provider must:",
+      "item102a": "Arrive on time",
+      "item102b": "Provide safe service",
+      "item102c": "Respect the customer",
+      "item102d": "Not request additional amounts outside the Platform without cause",
+      "item102e": "Upload before/after photos when required",
+      "item102f": "Provide a clear invoice when requested",
+      "sub103": "Safety: The provider is responsible for:",
+      "item103a": "Their tools",
+      "item103b": "Conduct of their staff",
+      "item103c": "Compliance with health and safety procedures",
+      "item103d": "Reporting any hazards at the customer's site",
+      "sub104": "Damages and Compensation: The provider bears full responsibility for:",
+      "item104a": "Damage to customer property",
+      "item104b": "Loss or damage to items",
+      "item104c": "Poor execution",
+      "item104d": "Re-performance when necessary",
+      "item104e": "(PASS TECHNOLOGY is not liable for such damages)",
+      "sub105": "Termination of Partnership: Sanad may terminate a provider's partnership when:",
+      "item105a": "Poor quality",
+      "item105b": "Recurring complaints",
+      "item105c": "Non-compliance with pricing",
+      "item105d": "Disrespect toward the customer",
+      "item105e": "Submitting false documents",
+      "sub106": "Provider Cancellation Policy",
+      "p106a": "The provider must not cancel a request after acceptance except for emergency or justified reasons.",
+      "p106b": "If the provider cancels without valid reason: points are deducted from their rating, their account may be suspended, Sanad reserves the right to terminate the partnership.",
+      "p106c": "The customer may receive: free rescheduling or Service Credit as determined by Sanad.",
+      "p106d": "Repeated cancellation by the same provider results in placement on the provider blacklist.",
+      "sub107": "Electronic Invoicing and Financial Compliance",
+      "p107a": "Sanad assists you, under UAE law, in obtaining a valid tax record and approved electronic invoice when requested.",
+      "p107b": "Full responsibility for VAT and other financial compliance lies with the service provider as independent tax responsible, not Sanad.",
+      "p107c": "Sanad bears no legal or financial consequences from any breach or delay by the provider in meeting tax obligations or issuing correct invoices.",
+      "sub108": "Local Licensing and Regulatory Obligations",
+      "p108a": "The provider acknowledges that they are solely responsible for obtaining all required licenses, permits, and approvals in the geographical areas they cover.",
+      "p108b": "Sanad acts only as a technical intermediary and does not verify completeness or validity of such licenses. The customer is responsible for verifying the provider's legal eligibility.",
+      "p108c": "If the provider breaches any local regulations, full legal and administrative responsibility lies with them; Sanad cooperates with authorities upon request."
+    },
+    "serviceQuality": {
+      "title": "Service Quality and Reviews",
+      "content": "Sanad operates a rigorous rating system. It may suspend or restrict providers based on quality. Before/after photos may be requested from the provider to confirm service delivery."
+    },
+    "aiPolicy": {
+      "title": "AI Safety and Usage Policy",
+      "sub121": "Role of AI on the Platform: Sanad uses AI for:",
+      "item121a": "Understanding requests via conversation",
+      "item121b": "Suggesting the right service",
+      "item121c": "Assigning requests to providers",
+      "item121d": "Analysis and prediction",
+      "item121e": "Quality improvement",
+      "sub122": "Limits of AI: Sanad's AI:",
+      "item122a": "Does not provide legal advice",
+      "item122b": "Does not provide medical advice",
+      "item122c": "Does not provide financial advice",
+      "item122d": "May occasionally misunderstand",
+      "item122e": "Provides initial support based on input data",
+      "sub123": "User Responsibility:",
+      "p123": "You must verify the accuracy of information generated by AI. The user is responsible for final decisions. Do not rely on AI for sensitive decisions.",
+      "sub124": "Privacy:",
+      "p124": "AI models are not trained on personal conversations. Data is not sold or shared.",
+      "sub125": "Service Improvement:",
+      "p125": "AI may be used to analyze patterns to: improve quality, detect fraud, enhance user experience.",
+      "sub126": "Use of Conversations and Recordings for Quality Assurance and AI Training",
+      "p126": "Some interactions — after de-identifying the user — may be used to improve AI models, quality systems, classification accuracy, and recommendations. No personally identifiable data is used for model training without consent. Users may opt out of this non-essential use via privacy@trysanad.ai"
+    },
+    "liabilityLimits": {
+      "title": "Limitation of Liability",
+      "intro": "To the extent permitted by law:",
+      "item1": "Sanad is not liable for the acts of service providers",
+      "item2": "We do not bear indirect, consequential, loss of profits, or data loss",
+      "item3": "Maximum financial liability does not exceed the fees paid to the Platform for the relevant request",
+      "sub133": "Liability Shift",
+      "p133a": "Service delivery is entirely the responsibility of the service provider, not Sanad or PASS TECHNOLOGY.",
+      "p133b": "In any dispute regarding service quality, content, timing, or resulting harm: legal and financial responsibility passes directly to the service provider.",
+      "p133c": "Sanad is not liable for: the provider adding/changing scope of work, use of unsuitable materials, execution errors, delayed arrival.",
+      "p133d": "Sanad only manages the report and assists both parties in resolving the dispute, without commitment to a specific outcome.",
+      "sub134": "As-Is and As-Available",
+      "p134a": "The Platform and related services are provided \"as is\" and \"as available.\" Sanad gives no warranties of any kind, express or implied.",
+      "p134b": "Sanad is not liable for damage from: service interruption, technical errors, system updates, third-party network failures."
+    },
+    "forceMajeure": {
+      "title": "Force Majeure",
+      "intro": "Sanad is not liable for any delay or failure due to:",
+      "item1": "Emergency circumstances",
+      "item2": "Network failures",
+      "item3": "Weather",
+      "item4": "Unforeseen risks"
+    },
+    "cybersecurity": {
+      "title": "Cybersecurity Policy",
+      "sub151": "Policy Objective:",
+      "p151": "To protect user and provider data and ensure secure operation of the Sanad platform.",
+      "sub152": "Security Standards: PASS TECHNOLOGY applies:",
+      "item152a": "TLS/SSL Encryption",
+      "item152b": "Firewall Protection",
+      "item152c": "Encrypted Databases",
+      "item152d": "Multi-Factor Authentication (when available)",
+      "item152e": "Access Control Layers",
+      "item152f": "Regular Security Patching",
+      "sub153": "Account Protection: The user must:",
+      "item153a": "Keep information confidential",
+      "item153b": "Not share the account with anyone",
+      "item153c": "Report any suspected breach",
+      "sub154": "Platform Systems Protection: Sanad applies:",
+      "item154a": "Periodic vulnerability scanning",
+      "item154b": "Threat monitoring",
+      "item154c": "Logging of sensitive activity",
+      "item154d": "DDoS protection",
+      "item154e": "Fraud detection systems",
+      "sub155": "Incident Response:",
+      "p155": "In the event of a breach: investigation is immediate, affected systems are isolated, users are notified (as required by law), corrective measures are taken.",
+      "sub156": "Staff Training:",
+      "p156": "PASS TECHNOLOGY trains staff on: data protection, handling sensitive information, phishing awareness.",
+      "sub157": "Backup:",
+      "p157": "Encrypted backups are taken periodically to ensure: no data loss, recovery in disasters."
+    },
+    "arbitration": {
+      "title": "Arbitration and Dispute Resolution",
+      "p161": "Dispute Resolution: You agree to first seek to resolve any dispute through good-faith negotiation with Sanad within 30 days of written notice.",
+      "p162": "Arbitration: If unresolved, the dispute is referred to final and binding arbitration under ICC rules in Abu Dhabi. A single arbitrator is appointed under ICC rules.",
+      "p163": "Waiver of Class Actions: Both User and Sanad waive any right to bring or participate in any class action or representative action.",
+      "p164": "Governing Law: This agreement is governed by the laws of Abu Dhabi, United Arab Emirates.",
+      "p165": "Jurisdiction: The parties agree that exclusive jurisdiction for any dispute arising from this agreement lies with the courts of Abu Dhabi."
+    },
+    "suspension": {
+      "title": "Suspension and Termination",
+      "sub171": "Sanad's Rights:",
+      "p171": "Sanad may suspend, terminate, or restrict your access immediately and without prior notice if: you breach any term, we suspect fraud or misuse, for security or operational reasons, or upon request by a competent government authority.",
+      "sub172": "Effects of Termination:",
+      "p172": "Upon termination: all licenses granted to you are cancelled, Sanad may permanently bar your access, terms that by nature survive termination remain in effect.",
+      "sub173": "Appeal:",
+      "p173": "You may submit a written appeal of a termination decision within 14 days of notice."
+    },
+    "minors": {
+      "title": "Minor Users",
+      "item1": "The service is intended for individuals aged 18 or older",
+      "item2": "By using the service, you confirm that you are at least 18",
+      "item3": "Sanad does not knowingly collect personal information from anyone under 18",
+      "item4": "If you are under 18, you must have parental or legal guardian consent"
+    },
+    "communications": {
+      "title": "Communications and Notices",
+      "item1": "Electronic Communications: You agree to receive all legally binding communications from Sanad electronically",
+      "item2": "Validity of Electronic Notices: Electronic notices are deemed written and satisfy any legal requirement for written communication",
+      "item3": "Formal Notices: Any legal notices to Sanad must be sent to the physical address set out below"
+    },
+    "ipRights": {
+      "title": "Intellectual Property Rights",
+      "item1": "Sanad's Ownership: All IP rights in the Platform, including logos, content, design, software, and database, are exclusively owned by PASS TECHNOLOGY",
+      "item2": "Limited License: Sanad grants you a limited, non-exclusive, non-transferable license to use the service for personal purposes",
+      "item3": "Restrictions: Copying, modifying, distributing, selling, or exploiting any part of the service without prior written permission is prohibited",
+      "item4": "User-Generated Content: By uploading content, you grant Sanad a worldwide license to use it to provide the service"
+    },
+    "indemnity": {
+      "title": "Indemnity",
+      "intro": "You agree to indemnify Sanad, PASS TECHNOLOGY, and their officers and agents against any claims, losses, damages, or costs (including legal fees) arising from:",
+      "item1": "Your breach of any term of this agreement.",
+      "item2": "Misuse of the Platform or services.",
+      "item3": "Providing false or misleading information.",
+      "item4": "Damage or disputes from direct dealings between you and a service provider outside the Platform.",
+      "outro": "This clause does not cover liability arising from Sanad's gross negligence or bad faith."
+    },
+    "lawJurisdiction": {
+      "title": "Law and Jurisdiction",
+      "content": "This agreement is governed by the laws of Abu Dhabi / United Arab Emirates. Jurisdiction lies with the courts of Abu Dhabi."
+    },
+    "severability": {
+      "title": "Severability",
+      "content": "If any term is held illegal or unenforceable, it is construed to the extent necessary to make it enforceable, or is deemed deleted, without affecting the rest."
+    },
+    "noWaiver": {
+      "title": "No Waiver",
+      "content": "Sanad's failure or delay in exercising any right under this agreement does not constitute a waiver of that right, nor preclude its future exercise."
+    },
+    "languagePrevails": {
+      "title": "Governing Language (Arabic Prevails)",
+      "content": "The Arabic version of these terms and policies is the original and governing version. In case of conflict with any translation, the Arabic version prevails."
+    },
+    "contact": {
+      "title": "Legal Contact Information",
+      "company": "Company: PASS TECHNOLOGY",
+      "license": "Trade License: CN-2797749",
+      "address": "Address: Abu Dhabi, United Arab Emirates",
+      "email": "Email: info@trysanad.ai",
+      "dpo": "Data Protection Officer: dpo@trysanad.ai",
+      "phone": "Legal Support Phone: [Add number]",
+      "hours": "Business Hours: Sunday – Thursday, 9 AM – 5 PM (UAE time)"
+    }
+  }
+}
