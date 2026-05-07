@@ -25,8 +25,8 @@ import { RegisterResponseDto } from './dto/register-response.dto';
 import { AuthTokensResponse, JwtPayloadType } from './types/user-token.type';
 import { UserInfoResponseWithTokensDto } from './dto/user-info-response.dto';
 import { RefreshDto } from './dto/refresh.dto';
-import { JwtAuthGuard } from './guards/jwt-auth.guard';
-import { VerificationGuard } from './guards/verification.guard';
+import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
+import { VerificationGuard } from '../auth/guards/verification.guard';
 import { OtpAuthDto } from './dto/auth-otp.dto';
 import { ForgetPasswordDto } from './dto/forget-password.dto';
 

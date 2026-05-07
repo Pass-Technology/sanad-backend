@@ -5,7 +5,8 @@ import { UserModule } from './modules/user/user.module';
 import { OtpModule } from './modules/otp/otp.module';
 import { HealthController } from './health.controller';
 import { AppConfigModule } from './config/config.module';
-import { ProfileModule } from './modules/profile/profile.module';
+import { ProfileModule } from './modules/provider-profile/profile.module';
+import { AuthModule } from './modules/auth/auth.module';
 import { PlanModule } from './modules/plan/plan.module';
 import { SubscriptionModule } from './subscription/subscription.module';
 import { ServiceManagementModule } from './modules/service-management/service-management.module';
@@ -25,6 +26,7 @@ import { LegalModule } from './modules/legal/legal.module';
     EventEmitterModule.forRoot(),
     DatabaseModule,
     UserModule,
+    AuthModule,
     OtpModule,
     ProfileModule,
     PlanModule,

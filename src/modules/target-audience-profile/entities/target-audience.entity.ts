@@ -1,4 +1,4 @@
-import { ProviderProfileEntity } from "../../../modules/profile/entities/provider-profile.entity";
+import { ProviderProfileEntity } from "../../../modules/provider-profile/entities/provider-profile.entity";
 import { BaseEntity } from "../../../database/base-entity";
 import { Column, Entity, JoinColumn, OneToOne } from "typeorm";
 import { BasicInfo, CustomerProfile, Operations, PurchasingBehavior, Services, Strategy } from "../types/target-audience-profile-sections.types";

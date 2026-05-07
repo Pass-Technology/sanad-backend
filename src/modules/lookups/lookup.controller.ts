@@ -1,8 +1,8 @@
 import { Controller, Get, Headers, Query, UseGuards } from "@nestjs/common";
 import { LookUpService } from "./lookup.service";
 import { ApiBearerAuth, ApiOperation, ApiQuery, ApiTags } from "@nestjs/swagger";
-import { JwtAuthGuard } from '../user/guards/jwt-auth.guard';
-import { VerificationGuard } from '../user/guards/verification.guard';
+import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
+import { VerificationGuard } from '../auth/guards/verification.guard';
 
 
 @ApiTags('lookup-tables')

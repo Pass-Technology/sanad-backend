@@ -1,7 +1,7 @@
 import { Entity, Column, ManyToOne, OneToMany, JoinColumn } from 'typeorm';
 import { BaseEntity } from '../../../database/base-entity';
 import { ServiceEntity } from './service.entity';
-import { ProviderProfileEntity } from '../../profile/entities/provider-profile.entity';
+import { ProviderProfileEntity } from '../../provider-profile/entities/provider-profile.entity';
 import { ProviderServicePricingEntity } from '../entities/provider-service-pricing.entity';
 
 @Entity('provider_services')

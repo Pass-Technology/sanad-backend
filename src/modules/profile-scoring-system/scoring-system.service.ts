@@ -3,7 +3,7 @@ import { EntityManager } from 'typeorm';
 import { SCORING_CONFIG } from './scoring.config';
 import { ScoringSectionConfig, ScoringFieldConfig } from './interfaces/scoring-system.interfaces';
 import { SharedCacheService } from '../../shared/cache/shared-cache.service';
-import { ProfileRepository } from '../profile/profile.repository';
+import { ProfileRepository } from '../provider-profile/profile.repository';
 import { TargetAudienceService } from '../target-audience-profile/target-audience.service';
 
 @Injectable()

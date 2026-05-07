@@ -2,7 +2,7 @@ import { Injectable, NotFoundException } from "@nestjs/common";
 import { InjectRepository } from "@nestjs/typeorm";
 import { Repository } from "typeorm";
 import { TargetAudienceProfile } from "./entities/target-audience.entity";
-import { ProfileRepository } from "../profile/profile.repository";
+import { ProfileRepository } from "../provider-profile/profile.repository";
 import { UpdateBasicInfoDto } from "./dto/update-basic-info.dto";
 import { UpdateServicesDto } from "./dto/update-services.dto";
 import { UpdateOperationsDto } from "./dto/update-operations.dto";

@@ -1,17 +1,14 @@
-import { Injectable, UnauthorizedException, ForbiddenException, Inject, forwardRef } from '@nestjs/common';
-import { JwtService } from '@nestjs/jwt';
+import { Injectable, UnauthorizedException, Inject, forwardRef } from '@nestjs/common';
 import * as bcrypt from 'bcrypt';
 import { UserRepository } from './user.repository';
 import { RegisterDto } from './dto/register.dto';
 import { AuthDto } from './dto/auth.dto';
 import { ChangePasswordDto } from './dto/change-password.dto';
 import { RefreshDto } from './dto/refresh.dto';
-import { AppConfigService } from '../../config/config.service';
 
 import { UserIdentifierType } from './enums/user-identifier-type.enum';
 import { OtpPurposeEnum } from '../otp/enum/otp-purpose.enum';
 import { ResetPasswordDto } from './dto/reset-password.dto';
-import { SendOtpDto } from '../otp/dto/send-otp.dto';
 import { OtpService } from '../otp/otp.service';
 import { OtpRepository } from '../otp/otp.repository';
 import { MailService } from '../mail/mail.service';
@@ -22,12 +19,13 @@ import { AuthTokensResponse, JwtPayloadType } from './types/user-token.type';
 import { ForgetPasswordDto } from './dto/forget-password.dto';
 
 
+import { AuthService } from '../auth/auth.service';
+
 @Injectable()
 export class UserService {
   constructor(
     private readonly userRepository: UserRepository,
-    private readonly jwtService: JwtService,
-    private readonly config: AppConfigService,
+    private readonly authService: AuthService,
     @Inject(forwardRef(() => OtpService))
     private readonly otpService: OtpService,
     private readonly otpRepository: OtpRepository,
@@ -75,7 +73,7 @@ export class UserService {
   async markVerifiedAndGenerateToken(userId: string): Promise<AuthTokensResponse> {
     await this.userRepository.markUserVerified(userId);
     const user = (await this.userRepository.findById(userId))!;
-    return this.generateTokens(user);
+    return this.authService.generateTokens(user);
   }
 
   async markVerifiedAndGenerateTokenByIdentifier(
@@ -83,7 +81,7 @@ export class UserService {
   ): Promise<AuthTokensResponse> {
     const user = (await this.userRepository.findByIdentifier(identifier))!;
     await this.userRepository.markUserVerified(user.id);
-    return this.generateTokens({ ...user, isVerified: true });
+    return this.authService.generateTokens({ ...user, isVerified: true });
   }
 
   async auth(dto: AuthDto): Promise<AuthTokensResponse> {
@@ -105,81 +103,13 @@ export class UserService {
     // }
 
 
-    return this.generateTokens(user as UserPayloadType);
-  }
+    return this.authService.generateTokens(user as UserPayloadType);
+}
 
   async refreshTokens(dto: RefreshDto): Promise<AuthTokensResponse> {
-    const { refreshToken } = dto;
-
-    try {
-      // Decode without verification first to get the user ID
-      const decoded = this.jwtService.decode(refreshToken) as { sub: string };
-      // console.log(decoded)
-      if (!decoded || !decoded.sub) {
-        throw new UnauthorizedException('Invalid refresh token');
-      }
-
-      const user = await this.userRepository.findUserRefreshTokenByUserId(decoded.sub);
-      console.log(user)
-      if (!user || !user.refreshToken) {
-        throw new UnauthorizedException('Invalid refresh token');
-      }
-
-
-      // if (!user.isVerified) {
-      //   throw new ForbiddenException('Please verify your account first');
-      // }
-
-
-
-      // Verify the refresh token with the secret
-      await this.jwtService.verifyAsync(refreshToken, {
-        secret: this.config.auth.jwtRefreshSecret,
-      });
-
-      // Compare hashed token
-      const isTokenMatch = await bcrypt.compare(refreshToken, user.refreshToken);
-      if (!isTokenMatch) {
-        throw new UnauthorizedException('Invalid refresh token');
-      }
-
-      return this.generateTokens(user);
-    } catch (e) {
-      throw new UnauthorizedException('Invalid refresh token');
-    }
+    return this.authService.refreshTokens(dto);
   }
 
-  private async generateTokens(userPaylpad: UserPayloadType): Promise<AuthTokensResponse> {
-    const { id, identifier, identifierType, isVerified, isProfileCompleted } = userPaylpad;
-    const payload = {
-      sub: id,
-      identifier: identifier,
-      identifierType: identifierType,
-      isVerified: isVerified,
-      isProfileCompleted: isProfileCompleted,
-    };
-
-    const accessToken = await this.jwtService.signAsync(payload, {
-      secret: this.config.auth.jwtSecret,
-      expiresIn: this.config.auth.accessExpiration as any,
-    });
-
-    const refreshToken = await this.jwtService.signAsync(payload, {
-      secret: this.config.auth.jwtRefreshSecret,
-      expiresIn: this.config.auth.refreshExpiration as any,
-    });
-
-
-    // Hash refresh token before saving
-    const hashedRefreshToken = await bcrypt.hash(refreshToken, 10);
-    await this.userRepository.updateRefreshToken(id, hashedRefreshToken);
-
-    return {
-      accessToken,
-      refreshToken,
-      user: payload
-    };
-  }
 
 
   async changePassword(
@@ -278,7 +208,7 @@ export class UserService {
     if (!user) {
       throw new UnauthorizedException('User not found');
     }
-    const token = await this.generateTokens({ ...user, isVerified: true });
+    const token = await this.authService.generateTokens({ ...user, isVerified: true });
     return {
       accessToken: token.accessToken,
       refreshToken: token.refreshToken,
@@ -314,7 +244,7 @@ export class UserService {
     await this.userRepository.markUserVerified(user.id);
 
     if (purpose === OtpPurposeEnum.REGISTER) {
-      return this.generateTokens({ ...user, isVerified: true });
+      return this.authService.generateTokens({ ...user, isVerified: true });
     }
     return { message: 'OTP verified successfully' };
 

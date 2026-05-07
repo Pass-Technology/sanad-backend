@@ -2,7 +2,7 @@ import { Entity, Column, OneToOne, OneToMany } from 'typeorm';
 import { Exclude } from 'class-transformer';
 import { UserIdentifierType } from '../enums/user-identifier-type.enum';
 import { BaseEntity } from '../../../database/base-entity';
-import { ProviderProfileEntity } from '../../profile/entities/provider-profile.entity';
+import { ProviderProfileEntity } from '../../provider-profile/entities/provider-profile.entity';
 import { OtpEntity } from '../../otp/entities/otp.entity';
 import { SubscriptionEntity } from '../../../subscription/entities/subscription.entity';
 import { RequestServiceEntity } from '../../../modules/service-management/entities/request-service.entity';

@@ -4,7 +4,7 @@ import {
     OneToOne,
     JoinColumn,
 } from 'typeorm';
-import { ProviderProfileEntity } from '../../profile/entities/provider-profile.entity';
+import { ProviderProfileEntity } from '../../provider-profile/entities/provider-profile.entity';
 import { BaseEntity } from '../../../database/base-entity';
 import { Exclude } from 'class-transformer';
 import { BankAccountEntity } from './bank-account.entity';
