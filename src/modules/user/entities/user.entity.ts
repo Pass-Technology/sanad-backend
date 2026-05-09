@@ -6,6 +6,8 @@ import { ProviderProfileEntity } from '../../provider-profile/entities/provider-
 import { OtpEntity } from '../../otp/entities/otp.entity';
 import { SubscriptionEntity } from '../../../subscription/entities/subscription.entity';
 import { RequestServiceEntity } from '../../../modules/service-management/entities/request-service.entity';
+import { UserType } from '../enums/user-type.enum';
+import { ClientProfileEntity } from '../../client/entity/client-profile.entity';
 
 
 
@@ -25,6 +27,13 @@ export class UserEntity extends BaseEntity {
     @Column({ default: false })
     isVerified: boolean;
 
+    @Column({
+        type: 'enum',
+        enum: UserType,
+        default: UserType.PROVIDER
+    })
+    type: UserType;
+
     @Exclude()
     @Column({ select: false })
     password: string;
@@ -36,7 +45,12 @@ export class UserEntity extends BaseEntity {
     @OneToOne(() => ProviderProfileEntity, (profile) => profile.user, {
         nullable: true,
     })
-    profile: ProviderProfileEntity;
+    providerProfile: ProviderProfileEntity;
+
+    @OneToOne(() => ClientProfileEntity, (profile) => profile.user, {
+        nullable: true,
+    })
+    clientProfile: ClientProfileEntity;
 
     @Column({ default: false })
     isProfileCompleted: boolean;

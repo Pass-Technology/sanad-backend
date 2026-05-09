@@ -4,6 +4,7 @@ import { Repository, EntityManager } from 'typeorm';
 import { UserEntity } from './entities/user.entity';
 import { BaseRepository } from '../../shared/generics/repository.abstract';
 import { UserIdentifierType } from './enums/user-identifier-type.enum';
+import { UserType } from './enums/user-type.enum';
 
 @Injectable()
 export class UserRepository extends BaseRepository<UserEntity> {
@@ -27,11 +28,13 @@ export class UserRepository extends BaseRepository<UserEntity> {
     identifier: string;
     identifierType: UserIdentifierType;
     password: string;
+    type: UserType;
   }): Promise<UserEntity> {
     const user = this.userRepository.create({
       identifier: data.identifier,
       identifierType: data.identifierType,
       password: data.password,
+      type: data.type
     });
     return this.userRepository.save(user);
   }
@@ -68,25 +71,21 @@ export class UserRepository extends BaseRepository<UserEntity> {
       // "identifierType": "email",
       // "isVerified": true,
       // "isProfileCompleted": false
-      select: { id: true, identifier: true, identifierType: true, isVerified: true, isProfileCompleted: true, password: true },
+      select: { id: true, identifier: true, identifierType: true, type: true, isVerified: true, isProfileCompleted: true, password: true },
       where: { identifier }
     })
   }
 
   async findUserWithPasswordById(userId: string) {
     return await this.userRepository.findOne({
-      //       "identifier": "mstwalasss@gmail.com",
-      // "identifierType": "email",
-      // "isVerified": true,
-      // "isProfileCompleted": false
-      select: { id: true, identifier: true, identifierType: true, isVerified: true, isProfileCompleted: true, password: true },
+      select: { id: true, identifier: true, identifierType: true, type: true, isVerified: true, isProfileCompleted: true, password: true },
       where: { id: userId }
     })
   }
 
   async findUserRefreshTokenByUserId(userId: string) {
     return await this.userRepository.findOne({
-      select: { id: true, identifier: true, identifierType: true, isVerified: true, isProfileCompleted: true, refreshToken: true },
+      select: { id: true, identifier: true, identifierType: true, type: true, isVerified: true, isProfileCompleted: true, refreshToken: true },
       where: { id: userId }
     })
   }

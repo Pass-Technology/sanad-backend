@@ -19,6 +19,7 @@ import { UploadAssetsModule } from './modules/upload-assets/upload-assets.module
 import { TargetAudienceModule } from './modules/target-audience-profile/target-audience.module';
 import { ValidatorModule } from './modules/validator/validator.module';
 import { LegalModule } from './modules/legal/legal.module';
+import { ClientModule } from './modules/client/client.module';
 
 @Module({
   imports: [
@@ -40,7 +41,8 @@ import { LegalModule } from './modules/legal/legal.module';
     UploadAssetsModule,
     TargetAudienceModule,
     ValidatorModule,
-    LegalModule
+    LegalModule,
+    ClientModule
   ],
   controllers: [HealthController],
 })

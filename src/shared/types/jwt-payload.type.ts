@@ -1,4 +1,5 @@
 import { UserIdentifierType } from '../../modules/user/enums/user-identifier-type.enum';
+import { UserType } from '../../modules/user/enums/user-type.enum';
 
 export type JwtPayload = {
   sub: string;
@@ -6,4 +7,5 @@ export type JwtPayload = {
   identifierType: UserIdentifierType;
   isVerified: boolean;
   isProfileCompleted: boolean;
+  type: UserType;
 };

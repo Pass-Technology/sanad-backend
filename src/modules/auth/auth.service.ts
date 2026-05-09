@@ -15,13 +15,14 @@ export class AuthService {
   ) { }
 
   async generateTokens(userPayload: UserPayloadType): Promise<AuthTokensResponse> {
-    const { id, identifier, identifierType, isVerified, isProfileCompleted } = userPayload;
+    const { id, identifier, identifierType, isVerified, isProfileCompleted, type } = userPayload;
     const payload = {
       sub: id,
       identifier: identifier,
       identifierType: identifierType,
       isVerified: isVerified,
       isProfileCompleted: isProfileCompleted,
+      type: type,
     };
 
     const accessToken = await this.jwtService.signAsync(payload, {

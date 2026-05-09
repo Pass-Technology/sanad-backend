@@ -9,6 +9,7 @@ import {
 import { IsUserNotExisting } from '../validators/existing-user.validator';
 import { IsEmailOrMobile } from '../../../shared/validators/email-or-mobile.validator';
 import { UserIdentifierType } from '../enums/user-identifier-type.enum';
+import { UserType } from '../enums/user-type.enum';
 
 export class RegisterDto {
   @ApiProperty({
@@ -30,4 +31,8 @@ export class RegisterDto {
   @IsString()
   @MinLength(6, { message: 'Password must be at least 6 characters' })
   password: string;
+
+  @ApiProperty({ enum: UserType, description: 'User type' })
+  @IsNotEmpty({ message: 'Type must be provided' })
+  type: UserType;
 }

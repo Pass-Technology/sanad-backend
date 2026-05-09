@@ -15,7 +15,8 @@ import { MailService } from '../mail/mail.service';
 import { UserInfoResponseWithTokensDto } from './dto/user-info-response.dto';
 import { OtpAuthDto } from './dto/auth-otp.dto';
 import { UserPayloadType } from './types/user-payload.type';
-import { AuthTokensResponse, JwtPayloadType } from './types/user-token.type';
+import { AuthTokensResponse } from './types/user-token.type';
+import { JwtPayload } from '../../shared/types/jwt-payload.type';
 import { ForgetPasswordDto } from './dto/forget-password.dto';
 
 
@@ -34,7 +35,7 @@ export class UserService {
 
 
   async register(dto: RegisterDto) {
-    const { identifier, password, identifierType } = dto;
+    const { identifier, password, identifierType, type } = dto;
     // console.log(identifier);
 
     const hashedPassword = await bcrypt.hash(password, 10);
@@ -47,6 +48,7 @@ export class UserService {
       identifier,
       identifierType,
       password: hashedPassword,
+      type
     });
 
     const { otp } = await this.otpService.createOtpForUser(user.id, identifier, OtpPurposeEnum.REGISTER);
@@ -73,7 +75,7 @@ export class UserService {
   async markVerifiedAndGenerateToken(userId: string): Promise<AuthTokensResponse> {
     await this.userRepository.markUserVerified(userId);
     const user = (await this.userRepository.findById(userId))!;
-    return this.authService.generateTokens(user);
+    return this.authService.generateTokens(user as UserPayloadType);
   }
 
   async markVerifiedAndGenerateTokenByIdentifier(
@@ -81,7 +83,7 @@ export class UserService {
   ): Promise<AuthTokensResponse> {
     const user = (await this.userRepository.findByIdentifier(identifier))!;
     await this.userRepository.markUserVerified(user.id);
-    return this.authService.generateTokens({ ...user, isVerified: true });
+    return this.authService.generateTokens({ ...user, isVerified: true } as UserPayloadType);
   }
 
   async auth(dto: AuthDto): Promise<AuthTokensResponse> {
@@ -104,7 +106,7 @@ export class UserService {
 
 
     return this.authService.generateTokens(user as UserPayloadType);
-}
+  }
 
   async refreshTokens(dto: RefreshDto): Promise<AuthTokensResponse> {
     return this.authService.refreshTokens(dto);
@@ -208,7 +210,7 @@ export class UserService {
     if (!user) {
       throw new UnauthorizedException('User not found');
     }
-    const token = await this.authService.generateTokens({ ...user, isVerified: true });
+    const token = await this.authService.generateTokens({ ...user, isVerified: true } as UserPayloadType);
     return {
       accessToken: token.accessToken,
       refreshToken: token.refreshToken,
@@ -217,10 +219,11 @@ export class UserService {
       isVerified: true,
       identifier: user.identifier,
       identifierType: user.identifierType,
+      type: user.type,
     };
   }
 
-  async getMe(user: JwtPayloadType) {
+  async getMe(user: JwtPayload) {
     const { identifier, identifierType, isVerified, isProfileCompleted } = user;
     const updatedUser = await this.userRepository.findByIdentifier(identifier);
     return updatedUser;
@@ -244,7 +247,7 @@ export class UserService {
     await this.userRepository.markUserVerified(user.id);
 
     if (purpose === OtpPurposeEnum.REGISTER) {
-      return this.authService.generateTokens({ ...user, isVerified: true });
+      return this.authService.generateTokens({ ...user, isVerified: true } as UserPayloadType);
     }
     return { message: 'OTP verified successfully' };
 

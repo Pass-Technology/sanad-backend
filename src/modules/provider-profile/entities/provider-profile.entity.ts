@@ -90,7 +90,7 @@ export class ProviderProfileEntity extends BaseEntity {
     })
     payment: ProviderPaymentEntity;
 
-    @ManyToOne(() => UserEntity, (user) => user.profile, { onDelete: 'CASCADE' })
+    @OneToOne(() => UserEntity, (user) => user.providerProfile, { onDelete: 'CASCADE' })
     @JoinColumn()
     user: UserEntity;
 

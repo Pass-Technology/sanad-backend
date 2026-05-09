@@ -35,10 +35,14 @@ import { UpdateProviderServiceDto } from './dto/update-provider-service.dto';
 import { CreateBranchDto } from './dto/create-branches.dto';
 // import { CurrentUser } from 'src/shared/decorators/current-user.decorator';
 import { UpdatePaymentDto } from '../payment/dto/update-payment.dto';
+import { UserTypeGuard } from '../../shared/guards/user-types.guard';
+import { UserTypes } from '../../shared/decorators/userTypes.decorator';
+import { UserType } from '../user/enums/user-type.enum';
 
 @ApiTags('provider-profile')
 @ApiBearerAuth()
-@UseGuards(JwtAuthGuard, VerificationGuard)
+@UseGuards(JwtAuthGuard, VerificationGuard, UserTypeGuard)
+@UserTypes(UserType.PROVIDER)
 @UseInterceptors(ClassSerializerInterceptor)
 @Controller('profile')
 export class ProfileController {

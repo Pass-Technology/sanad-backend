@@ -1,5 +1,6 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { UserIdentifierType } from '../enums/user-identifier-type.enum';
+import { UserType } from '../enums/user-type.enum';
 
 export class UserInfoResponseWithTokensDto {
   @ApiProperty({
@@ -22,6 +23,12 @@ export class UserInfoResponseWithTokensDto {
 
   @ApiProperty({ example: false, description: 'Whether the user is verified' })
   isVerified: boolean;
+
+  @ApiProperty({
+    enum: UserType,
+    description: 'Type of user',
+  })
+  type: UserType;
 
   @ApiProperty({ example: false, description: 'Whether the profile is completed' })
   isProfileCompleted: boolean;

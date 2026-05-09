@@ -22,7 +22,8 @@ import { ChangePasswordDto } from './dto/change-password.dto';
 import { ResetPasswordDto } from './dto/reset-password.dto';
 import { SendOtpDto } from '../otp/dto/send-otp.dto';
 import { RegisterResponseDto } from './dto/register-response.dto';
-import { AuthTokensResponse, JwtPayloadType } from './types/user-token.type';
+import { AuthTokensResponse } from './types/user-token.type';
+import { JwtPayload } from '../../shared/types/jwt-payload.type';
 import { UserInfoResponseWithTokensDto } from './dto/user-info-response.dto';
 import { RefreshDto } from './dto/refresh.dto';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
@@ -73,7 +74,7 @@ export class UserController {
   @UseGuards(JwtAuthGuard, VerificationGuard)
   @ApiBearerAuth()
   @ApiOperation({ summary: 'Get current user info from token' })
-  getInfo(@CurrentUser() user: JwtPayloadType) {
+  getInfo(@CurrentUser() user: JwtPayload) {
     return this.userService.getMe(user)
 
 
