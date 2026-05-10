@@ -23,38 +23,53 @@ export class ProfileRepository {
 
         const profile = await repo.findOne({
             where: { user: { id: userId } },
-            relations: {
-                status: true,
-                providerType: true,
-                user: true,
-                userInfo: true,
-                branches: {
-                    servingAreas: true
-                },
-                compliance: true,
-                payment: {
-                    cash: true,
-                    bankTransfer: { bankAccount: true },
-                    paymentLink: true,
-                    sanad: { bankAccount: true },
-                    pos: true,
-                    cheque: true,
-                    // bankAccounts: true, // no need to show this but TODO: check how to remove dead records
-                },
-                providerServices: {
-                    service: {
-                        category: true,
-                        children: true
-                    },
-                    pricingDetails: true
-                },
-                languages: true
-            }
+            relations: this.getProfileRelations()
         });
         if (!profile) {
             throw new NotFoundException('Profile not found. Please start the setup process.');
         }
         return profile;
+    }
+
+    async findProfileById(id: string, manager?: EntityManager): Promise<ProviderProfileEntity> {
+        const repo = manager ? manager.getRepository(ProviderProfileEntity) : this.profileRepo;
+        const profile = await repo.findOne({
+            where: { id },
+            relations: this.getProfileRelations()
+        });
+        if (!profile) {
+            throw new NotFoundException('Profile not found');
+        }
+        return profile;
+    }
+
+    private getProfileRelations() {
+        return {
+            status: true,
+            providerType: true,
+            user: true,
+            userInfo: true,
+            branches: {
+                servingAreas: true
+            },
+            compliance: true,
+            payment: {
+                cash: true,
+                bankTransfer: { bankAccount: true },
+                paymentLink: true,
+                sanad: { bankAccount: true },
+                pos: true,
+                cheque: true,
+            },
+            providerServices: {
+                service: {
+                    category: true,
+                    children: true
+                },
+                pricingDetails: true
+            },
+            languages: true
+        };
     }
 
     // async createProfile(data: Partial<ProviderProfileEntity>, manager?: EntityManager): Promise<ProviderProfileEntity> {

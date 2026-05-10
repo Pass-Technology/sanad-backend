@@ -20,6 +20,8 @@ import { TargetAudienceModule } from './modules/target-audience-profile/target-a
 import { ValidatorModule } from './modules/validator/validator.module';
 import { LegalModule } from './modules/legal/legal.module';
 import { ClientModule } from './modules/client/client.module';
+import { OrdersModule } from './modules/orders/orders.module';
+import { PromotionsModule } from './modules/promotions/promotions.module';
 
 @Module({
   imports: [
@@ -42,7 +44,9 @@ import { ClientModule } from './modules/client/client.module';
     TargetAudienceModule,
     ValidatorModule,
     LegalModule,
-    ClientModule
+    ClientModule,
+    OrdersModule,
+    PromotionsModule
   ],
   controllers: [HealthController],
 })

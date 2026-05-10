@@ -65,6 +65,16 @@ export class ServiceManagementService {
         return this.localize(service, lang);
     }
 
+    async getServiceOrThrow(serviceId: string) {
+        const service = await this.serviceRepo.findOne({
+            where: { id: serviceId, isActive: true }
+        });
+        if (!service) {
+            throw new NotFoundException('Service not found');
+        }
+        return service;
+    }
+
     async findServicesByIds(serviceIds: string[]) {
         if (!serviceIds || serviceIds.length === 0) return [];
         return await this.serviceRepo.find({

@@ -18,6 +18,8 @@ import { PaymentModule } from '../payment/payment.module';
 import { ScoringSystemModule } from '../profile-scoring-system/scoring-system.module';
 import { AuthModule } from '../auth/auth.module';
 
+import { ProviderWorkerEntity } from './entities/provider-worker.entity';
+
 @Module({
     imports: [
         TypeOrmModule.forFeature([
@@ -29,6 +31,7 @@ import { AuthModule } from '../auth/auth.module';
             ProviderPaymentEntity,
             ProviderServiceEntity,
             ProviderServicePricingEntity,
+            ProviderWorkerEntity,
         ]),
         UserModule,
         AuthModule,

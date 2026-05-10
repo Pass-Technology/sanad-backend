@@ -11,6 +11,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository, DataSource, EntityManager } from 'typeorm';
 import { ProfileRepository } from './profile.repository';
 import { UserRepository } from '../user/user.repository';
+import { ProviderWorkerEntity } from './entities/provider-worker.entity';
 // import { UserEntity } from '../user/entities/user.entity';
 // import { CreateBranchDto } from './dto/step-3-branches.dto';
 import { CreateFullProfileDto } from './dto/create-full-profile.dto';
@@ -54,6 +55,8 @@ export class ProfileService {
         private readonly branchRepo: Repository<BranchEntity>,
         @InjectRepository(ServingAreaEntity)
         private readonly servingAreaRepo: Repository<ServingAreaEntity>,
+        @InjectRepository(ProviderWorkerEntity)
+        private readonly workerRepo: Repository<ProviderWorkerEntity>,
         private readonly userRepo: UserRepository,
         private readonly dataSource: DataSource,
         @Inject(forwardRef(() => ScoringSystemService))
@@ -115,6 +118,10 @@ export class ProfileService {
 
     async getMyProfile(userId: string): Promise<ProviderProfileEntity> {
         return await this.profileRepo.findProfileByUserId(userId);
+    }
+
+    async getProfileById(id: string): Promise<ProviderProfileEntity> {
+        return await this.profileRepo.findProfileById(id);
     }
 
     async updateCompanyInfo(userId: string, updateCompanyInfoDto: UpdateCompanyInfoDto) {
@@ -457,4 +464,19 @@ export class ProfileService {
         });
     }
 
+    async getWorkerOrThrow(workerId: string, providerId: string): Promise<ProviderWorkerEntity> {
+        const worker = await this.workerRepo.findOne({
+            where: { id: workerId, provider: { id: providerId } }
+        });
+        if (!worker) {
+            throw new NotFoundException('Worker not found');
+        }
+        return worker;
+    }
+
+    async getWorkersByProvider(providerId: string): Promise<ProviderWorkerEntity[]> {
+        return this.workerRepo.find({
+            where: { provider: { id: providerId } }
+        });
+    }
 }
