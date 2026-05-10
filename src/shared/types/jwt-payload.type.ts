@@ -3,6 +3,7 @@ import { UserType } from '../../modules/user/enums/user-type.enum';
 
 export type JwtPayload = {
   sub: string;
+  userId?: string;
   identifier: string;
   identifierType: UserIdentifierType;
   isVerified: boolean;

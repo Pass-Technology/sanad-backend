@@ -29,6 +29,7 @@ export class JwtAuthGuard extends AuthGuard('jwt') {
         secret: this.config.auth.jwtSecret,
       });
       request.user = {
+        sub: payload.sub,
         userId: payload.sub,
         identifier: payload.identifier,
         identifierType: payload.identifierType,

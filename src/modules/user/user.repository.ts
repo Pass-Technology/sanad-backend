@@ -131,9 +131,9 @@ export class UserRepository extends BaseRepository<UserEntity> {
     await repo.update(userId, { isProfileCompleted: status });
   }
 
-  async findMeInfo(identifier: string): Promise<UserEntity | null> {
+  async findMeInfo(userId: string): Promise<UserEntity | null> {
     return await this.userRepository.findOne({
-      where: { identifier },
+      where: { id: userId },
     });
   }
 }
