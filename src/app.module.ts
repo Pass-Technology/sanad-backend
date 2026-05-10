@@ -1,5 +1,6 @@
 import { Module } from '@nestjs/common';
-import { EventEmitterModule } from '@nestjs/event-emitter';
+// import { ThrottlerModule } from '@nestjs/throttler';
+// import { EventEmitterModule } from '@nestjs/event-emitter';
 import { DatabaseModule } from './database/database.module';
 import { UserModule } from './modules/user/user.module';
 import { OtpModule } from './modules/otp/otp.module';
@@ -26,7 +27,11 @@ import { PromotionsModule } from './modules/promotions/promotions.module';
 @Module({
   imports: [
     AppConfigModule,
-    EventEmitterModule.forRoot(),
+    // ThrottlerModule.forRoot([{
+    //   ttl: 60000,
+    //   limit: 10,
+    // }]),
+    // EventEmitterModule.forRoot(),
     DatabaseModule,
     UserModule,
     AuthModule,

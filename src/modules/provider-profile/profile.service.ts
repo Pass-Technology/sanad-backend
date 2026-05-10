@@ -97,7 +97,7 @@ export class ProfileService {
 
         return manager.save(ProviderProfileEntity, {
             user: { id: userId },
-            status: { id: LOOKUP_IDS.PROFILE_STATUS.DRAFT },
+            status: { id: LOOKUP_IDS.PROFILE_STATUS.PENDING_REVIEW },
             referenceNumber: await this.generateReferenceNumber(),
             providerType: { id: companyInfo.providerTypeId },
             companyType: companyInfo.companyTypeId ? { id: companyInfo.companyTypeId } : null,

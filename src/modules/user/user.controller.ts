@@ -1,113 +1,38 @@
 import {
-  Body,
   Controller,
   Get,
-  Post,
   UseGuards,
   Delete,
-  Param,
 } from '@nestjs/common';
 import { CurrentUser } from '../../shared/decorators/current-user.decorator';
 import {
   ApiOperation,
   ApiTags,
   ApiBearerAuth,
-  ApiUnauthorizedResponse,
-  ApiForbiddenResponse,
 } from '@nestjs/swagger';
 import { UserService } from './user.service';
-import { RegisterDto } from './dto/register.dto';
-import { AuthDto } from './dto/auth.dto';
-import { ChangePasswordDto } from './dto/change-password.dto';
-import { ResetPasswordDto } from './dto/reset-password.dto';
-import { SendOtpDto } from '../otp/dto/send-otp.dto';
-import { RegisterResponseDto } from './dto/register-response.dto';
-import { AuthTokensResponse } from './types/user-token.type';
 import { JwtPayload } from '../../shared/types/jwt-payload.type';
-import { UserInfoResponseWithTokensDto } from './dto/user-info-response.dto';
-import { RefreshDto } from './dto/refresh.dto';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { VerificationGuard } from '../auth/guards/verification.guard';
-import { OtpAuthDto } from './dto/auth-otp.dto';
-import { ForgetPasswordDto } from './dto/forget-password.dto';
-
 
 @ApiTags('user')
 @Controller('user')
-
 export class UserController {
   constructor(private readonly userService: UserService) { }
 
-  @Post('register')
-  @ApiOperation({ summary: 'Register a new user' })
-  // @Version('2')
-  register(@Body() dto: RegisterDto): Promise<RegisterResponseDto> {
-    return this.userService.register(dto);
-  }
-
-  @Post('validate-auth-otp')
-  @ApiOperation({ summary: 'Validate OTP' })
-  async validateOtp(
-    @Body() validateOtpDto: OtpAuthDto,
-  ) {
-    return await this.userService.validateAuthOtp(validateOtpDto);
-  }
-
-  @Post('auth')
-  @ApiOperation({ summary: 'Authenticate with email/mobile and password' })
-  @ApiUnauthorizedResponse({ description: 'Invalid credentials or user not found' })
-  @ApiForbiddenResponse({ description: 'Please verify your account first' })
-  async auth(@Body() dto: AuthDto) {
-    return await this.userService.auth(dto);
-  }
-
-  @Post('refresh')
-  @ApiOperation({ summary: 'Refresh access token using refresh token' })
-  @ApiUnauthorizedResponse({ description: 'Invalid refresh token' })
-  @ApiForbiddenResponse({ description: 'Please verify your account first' })
-  async refresh(@Body() dto: RefreshDto): Promise<AuthTokensResponse> {
-    return await this.userService.refreshTokens(dto);
-  }
-
-
   @Get('me')
-  @UseGuards(JwtAuthGuard, VerificationGuard)
+  @UseGuards(JwtAuthGuard)
   @ApiBearerAuth()
   @ApiOperation({ summary: 'Get current user info from token' })
   getInfo(@CurrentUser() user: JwtPayload) {
-    return this.userService.getMe(user)
-
-
+    return this.userService.getMe(user);
   }
 
-  @Post('change-password')
+  @Delete('delete')
   @UseGuards(JwtAuthGuard, VerificationGuard)
   @ApiBearerAuth()
-  @ApiOperation({ summary: 'Change user password (requires authentication)' })
-  async changePassword(
-    @CurrentUser() user: UserInfoResponseWithTokensDto,
-    @Body() dto: ChangePasswordDto,
-  ): Promise<{ message: string }> {
-    return await this.userService.changePassword(user, dto);
-  }
-
-  @Post('forgot-password')
-  @ApiOperation({ summary: 'Request OTP for password reset' })
-  async forgotPassword(@Body() dto: ForgetPasswordDto): Promise<{ message: string }> {
-    return await this.userService.forgotPassword(dto);
-  }
-
-  @Post('reset-password')
-  @ApiOperation({ summary: 'Reset password using OTP' })
-  async resetPassword(@Body() dto: ResetPasswordDto): Promise<{ message: string }> {
-    return await this.userService.resetPassword(dto);
-  }
-
-  @Delete('delete:id')
-  @UseGuards(JwtAuthGuard, VerificationGuard)
-  @ApiBearerAuth()
-  @ApiOperation({ summary: 'Delete user (requires authentication)' })
-  async delete(@Param('id') id: string): Promise<{ message: string }> {
-    return await this.userService.delete(id);
+  @ApiOperation({ summary: 'Delete current user account (requires authentication)' })
+  async delete(@CurrentUser() user: JwtPayload): Promise<{ message: string }> {
+    return await this.userService.delete(user.sub);
   }
 }

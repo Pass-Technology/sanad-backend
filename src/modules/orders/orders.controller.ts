@@ -7,6 +7,7 @@ import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { UserTypes } from '../../shared/decorators/userTypes.decorator';
 import { UserType } from '../user/enums/user-type.enum';
 import { UserTypeGuard } from '../../shared/guards/user-types.guard';
+import { VerificationGuard } from '../auth/guards/verification.guard';
 import { ApiTags, ApiBearerAuth, ApiOperation } from '@nestjs/swagger';
 import { OrdersService } from './orders.service';
 import { UserInfoResponseWithTokensDto } from '../user/dto/user-info-response.dto';
@@ -14,7 +15,7 @@ import { UserInfoResponseWithTokensDto } from '../user/dto/user-info-response.dt
 @ApiTags('Orders')
 @ApiBearerAuth()
 @Controller('orders')
-@UseGuards(JwtAuthGuard, UserTypeGuard)
+@UseGuards(JwtAuthGuard, VerificationGuard, UserTypeGuard)
 export class OrdersController {
     constructor(private readonly ordersService: OrdersService) { }
 

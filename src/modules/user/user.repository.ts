@@ -67,13 +67,17 @@ export class UserRepository extends BaseRepository<UserEntity> {
 
   async findUserWithPassword(identifier: string) {
     return await this.userRepository.findOne({
-      //       "identifier": "mstwalasss@gmail.com",
-      // "identifierType": "email",
-      // "isVerified": true,
-      // "isProfileCompleted": false
-      select: { id: true, identifier: true, identifierType: true, type: true, isVerified: true, isProfileCompleted: true, password: true },
-      where: { identifier }
-    })
+      select: {
+        id: true,
+        identifier: true,
+        identifierType: true,
+        type: true,
+        isVerified: true,
+        isProfileCompleted: true,
+        password: true,
+      },
+      where: { identifier },
+    });
   }
 
   async findUserWithPasswordById(userId: string) {
@@ -85,9 +89,17 @@ export class UserRepository extends BaseRepository<UserEntity> {
 
   async findUserRefreshTokenByUserId(userId: string) {
     return await this.userRepository.findOne({
-      select: { id: true, identifier: true, identifierType: true, type: true, isVerified: true, isProfileCompleted: true, refreshToken: true },
-      where: { id: userId }
-    })
+      select: {
+        id: true,
+        identifier: true,
+        identifierType: true,
+        type: true,
+        isVerified: true,
+        isProfileCompleted: true,
+        refreshToken: true,
+      },
+      where: { id: userId },
+    });
   }
 
   async markUserVerified(userId: string): Promise<UserEntity> {
@@ -117,6 +129,12 @@ export class UserRepository extends BaseRepository<UserEntity> {
   async updateProfileCompletionStatus(userId: string, status: boolean, manager?: EntityManager): Promise<void> {
     const repo = manager ? manager.getRepository(UserEntity) : this.userRepository;
     await repo.update(userId, { isProfileCompleted: status });
+  }
+
+  async findMeInfo(identifier: string): Promise<UserEntity | null> {
+    return await this.userRepository.findOne({
+      where: { identifier },
+    });
   }
 }
 

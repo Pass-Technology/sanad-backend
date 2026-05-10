@@ -75,9 +75,8 @@ export class ServiceManagementController {
         return await this.serviceManagementService.getMyServices(req.user.userId, query, lang);
     }
 
-    // toggle button for service activate/deactivate
     @Post('service-toggle-status')
-    @UseGuards(JwtAuthGuard)
+    @UseGuards(JwtAuthGuard, VerificationGuard)
     @ApiBearerAuth()
     @ApiOperation({ summary: 'Toggle activation status of a provider service' })
     async toggleStatus(
