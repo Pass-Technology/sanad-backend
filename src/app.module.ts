@@ -23,6 +23,7 @@ import { LegalModule } from './modules/legal/legal.module';
 import { ClientModule } from './modules/client/client.module';
 import { OrdersModule } from './modules/orders/orders.module';
 import { PromotionsModule } from './modules/promotions/promotions.module';
+import { EarningsModule } from './modules/earnings/earnings.module';
 
 @Module({
   imports: [
@@ -51,7 +52,8 @@ import { PromotionsModule } from './modules/promotions/promotions.module';
     LegalModule,
     ClientModule,
     OrdersModule,
-    PromotionsModule
+    PromotionsModule,
+    EarningsModule
   ],
   controllers: [HealthController],
 })

@@ -139,7 +139,12 @@ export class AuthService {
     return { message: 'Password reset successfully' };
   }
 
-  async changePassword(user: any, dto: ChangePasswordDto): Promise<{ message: string }> {
+  async changePassword(userId: string, dto: ChangePasswordDto): Promise<{ message: string }> {
+    const user = await this.userRepository.findById(userId);
+    if (!user) {
+      throw new UnauthorizedException('User not found');
+    }
+
     const authenticatedUser = await this.userRepository.findUserWithPassword(user.identifier);
     if (!authenticatedUser) {
       throw new UnauthorizedException('User not found');
@@ -151,7 +156,7 @@ export class AuthService {
     }
 
     const hashedPassword = await bcrypt.hash(dto.password, 10);
-    await this.userRepository.updatePassword(user.userId, hashedPassword);
+    await this.userRepository.updatePassword(userId, hashedPassword);
 
     return { message: 'Password changed successfully' };
   }

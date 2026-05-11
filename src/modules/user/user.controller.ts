@@ -3,17 +3,17 @@ import {
   Get,
   UseGuards,
   Delete,
+  Request,
 } from '@nestjs/common';
-import { CurrentUser } from '../../shared/decorators/current-user.decorator';
 import {
   ApiOperation,
   ApiTags,
   ApiBearerAuth,
 } from '@nestjs/swagger';
 import { UserService } from './user.service';
-import { JwtPayload } from '../../shared/types/jwt-payload.type';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { VerificationGuard } from '../auth/guards/verification.guard';
+import { UserInfoResponseWithTokensDto } from './dto/user-info-response.dto';
 
 @ApiTags('user')
 @Controller('user')
@@ -24,15 +24,15 @@ export class UserController {
   @UseGuards(JwtAuthGuard)
   @ApiBearerAuth()
   @ApiOperation({ summary: 'Get current user info from token' })
-  getInfo(@CurrentUser() user: JwtPayload) {
-    return this.userService.getMe(user);
+  getInfo(@Request() req: { user: UserInfoResponseWithTokensDto }) {
+    return this.userService.getMe(req.user.userId);
   }
 
   @Delete('delete')
   @UseGuards(JwtAuthGuard, VerificationGuard)
   @ApiBearerAuth()
   @ApiOperation({ summary: 'Delete current user account (requires authentication)' })
-  async delete(@CurrentUser() user: JwtPayload): Promise<{ message: string }> {
-    return await this.userService.delete(user.sub);
+  async delete(@Request() req: { user: UserInfoResponseWithTokensDto }): Promise<{ message: string }> {
+    return await this.userService.delete(req.user.userId);
   }
 }

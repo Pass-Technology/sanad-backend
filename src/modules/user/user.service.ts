@@ -10,8 +10,8 @@ export class UserService {
     private readonly otpService: OtpService,
   ) { }
 
-  async getMe(payload: JwtPayload) {
-    const user = await this.userRepository.findMeInfo(payload.sub);
+  async getMe(userId: string) {
+    const user = await this.userRepository.findMeInfo(userId);
     if (!user) {
       throw new UnauthorizedException('User not found');
     }

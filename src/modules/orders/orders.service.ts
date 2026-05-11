@@ -6,6 +6,7 @@ import { OfferEntity } from './entities/offer.entity';
 import { CreateOrderDto } from './dto/create-order.dto';
 import { CreateOfferDto } from './dto/create-offer.dto';
 import { GetOrdersQueryDto } from './dto/get-orders-query.dto';
+import { UpdateJobProgressDto } from './dto/update-job-progress.dto';
 import { OrderStatus, OfferStatus } from './enums/order-status.enum';
 import { ClientService } from '../client/client.service';
 import { ProfileService } from '../provider-profile/profile.service';
@@ -308,7 +309,7 @@ export class OrdersService {
         return { success: true };
     }
 
-    async updateJobStatus(userId: string, orderId: string, status: OrderStatus) {
+    async updateJobStatus(userId: string, orderId: string, dto: UpdateJobProgressDto) {
         const provider = await this.getProviderByUserId(userId);
 
         const order = await this.getOrderOrThrow(orderId, {
@@ -321,7 +322,23 @@ export class OrdersService {
             throw new ForbiddenException('You are not authorized to update this job');
         }
 
-        order.status = status;
+        if (dto.status) {
+            order.status = dto.status;
+            
+            // Automatic timestamps
+            if (dto.status === OrderStatus.IN_PROGRESS && !order.startedAt) {
+                order.startedAt = new Date();
+            }
+            if (dto.status === OrderStatus.COMPLETED) {
+                order.completedAt = new Date();
+            }
+        }
+
+        if (dto.beforeServicePhotos) order.beforeServicePhotos = dto.beforeServicePhotos;
+        if (dto.afterServicePhotos) order.afterServicePhotos = dto.afterServicePhotos;
+        if (dto.customerSignature) order.customerSignature = dto.customerSignature;
+        if (dto.notes) order.details = { ...(order.details || {}), providerNotes: dto.notes };
+
         return await this.orderRepository.save(order);
     }
 

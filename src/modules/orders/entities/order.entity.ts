@@ -54,6 +54,21 @@ export class OrderEntity extends BaseEntity {
 
     @Column({ type: 'jsonb', nullable: true })
     details: any;
+    
+    @Column({ type: 'jsonb', nullable: true })
+    beforeServicePhotos: string[];
+
+    @Column({ type: 'jsonb', nullable: true })
+    afterServicePhotos: string[];
+
+    @Column({ type: 'text', nullable: true })
+    customerSignature: string;
+
+    @Column({ type: 'timestamp', nullable: true })
+    startedAt: Date;
+
+    @Column({ type: 'timestamp', nullable: true })
+    completedAt: Date;
 
     @OneToMany(() => OfferEntity, (offer) => offer.order)
     offers: OfferEntity[];

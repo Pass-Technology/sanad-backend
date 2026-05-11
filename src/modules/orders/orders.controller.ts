@@ -11,6 +11,7 @@ import { VerificationGuard } from '../auth/guards/verification.guard';
 import { ApiTags, ApiBearerAuth, ApiOperation } from '@nestjs/swagger';
 import { OrdersService } from './orders.service';
 import { UserInfoResponseWithTokensDto } from '../user/dto/user-info-response.dto';
+import { UpdateJobProgressDto } from './dto/update-job-progress.dto';
 
 @ApiTags('Orders')
 @ApiBearerAuth()
@@ -94,9 +95,9 @@ export class OrdersController {
 
     @Patch(':id/status')
     @UserTypes(UserType.PROVIDER)
-    @ApiOperation({ summary: 'Update job status (Start Job, Complete)' })
-    updateJobStatus(@Request() req: { user: UserInfoResponseWithTokensDto }, @Param('id') id: string, @Body('status') status: OrderStatus) {
-        return this.ordersService.updateJobStatus(req.user.userId, id, status);
+    @ApiOperation({ summary: 'Update job status and documentation (Start Job, Complete, Photos, Signature)' })
+    updateJobStatus(@Request() req: { user: UserInfoResponseWithTokensDto }, @Param('id') id: string, @Body() dto: UpdateJobProgressDto) {
+        return this.ordersService.updateJobStatus(req.user.userId, id, dto);
     }
 
     @Get('provider/workers')
