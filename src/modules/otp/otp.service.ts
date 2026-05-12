@@ -1,4 +1,4 @@
-import { BadRequestException, Injectable, Inject, forwardRef } from '@nestjs/common';
+import { BadRequestException, forwardRef, Inject, Injectable } from '@nestjs/common';
 import { OtpRepository } from './otp.repository';
 import { SendOtpDto } from './dto/send-otp.dto';
 import { AppConfigService } from '../../config/config.service';

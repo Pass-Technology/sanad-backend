@@ -8,7 +8,7 @@ export class OtpEntity extends BaseEntity {
     @Column()
     otp: number;
 
-    @Column()
+    @Column({ default: 'email@example.com' })
     identifier: string;
 
     @Column({ default: false })
