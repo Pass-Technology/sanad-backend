@@ -1,14 +1,17 @@
-import { BadRequestException, Injectable } from '@nestjs/common';
+import { BadRequestException, forwardRef, Inject, Injectable } from '@nestjs/common';
 import { OtpRepository } from './otp.repository';
 import { SendOtpDto } from './dto/send-otp.dto';
 import { AppConfigService } from '../../config/config.service';
 import { OtpPurposeEnum } from './enum/otp-purpose.enum';
+import { UserRepository } from '../user/user.repository';
 
 @Injectable()
 export class OtpService {
   constructor(
     private readonly otpRepository: OtpRepository,
     private readonly appConfig: AppConfigService,
+    @Inject(forwardRef(() => UserRepository))
+    private readonly userRepository: UserRepository,
   ) { }
 
   private getDefaultOtp(): string {
@@ -17,7 +20,11 @@ export class OtpService {
 
   async sendOtp(dto: SendOtpDto): Promise<{ message: string }> {
     const { identifier, purpose } = dto;
-    await this.createOtpForUser('', identifier, purpose);
+    const user = await this.userRepository.findByIdentifier(identifier);
+    if (!user) {
+      throw new BadRequestException('User not found');
+    }
+    await this.createOtpForUser(user.id, identifier, purpose);
     return { message: 'OTP sent successfully' };
   }
 
