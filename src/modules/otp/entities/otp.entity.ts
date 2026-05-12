@@ -8,6 +8,9 @@ export class OtpEntity extends BaseEntity {
     @Column()
     otp: number;
 
+    @Column()
+    identifier: string;
+
     @Column({ default: false })
     isVerified: boolean;
 
