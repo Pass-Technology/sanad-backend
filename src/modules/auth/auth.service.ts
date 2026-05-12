@@ -12,7 +12,6 @@ import { ForgetPasswordDto } from '../user/dto/forget-password.dto';
 import { ResetPasswordDto } from '../user/dto/reset-password.dto';
 import { ChangePasswordDto } from '../user/dto/change-password.dto';
 import { OtpService } from '../otp/otp.service';
-import { MailService } from '../mail/mail.service';
 import { OtpPurposeEnum } from '../otp/enum/otp-purpose.enum';
 import { UserIdentifierType } from '../user/enums/user-identifier-type.enum';
 import { UserInfoResponseWithTokensDto } from '../user/dto/user-info-response.dto';
@@ -24,7 +23,6 @@ export class AuthService {
     private readonly config: AppConfigService,
     private readonly userRepository: UserRepository,
     private readonly otpService: OtpService,
-    private readonly mailService: MailService,
   ) { }
 
   async register(dto: RegisterDto) {
@@ -43,19 +41,7 @@ export class AuthService {
       type
     });
 
-    const { otp } = await this.otpService.createOtpForUser(user.id, identifier, OtpPurposeEnum.REGISTER);
-
-    if (identifierType === UserIdentifierType.EMAIL) {
-      this.mailService.sendMail({
-        to: identifier,
-        subject: 'Sanad - Welcome to Sanad App!',
-        template: 'otp-arabic',
-        context: {
-          OTP_CODE: otp.toString(),
-          LOGO_URL: 'sanad.png',
-        },
-      }).catch(err => console.error('Failed to send registration email', err));
-    }
+    await this.otpService.createOtpForUser(user.id, identifier, OtpPurposeEnum.REGISTER);
 
     return {
       message: 'Registration successful. Please verify your OTP.',
@@ -105,19 +91,7 @@ export class AuthService {
       throw new UnauthorizedException('User not found');
     }
 
-    const { otp } = await this.otpService.createOtpForUser(user.id, identifier, OtpPurposeEnum.FORGOT_PASSWORD);
-
-    if (user.identifierType === UserIdentifierType.EMAIL) {
-      this.mailService.sendMail({
-        to: identifier,
-        subject: 'Sanad - Reset Your Password',
-        template: 'otp-arabic',
-        context: {
-          OTP_CODE: otp.toString(),
-          LOGO_URL: 'sanad.png',
-        },
-      }).catch(err => console.error('Failed to send forgot password email', err));
-    }
+    await this.otpService.createOtpForUser(user.id, identifier, OtpPurposeEnum.FORGOT_PASSWORD);
 
     return { message: 'OTP sent successfully' };
   }

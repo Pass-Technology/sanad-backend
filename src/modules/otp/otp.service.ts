@@ -4,6 +4,8 @@ import { SendOtpDto } from './dto/send-otp.dto';
 import { AppConfigService } from '../../config/config.service';
 import { OtpPurposeEnum } from './enum/otp-purpose.enum';
 import { UserRepository } from '../user/user.repository';
+import { MailService } from '../mail/mail.service';
+import { UserIdentifierType } from '../user/enums/user-identifier-type.enum';
 
 @Injectable()
 export class OtpService {
@@ -12,6 +14,7 @@ export class OtpService {
     private readonly appConfig: AppConfigService,
     @Inject(forwardRef(() => UserRepository))
     private readonly userRepository: UserRepository,
+    private readonly mailService: MailService,
   ) { }
 
   private getDefaultOtp(): string {
@@ -45,7 +48,29 @@ export class OtpService {
       purpose,
       user: { id: userId },
     });
+
+    await this.sendOtpNotification(identifier, otp, purpose);
+
     return { otp };
+  }
+
+  private async sendOtpNotification(identifier: string, otp: number, purpose: OtpPurposeEnum) {
+    const isEmail = identifier.includes('@');
+    if (!isEmail) return; // SMS logic can be added here later
+
+    const subject = purpose === OtpPurposeEnum.REGISTER
+      ? 'Sanad - Welcome to Sanad App!'
+      : 'Sanad - Reset Your Password';
+
+    await this.mailService.sendMail({
+      to: identifier,
+      subject,
+      template: 'otp-arabic',
+      context: {
+        OTP_CODE: otp.toString(),
+        LOGO_URL: 'sanad.png',
+      },
+    }).catch(err => console.error(`Failed to send ${purpose} email to ${identifier}`, err));
   }
 
   async validateOtp(identifier: string, otp: number, purpose: OtpPurposeEnum): Promise<void> {
