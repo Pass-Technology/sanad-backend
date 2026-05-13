@@ -19,7 +19,7 @@ import { UserEntity } from '../../user/entities/user.entity';
 import { ProviderPaymentEntity } from '../../payment/entities/provider-payment.entity';
 import { ProviderServiceEntity } from '../../service-management/entities/provider-service.entity';
 import { LookupLanguagesEntity } from '../../lookups/entities/lookup-languages.entity';
-import { OfferEntity } from '../../orders/entities/offer.entity';
+import { OfferEntity } from '../../marketplace/entities/offer.entity';
 import { ProviderCouponEntity } from '../../promotions/entities/provider-coupon.entity';
 
 @Entity('provider_profiles')

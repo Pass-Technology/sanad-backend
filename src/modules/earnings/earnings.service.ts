@@ -1,9 +1,9 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository, Between } from 'typeorm';
-import { OrderEntity } from '../orders/entities/order.entity';
+import { JobEntity } from '../marketplace/entities/job.entity';
 import { PayoutEntity } from './entities/payout.entity';
-import { OrderStatus } from '../orders/enums/order-status.enum';
+import { JobStatus } from '../marketplace/enums/job-status.enum';
 import { PayoutStatus } from './enums/payout-status.enum';
 import { ProfileService } from '../provider-profile/profile.service';
 import { EarningsQueryDto, TimePeriod } from './dto/earnings-query.dto';
@@ -13,8 +13,8 @@ export class EarningsService {
     private readonly PLATFORM_FEE_PERCENT = 0.10;
 
     constructor(
-        @InjectRepository(OrderEntity)
-        private readonly orderRepository: Repository<OrderEntity>,
+        @InjectRepository(JobEntity)
+        private readonly jobRepository: Repository<JobEntity>,
         @InjectRepository(PayoutEntity)
         private readonly payoutRepository: Repository<PayoutEntity>,
         private readonly providerProfileService: ProfileService,
@@ -29,22 +29,17 @@ export class EarningsService {
         const providerId = provider.id;
         const dateRange = this.getDateRange(query);
 
-        // Get all completed orders for this provider within date range
-        const completedOrders = await this.orderRepository.find({
+        // Get all completed jobs for this provider within date range
+        const completedJobs = await this.jobRepository.find({
             where: {
-                status: OrderStatus.COMPLETED,
-                acceptedOffer: {
-                    provider: { id: providerId }
-                },
+                status: JobStatus.COMPLETED,
+                provider: { id: providerId },
                 updatedAt: Between(dateRange.start, dateRange.end)
             },
-            relations: {
-                acceptedOffer: true
-            }
         });
 
-        const grossEarnings = completedOrders.reduce((sum, order) => {
-            return sum + Number(order.acceptedOffer?.price || 0);
+        const grossEarnings = completedJobs.reduce((sum, job) => {
+            return sum + Number(job.finalPrice || 0);
         }, 0);
 
         const platformFee = grossEarnings * this.PLATFORM_FEE_PERCENT;

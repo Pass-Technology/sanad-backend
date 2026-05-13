@@ -21,7 +21,8 @@ import { TargetAudienceModule } from './modules/target-audience-profile/target-a
 import { ValidatorModule } from './modules/validator/validator.module';
 import { LegalModule } from './modules/legal/legal.module';
 import { ClientModule } from './modules/client/client.module';
-import { OrdersModule } from './modules/orders/orders.module';
+import { ClientRequestsModule } from './modules/client-requests/client-requests.module';
+import { ProviderJobsModule } from './modules/provider-jobs/provider-jobs.module';
 import { PromotionsModule } from './modules/promotions/promotions.module';
 import { EarningsModule } from './modules/earnings/earnings.module';
 
@@ -51,7 +52,8 @@ import { EarningsModule } from './modules/earnings/earnings.module';
     ValidatorModule,
     LegalModule,
     ClientModule,
-    OrdersModule,
+    ClientRequestsModule,
+    ProviderJobsModule,
     PromotionsModule,
     EarningsModule
   ],

@@ -1,12 +1,12 @@
 import { ApiPropertyOptional } from '@nestjs/swagger';
-import { IsOptional, IsArray, IsString, IsEnum, IsDateString } from 'class-validator';
-import { OrderStatus } from '../enums/order-status.enum';
+import { IsOptional, IsArray, IsString, IsEnum } from 'class-validator';
+import { JobStatus } from '../../marketplace/enums/job-status.enum';
 
 export class UpdateJobProgressDto {
-    @ApiPropertyOptional({ enum: OrderStatus })
+    @ApiPropertyOptional({ enum: JobStatus, description: 'New job status — must follow valid state transitions' })
     @IsOptional()
-    @IsEnum(OrderStatus)
-    status?: OrderStatus;
+    @IsEnum(JobStatus)
+    status?: JobStatus;
 
     @ApiPropertyOptional({ type: [String] })
     @IsOptional()
