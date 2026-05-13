@@ -109,7 +109,7 @@ export class OrdersController {
 
     @Get(':id')
     @ApiOperation({ summary: 'Get order details' })
-    getOrderById(@Param('id') id: string) {
-        return this.ordersService.getOrderById(id);
+    getOrderById(@Request() req: { user: UserInfoResponseWithTokensDto }, @Param('id') id: string) {
+        return this.ordersService.getOrderById(req.user.userId, id);
     }
 }

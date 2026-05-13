@@ -12,6 +12,8 @@ import { ClientService } from '../client/client.service';
 import { ProfileService } from '../provider-profile/profile.service';
 import { ServiceManagementService } from '../service-management/service-management.service';
 import { ProviderWorkerEntity } from '../provider-profile/entities/provider-worker.entity';
+import { UserType } from '../user/enums/user-type.enum';
+import { UserRepository } from '../user/user.repository';
 
 @Injectable()
 export class OrdersService {
@@ -23,6 +25,7 @@ export class OrdersService {
         private readonly clientService: ClientService,
         private readonly profileService: ProfileService,
         private readonly serviceManagement: ServiceManagementService,
+        private readonly userRepository: UserRepository,
         private readonly dataSource: DataSource,
     ) { }
 
@@ -52,6 +55,10 @@ export class OrdersService {
         const existingOffer = order.offers.find(o => o.provider.id === provider.id);
         if (existingOffer) {
             throw new BadRequestException('You have already made an offer for this order');
+        }
+
+        if (order.status !== OrderStatus.PENDING && order.status !== OrderStatus.SEARCHING) {
+            throw new BadRequestException('This order is no longer accepting offers');
         }
 
         let worker: ProviderWorkerEntity | undefined;
@@ -348,17 +355,57 @@ export class OrdersService {
         return this.profileService.getWorkersByProvider(provider.id);
     }
 
-    async getOrderById(orderId: string) {
-        return await this.getOrderOrThrow(orderId, {
-            client: true,
+    async getOrderById(userId: string, orderId: string) {
+        const order = await this.getOrderOrThrow(orderId, {
+            client: {
+                user: true
+            },
             service: true,
             offers: {
-                provider: true
+                provider: true,
+                worker: true,
             },
             acceptedOffer: {
-                provider: true
+                provider: true,
+                worker: true,
             }
         });
+
+        const user = await this.userRepository.findById(userId);
+        if (!user) throw new NotFoundException('User not found');
+
+        if (user.type === UserType.CLIENT) {
+            if (order.client.id !== (await this.getClientByUserId(userId)).id) {
+                throw new ForbiddenException('You are not authorized to view this order');
+            }
+            return order;
+        } else {
+            const provider = await this.getProviderByUserId(userId);
+            
+            // Check if provider provides this service
+            const providerServices = await this.profileService.getProfileById(provider.id);
+            const providesService = providerServices.providerServices.some(ps => ps.service.id === order.service.id);
+            
+            // If they don't provide the service AND didn't make an offer AND aren't the accepted provider, deny access
+            const hasOffer = order.offers.some(o => o.provider.id === provider.id);
+            const isAccepted = order.acceptedOffer?.provider.id === provider.id;
+
+            if (!providesService && !hasOffer && !isAccepted) {
+                throw new ForbiddenException('You are not authorized to view this order');
+            }
+
+            // FILTER OFFERS: A provider should only see THEIR OWN offer
+            order.offers = order.offers.filter(o => o.provider.id === provider.id);
+            
+            // HIDE CLIENT CONTACT INFO until offer is accepted
+            if (!isAccepted) {
+                if (order.client.user) {
+                    order.client.user.identifier = 'HIDDEN';
+                }
+            }
+            
+            return order;
+        }
     }
 
     private async getClientByUserId(userId: string) {

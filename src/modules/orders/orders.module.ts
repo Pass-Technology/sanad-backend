@@ -6,6 +6,7 @@ import { AuthModule } from '../auth/auth.module';
 import { ClientModule } from '../client/client.module';
 import { ProfileModule } from '../provider-profile/profile.module';
 import { ServiceManagementModule } from '../service-management/service-management.module';
+import { UserModule } from '../user/user.module';
 import { OrdersService } from './orders.service';
 import { OrdersController } from './orders.controller';
 
@@ -19,6 +20,7 @@ import { OrdersController } from './orders.controller';
         ClientModule,
         ProfileModule,
         ServiceManagementModule,
+        UserModule,
     ],
     controllers: [OrdersController],
     providers: [OrdersService],
