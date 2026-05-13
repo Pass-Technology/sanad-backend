@@ -25,6 +25,7 @@ import { ClientRequestsModule } from './modules/client-requests/client-requests.
 import { ProviderJobsModule } from './modules/provider-jobs/provider-jobs.module';
 import { PromotionsModule } from './modules/promotions/promotions.module';
 import { EarningsModule } from './modules/earnings/earnings.module';
+import { ReviewModule } from './modules/reviews/review.module';
 
 @Module({
   imports: [
@@ -55,7 +56,8 @@ import { EarningsModule } from './modules/earnings/earnings.module';
     ClientRequestsModule,
     ProviderJobsModule,
     PromotionsModule,
-    EarningsModule
+    EarningsModule,
+    ReviewModule
   ],
   controllers: [HealthController],
 })

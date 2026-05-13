@@ -6,6 +6,7 @@ import { ProviderWorkerEntity } from '../../provider-profile/entities/provider-w
 import { ClientServiceRequestEntity } from './client-service-request.entity';
 import { OfferEntity } from './offer.entity';
 import { JobStatus } from '../enums/job-status.enum';
+import { ReviewEntity } from '../../reviews/entities/review.entity';
 
 @Entity('jobs')
 export class JobEntity extends BaseEntity {
@@ -64,4 +65,7 @@ export class JobEntity extends BaseEntity {
 
     @Column({ type: 'jsonb', nullable: true })
     providerNotes: Record<string, any>;
+
+    @OneToOne(() => ReviewEntity, (review) => review.job)
+    review: ReviewEntity;
 }
