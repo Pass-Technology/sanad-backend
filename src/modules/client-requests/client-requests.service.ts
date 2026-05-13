@@ -46,6 +46,7 @@ export class ClientRequestsService {
             isUrgent: dto.isUrgent,
             paymentMethod: dto.paymentMethod,
             budgetEstimate: dto.budgetEstimate,
+            estimatedDurationMinutes: dto.estimatedDurationMinutes,
             details: dto.details,
         });
 

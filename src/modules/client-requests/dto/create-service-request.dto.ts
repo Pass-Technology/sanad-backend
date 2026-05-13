@@ -1,4 +1,4 @@
-import { IsNotEmpty, IsOptional, IsString, IsNumber, IsDateString, IsUUID, IsBoolean, IsEnum, IsObject } from 'class-validator';
+import { IsNotEmpty, IsOptional, IsString, IsNumber, IsDateString, IsUUID, IsBoolean, IsEnum, IsObject, IsInt, Min } from 'class-validator';
 import { ApiProperty } from '@nestjs/swagger';
 import { PaymentMethod } from '../../marketplace/enums/payment-method.enum';
 
@@ -37,6 +37,12 @@ export class CreateServiceRequestDto {
     @IsNumber()
     @IsOptional()
     budgetEstimate?: number;
+
+    @ApiProperty({ required: false, description: 'Expected duration in minutes' })
+    @IsInt()
+    @IsOptional()
+    @Min(1)
+    estimatedDurationMinutes?: number;
 
     @ApiProperty({ required: false, description: 'Service-specific details (rooms, property type, etc.)' })
     @IsObject()

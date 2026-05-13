@@ -58,6 +58,10 @@ export class ClientServiceRequestEntity extends BaseEntity {
     @Column({ type: 'decimal', precision: 10, scale: 2, nullable: true })
     budgetEstimate: number;
 
+    /** Client's estimated duration in minutes (shown on request cards) */
+    @Column({ type: 'int', nullable: true })
+    estimatedDurationMinutes: number;
+
     /** Service-specific details (rooms, property type, space size, etc.) */
     @Column({ type: 'jsonb', nullable: true })
     details: Record<string, any>;

@@ -1,6 +1,6 @@
 import { Injectable, NotFoundException, BadRequestException, ForbiddenException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository, In, FindOptionsWhere, FindOptionsRelations } from 'typeorm';
+import { Repository, In, FindOptionsWhere, FindOptionsRelations, MoreThanOrEqual } from 'typeorm';
 import { ClientServiceRequestEntity } from '../marketplace/entities/client-service-request.entity';
 import { OfferEntity } from '../marketplace/entities/offer.entity';
 import { JobEntity } from '../marketplace/entities/job.entity';
@@ -61,7 +61,7 @@ export class ProviderJobsService {
         }
 
         if (search) {
-            qb.andWhere('address.address ILIKE :search', { search: `%${search}%` });
+            qb.andWhere('(address.address ILIKE :search OR client.name ILIKE :search)', { search: `%${search}%` });
         }
 
         return qb.orderBy('request.createdAt', 'DESC').getMany();
@@ -248,23 +248,28 @@ export class ProviderJobsService {
         const provider = await this.getProviderByUserId(userId);
         const statuses = this.resolveJobStatuses(type);
 
-        const where: FindOptionsWhere<JobEntity> = {
-            provider: { id: provider.id },
-            status: In(statuses),
-        };
+        const qb = this.jobRepository.createQueryBuilder('job')
+            .leftJoinAndSelect('job.serviceRequest', 'serviceRequest')
+            .leftJoinAndSelect('serviceRequest.service', 'service')
+            .leftJoinAndSelect('serviceRequest.address', 'address')
+            .leftJoinAndSelect('job.client', 'client')
+            .leftJoinAndSelect('job.assignedWorker', 'assignedWorker')
+            .where('job.provider_id = :providerId', { providerId: provider.id })
+            .andWhere('job.status IN (:...statuses)', { statuses });
 
-        if (query.serviceId) where.serviceRequest = { service: { id: query.serviceId } };
-        if (query.status) where.status = query.status;
+        if (query.serviceId) {
+            qb.andWhere('service.id = :serviceId', { serviceId: query.serviceId });
+        }
 
-        return this.jobRepository.find({
-            where,
-            relations: {
-                serviceRequest: { service: true, address: true },
-                client: true,
-                assignedWorker: true,
-            },
-            order: { updatedAt: 'DESC' },
-        });
+        if (query.status) {
+            qb.andWhere('job.status = :status', { status: query.status });
+        }
+
+        if (query.search) {
+            qb.andWhere('(address.address ILIKE :search OR client.name ILIKE :search)', { search: `%${query.search}%` });
+        }
+
+        return qb.orderBy('job.updatedAt', 'DESC').getMany();
     }
 
     async getProviderJobById(userId: string, jobId: string) {
@@ -311,18 +316,27 @@ export class ProviderJobsService {
         const today = new Date();
         today.setHours(0, 0, 0, 0);
 
+        const completedTodayCount = await this.jobRepository.count({
+            where: {
+                provider: { id: provider.id },
+                status: JobStatus.COMPLETED,
+                completedAt: MoreThanOrEqual(today),
+            },
+        });
+
         const earningsTodayResult = await this.jobRepository
             .createQueryBuilder('job')
             .select('SUM(job.finalPrice)', 'total')
             .where('job.provider_id = :providerId', { providerId: provider.id })
             .andWhere('job.status = :status', { status: JobStatus.COMPLETED })
-            .andWhere('job.updatedAt >= :today', { today })
+            .andWhere('job.completedAt >= :today', { today })
             .getRawOne();
 
         return {
             availableRequests: availableRequestsCount,
             activeJobs: activeJobsCount,
             completedJobs: completedJobsCount,
+            completedToday: completedTodayCount,
             cancelledJobs: cancelledJobsCount,
             earningsToday: parseFloat(earningsTodayResult?.total || 0),
         };
