@@ -105,6 +105,9 @@ export class ProviderProfileEntity extends BaseEntity {
     })
     languages: LookupLanguagesEntity[];
 
+    @Column({ type: 'boolean', default: false })
+    isEmergencyModeActive: boolean;
+
     @Column({ type: 'varchar', nullable: true })
     referenceNumber: string | null;
 
