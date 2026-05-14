@@ -39,7 +39,7 @@ import { LOOKUP_IDS } from '../../shared/constants/lookup-ids';
 import { UpdatePaymentDto } from '../payment/dto/update-payment.dto';
 import { CreateBranchDto, CreateBranchesDto, ServingAreaDto } from './dto/create-branches.dto';
 import { UpdateProviderServiceDto, UpdateProviderServicePricingDto } from './dto/update-provider-service.dto';
-import { ScoringSystemService } from '../profile-scoring-system/scoring-system.service';
+import { EventEmitter2 } from '@nestjs/event-emitter';
 // import { PricingDto } from '../service-management/Dto/pricing.dto';
 
 @Injectable()
@@ -59,8 +59,7 @@ export class ProfileService {
         private readonly workerRepo: Repository<ProviderWorkerEntity>,
         private readonly userRepo: UserRepository,
         private readonly dataSource: DataSource,
-        @Inject(forwardRef(() => ScoringSystemService))
-        private readonly scoringService: ScoringSystemService,
+        private readonly eventEmitter: EventEmitter2,
     ) { }
 
 
@@ -85,7 +84,7 @@ export class ProfileService {
             await this.userRepo.updateProfileCompletionStatus(userId, true, manager);
 
             // 4. Trigger initial score calculation
-            await this.scoringService.recalculate(userId, manager);
+            this.eventEmitter.emit('profile.updated', { userId });
 
             return profileData;
         });
@@ -135,7 +134,7 @@ export class ProfileService {
 
         Object.assign(profile, basicInfo);
         const updated = await this.dataSource.manager.save(ProviderProfileEntity, profile);
-        await this.scoringService.recalculate(userId);
+        this.eventEmitter.emit('profile.updated', { userId });
         return updated;
     }
 
@@ -145,7 +144,7 @@ export class ProfileService {
 
         Object.assign(userInfo, updateUserInfoInfoDto);
         await this.userInfoRepo.save(userInfo);
-        await this.scoringService.recalculate(userId);
+        this.eventEmitter.emit('profile.updated', { userId });
         return await this.profileRepo.findProfileByUserId(userId);
     }
 
@@ -171,7 +170,7 @@ export class ProfileService {
                 await this.syncPricingDetails(manager, saved, dto.pricingDetails);
             }
 
-            await this.scoringService.recalculate(userId, manager);
+            this.eventEmitter.emit('profile.updated', { userId });
             return await this.profileRepo.findProfileByUserId(userId, manager);
         });
     }
@@ -194,7 +193,7 @@ export class ProfileService {
             }
 
             await manager.save(providerService);
-            await this.scoringService.recalculate(userId, manager);
+            this.eventEmitter.emit('profile.updated', { userId });
             return await this.profileRepo.findProfileByUserId(userId, manager);
         });
     }
@@ -210,7 +209,7 @@ export class ProfileService {
             }
 
             await manager.remove(providerService);
-            await this.scoringService.recalculate(userId, manager);
+            this.eventEmitter.emit('profile.updated', { userId });
             return await this.profileRepo.findProfileByUserId(userId, manager);
         });
     }
@@ -250,13 +249,13 @@ export class ProfileService {
 
         Object.assign(compliance, updateComplianceDto);
         await this.dataSource.manager.save(ProviderComplianceEntity, compliance);
-        await this.scoringService.recalculate(userId);
+        this.eventEmitter.emit('profile.updated', { userId });
         return await this.profileRepo.findProfileByUserId(userId);
     }
 
     async updatePayment(userId: string, updatePaymentDto: UpdatePaymentDto) {
         await this.paymentService.syncPayment(userId, updatePaymentDto);
-        await this.scoringService.recalculate(userId);
+        this.eventEmitter.emit('profile.updated', { userId });
         return await this.profileRepo.findProfileByUserId(userId);
     }
 
@@ -299,7 +298,7 @@ export class ProfileService {
             }
         });
 
-        await this.scoringService.recalculate(userId);
+        this.eventEmitter.emit('profile.updated', { userId });
         return await this.profileRepo.findProfileByUserId(userId);
     }
 
@@ -360,7 +359,7 @@ export class ProfileService {
         }
 
         await this.dataSource.manager.save(BranchEntity, branch);
-        await this.scoringService.recalculate(userId);
+        this.eventEmitter.emit('profile.updated', { userId });
 
         return await this.profileRepo.findProfileByUserId(userId);
     }
@@ -372,7 +371,7 @@ export class ProfileService {
         newBranch.providerProfile = profile;
 
         await this.dataSource.manager.save(BranchEntity, newBranch);
-        await this.scoringService.recalculate(userId);
+        this.eventEmitter.emit('profile.updated', { userId });
 
         return await this.profileRepo.findProfileByUserId(userId);
     }
@@ -391,7 +390,7 @@ export class ProfileService {
         await this.profileRepo.deleteServingAreasByBranchId(branchId);
         await this.profileRepo.deleteBranch(branchId);
 
-        await this.scoringService.recalculate(userId);
+        this.eventEmitter.emit('profile.updated', { userId });
 
         return await this.profileRepo.findProfileByUserId(userId);
     }

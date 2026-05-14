@@ -1,4 +1,5 @@
 import { Injectable, NotFoundException } from "@nestjs/common";
+import { EventEmitter2 } from '@nestjs/event-emitter';
 import { InjectRepository } from "@nestjs/typeorm";
 import { Repository } from "typeorm";
 import { TargetAudienceProfile } from "./entities/target-audience.entity";
@@ -13,11 +14,11 @@ import { UpdateTargetAudienceDto } from "./dto/UpdateTargetAudience.dto";
 
 @Injectable()
 export class TargetAudienceService {
-
     constructor(
         @InjectRepository(TargetAudienceProfile)
         private readonly targetAudienceProfileRepository: Repository<TargetAudienceProfile>,
         private readonly profileRepository: ProfileRepository,
+        private readonly eventEmitter: EventEmitter2,
     ) { }
 
     private async getOrCreateProfile(userId: string): Promise<TargetAudienceProfile> {
@@ -79,6 +80,7 @@ export class TargetAudienceService {
             profile.targetAudienceProfileCompleteScore = dto.targetAudienceProfileCompleteScore;
         }
         const savedProfile = await this.targetAudienceProfileRepository.save(profile);
+        this.eventEmitter.emit('profile.updated', { userId });
         const { providerProfile: _, ...result } = savedProfile;
         return result as TargetAudienceProfile;
     }
