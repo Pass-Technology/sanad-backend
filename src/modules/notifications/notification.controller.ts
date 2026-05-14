@@ -1,7 +1,7 @@
 import { Controller, Get, Post, Patch, Body, Param, UseGuards, Request, Query } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiBearerAuth, ApiQuery } from '@nestjs/swagger';
-import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
-import { VerificationGuard } from '../auth/guards/verification.guard';
+import { JwtAuthGuard } from '../../shared/guards/jwt-auth.guard';
+import { VerificationGuard } from '../../shared/guards/verification.guard';
 import { NotificationService } from './notification.service';
 import { UpdateNotificationSettingsDto } from './dto/update-settings.dto';
 import { UserInfoResponseWithTokensDto } from '../user/dto/user-info-response.dto';

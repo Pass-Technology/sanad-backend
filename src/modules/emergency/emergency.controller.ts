@@ -1,10 +1,10 @@
 import { Controller, Get, Post, Patch, Body, UseGuards, Request } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiBearerAuth } from '@nestjs/swagger';
-import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { UserTypes } from '../../shared/decorators/userTypes.decorator';
 import { UserType } from '../user/enums/user-type.enum';
 import { UserTypeGuard } from '../../shared/guards/user-types.guard';
-import { VerificationGuard } from '../auth/guards/verification.guard';
+import { JwtAuthGuard } from '../../shared/guards/jwt-auth.guard';
+import { VerificationGuard } from '../../shared/guards/verification.guard';
 import { EmergencyService } from './emergency.service';
 import { UpdateEmergencyServicesDto, ToggleEmergencyModeDto } from './dto/emergency-mode.dto';
 import { UserInfoResponseWithTokensDto } from '../user/dto/user-info-response.dto';

@@ -1,4 +1,4 @@
-import { BadRequestException, forwardRef, Inject, Injectable } from '@nestjs/common';
+import { BadRequestException, Injectable } from '@nestjs/common';
 import { OtpRepository } from './otp.repository';
 import { SendOtpDto } from './dto/send-otp.dto';
 import { AppConfigService } from '../../config/config.service';
@@ -12,7 +12,6 @@ export class OtpService {
   constructor(
     private readonly otpRepository: OtpRepository,
     private readonly appConfig: AppConfigService,
-    @Inject(forwardRef(() => UserRepository))
     private readonly userRepository: UserRepository,
     private readonly mailService: MailService,
   ) { }

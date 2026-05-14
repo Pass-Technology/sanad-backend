@@ -1,9 +1,9 @@
 import { Injectable, CanActivate, ExecutionContext, ForbiddenException } from '@nestjs/common';
 import { DataSource } from 'typeorm';
 import { Request } from 'express';
-import { UserType } from '../../user/enums/user-type.enum';
-import { ProfileStatusStaticCode } from '../../lookups/enums/lookup-static-codes.enum';
-import { ProviderProfileEntity } from '../../provider-profile/entities/provider-profile.entity';
+import { UserType } from '../../modules/user/enums/user-type.enum';
+import { ProfileStatusStaticCode } from '../../modules/lookups/enums/lookup-static-codes.enum';
+import { ProviderProfileEntity } from '../../modules/provider-profile/entities/provider-profile.entity';
 
 @Injectable()
 export class VerificationGuard implements CanActivate {

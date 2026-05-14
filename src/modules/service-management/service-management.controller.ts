@@ -2,8 +2,8 @@ import { Controller, Get, Param, Headers, Query, Body, Post, UseGuards, Request 
 import { ApiOperation, ApiTags, ApiParam, ApiQuery, ApiBearerAuth } from '@nestjs/swagger';
 import { ServiceManagementService } from './service-management.service';
 import { RequestServiceDto } from './Dto/request-service.dto';
-import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
-import { VerificationGuard } from '../auth/guards/verification.guard';
+import { JwtAuthGuard } from '../../shared/guards/jwt-auth.guard';
+import { VerificationGuard } from '../../shared/guards/verification.guard';
 import { UserInfoResponseWithTokensDto } from '../user/dto/user-info-response.dto';
 import { ToggleServiceDto } from './Dto/toggle-service.dto';
 import { GetMyServicesQueryDto } from './Dto/get-my-services-query.dto';

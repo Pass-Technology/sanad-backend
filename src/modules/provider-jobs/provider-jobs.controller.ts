@@ -1,10 +1,10 @@
 import { Controller, Post, Get, Body, Param, UseGuards, Query, Patch, Request } from '@nestjs/common';
 import { ApiTags, ApiBearerAuth, ApiOperation } from '@nestjs/swagger';
-import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { UserTypes } from '../../shared/decorators/userTypes.decorator';
 import { UserType } from '../user/enums/user-type.enum';
 import { UserTypeGuard } from '../../shared/guards/user-types.guard';
-import { VerificationGuard } from '../auth/guards/verification.guard';
+import { JwtAuthGuard } from '../../shared/guards/jwt-auth.guard';
+import { VerificationGuard } from '../../shared/guards/verification.guard';
 import { UserInfoResponseWithTokensDto } from '../user/dto/user-info-response.dto';
 import { ProviderJobsService } from './provider-jobs.service';
 import { CreateProviderOfferDto } from './dto/create-provider-offer.dto';

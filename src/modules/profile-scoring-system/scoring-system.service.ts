@@ -1,4 +1,4 @@
-import { Injectable, Logger, Inject, forwardRef } from '@nestjs/common';
+import { Injectable, Logger } from '@nestjs/common';
 import { EntityManager } from 'typeorm';
 import { SCORING_CONFIG } from './scoring.config';
 import { ScoringSectionConfig, ScoringFieldConfig } from './interfaces/scoring-system.interfaces';
@@ -13,7 +13,6 @@ export class ScoringSystemService {
 
     constructor(
         private readonly cacheService: SharedCacheService,
-        @Inject(forwardRef(() => ProfileRepository))
         private readonly profileRepo: ProfileRepository,
         private readonly targetAudienceService: TargetAudienceService,
     ) { }
