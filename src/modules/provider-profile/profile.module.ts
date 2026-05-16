@@ -19,6 +19,7 @@ import { ScoringSystemModule } from '../profile-scoring-system/scoring-system.mo
 import { AuthModule } from '../auth/auth.module';
 
 import { ProviderWorkerEntity } from './entities/provider-worker.entity';
+import { ProviderProfileChangeEntity } from './entities/provider-profile-change.entity';
 
 @Module({
     imports: [
@@ -32,6 +33,7 @@ import { ProviderWorkerEntity } from './entities/provider-worker.entity';
             ProviderServiceEntity,
             ProviderServicePricingEntity,
             ProviderWorkerEntity,
+            ProviderProfileChangeEntity,
         ]),
         UserModule,
         AuthModule,

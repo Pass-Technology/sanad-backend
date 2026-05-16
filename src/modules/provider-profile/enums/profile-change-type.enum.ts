@@ -1,0 +1,8 @@
+export enum ProfileChangeType {
+    COMPANY_INFO = 'COMPANY_INFO',
+    USER_INFO = 'USER_INFO',
+    COMPLIANCE = 'COMPLIANCE',
+    BRANCHES = 'BRANCHES',
+    SERVICES = 'SERVICES',
+    PAYMENT = 'PAYMENT',
+}

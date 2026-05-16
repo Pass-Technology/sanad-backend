@@ -32,7 +32,7 @@ export class VerificationGuard implements CanActivate {
       return true;
     }
 
-    // 4. For Providers, check real-time profile status from database
+    // 4. For Providers, check profile status
     if (user.type === UserType.PROVIDER) {
       const profileRepo = this.dataSource.getRepository(ProviderProfileEntity);
       const profile = await profileRepo.findOne({
@@ -40,13 +40,22 @@ export class VerificationGuard implements CanActivate {
         relations: { status: true },
       });
 
+      // If no profile yet, only allow setup
       if (!profile) {
+        if (request.method === 'POST' && request.url.includes('/profile/setup')) {
+          return true;
+        }
         throw new ForbiddenException('Please complete your profile setup first.');
       }
 
+      // PHASE 1: If profile is NOT approved, allow everything (unrestricted access)
       if (profile.status?.staticCode !== ProfileStatusStaticCode.APPROVED) {
-        throw new ForbiddenException('Your profile is under review. You cannot perform this action until it is approved by the admin.');
+        return true;
       }
+
+      // PHASE 2: If profile IS approved, allow the request to proceed.
+      // The Service layer will now decide whether to update directly or stage the change.
+      return true;
     }
 
     return true;
