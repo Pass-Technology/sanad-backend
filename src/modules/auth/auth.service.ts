@@ -14,9 +14,8 @@ import { ResetPasswordDto } from '../user/dto/reset-password.dto';
 import { ChangePasswordDto } from '../user/dto/change-password.dto';
 import { OtpService } from '../otp/otp.service';
 import { OtpPurposeEnum } from '../otp/enum/otp-purpose.enum';
-import { UserIdentifierType } from '../user/enums/user-identifier-type.enum';
-import { UserInfoResponseWithTokensDto } from '../user/dto/user-info-response.dto';
-import { JwtPayload } from 'src/shared/types/jwt-payload.type';
+
+
 
 @Injectable()
 export class AuthService {
