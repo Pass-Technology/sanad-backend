@@ -4,6 +4,7 @@ import * as bcrypt from 'bcrypt';
 import { AppConfigService } from '../../config/config.service';
 import { UserRepository } from '../user/user.repository';
 import { UserPayloadType } from '../user/types/user-payload.type';
+import { JwtPayload } from '../../shared/types/jwt-payload.type';
 import { AuthTokensResponse } from '../user/types/user-token.type';
 import { RegisterDto } from '../user/dto/register.dto';
 import { AuthDto } from '../user/dto/auth.dto';
@@ -12,7 +13,6 @@ import { ForgetPasswordDto } from '../user/dto/forget-password.dto';
 import { ResetPasswordDto } from '../user/dto/reset-password.dto';
 import { ChangePasswordDto } from '../user/dto/change-password.dto';
 import { OtpService } from '../otp/otp.service';
-import { MailService } from '../mail/mail.service';
 import { OtpPurposeEnum } from '../otp/enum/otp-purpose.enum';
 import { UserIdentifierType } from '../user/enums/user-identifier-type.enum';
 import { UserInfoResponseWithTokensDto } from '../user/dto/user-info-response.dto';
@@ -25,7 +25,6 @@ export class AuthService {
     private readonly config: AppConfigService,
     private readonly userRepository: UserRepository,
     private readonly otpService: OtpService,
-    private readonly mailService: MailService,
   ) { }
 
   async register(dto: RegisterDto) {
@@ -44,19 +43,7 @@ export class AuthService {
       type
     });
 
-    const { otp } = await this.otpService.createOtpForUser(user.id, identifier, OtpPurposeEnum.REGISTER);
-
-    if (identifierType === UserIdentifierType.EMAIL) {
-      this.mailService.sendMail({
-        to: identifier,
-        subject: 'Sanad - Welcome to Sanad App!',
-        template: 'otp-arabic',
-        context: {
-          OTP_CODE: otp.toString(),
-          LOGO_URL: 'sanad.png',
-        },
-      }).catch(err => console.error('Failed to send registration email', err));
-    }
+    await this.otpService.createOtpForUser(user.id, identifier, OtpPurposeEnum.REGISTER);
 
     return {
       message: 'Registration successful. Please verify your OTP.',
@@ -106,19 +93,7 @@ export class AuthService {
       throw new UnauthorizedException('User not found');
     }
 
-    const { otp } = await this.otpService.createOtpForUser(user.id, identifier, OtpPurposeEnum.FORGOT_PASSWORD);
-
-    if (user.identifierType === UserIdentifierType.EMAIL) {
-      this.mailService.sendMail({
-        to: identifier,
-        subject: 'Sanad - Reset Your Password',
-        template: 'otp-arabic',
-        context: {
-          OTP_CODE: otp.toString(),
-          LOGO_URL: 'sanad.png',
-        },
-      }).catch(err => console.error('Failed to send forgot password email', err));
-    }
+    await this.otpService.createOtpForUser(user.id, identifier, OtpPurposeEnum.FORGOT_PASSWORD);
 
     return { message: 'OTP sent successfully' };
   }
@@ -140,7 +115,12 @@ export class AuthService {
     return { message: 'Password reset successfully' };
   }
 
-  async changePassword(user: any, dto: ChangePasswordDto): Promise<{ message: string }> {
+  async changePassword(userId: string, dto: ChangePasswordDto): Promise<{ message: string }> {
+    const user = await this.userRepository.findById(userId);
+    if (!user) {
+      throw new UnauthorizedException('User not found');
+    }
+
     const authenticatedUser = await this.userRepository.findUserWithPassword(user.identifier);
     if (!authenticatedUser) {
       throw new UnauthorizedException('User not found');
@@ -152,7 +132,7 @@ export class AuthService {
     }
 
     const hashedPassword = await bcrypt.hash(dto.password, 10);
-    await this.userRepository.updatePassword(user.userId, hashedPassword);
+    await this.userRepository.updatePassword(userId, hashedPassword);
 
     return { message: 'Password changed successfully' };
   }

@@ -1,4 +1,4 @@
-import { forwardRef, Module } from '@nestjs/common';
+import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { ProfileController } from './profile.controller';
 import { ProfileService } from './profile.service';
@@ -15,7 +15,6 @@ import { UserModule } from '../user/user.module';
 import { LookupsModule } from '../lookups/lookups.module';
 import { ProviderPaymentEntity } from '../payment/entities/provider-payment.entity';
 import { PaymentModule } from '../payment/payment.module';
-import { ScoringSystemModule } from '../profile-scoring-system/scoring-system.module';
 import { AuthModule } from '../auth/auth.module';
 
 import { ProviderWorkerEntity } from './entities/provider-worker.entity';
@@ -40,7 +39,6 @@ import { ProviderProfileChangeEntity } from './entities/provider-profile-change.
         ServiceManagementModule,
         LookupsModule,
         PaymentModule,
-        forwardRef(() => ScoringSystemModule),
     ],
     controllers: [ProfileController],
     providers: [ProfileService, ProfileRepository],

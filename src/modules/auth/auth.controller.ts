@@ -3,6 +3,7 @@ import {
   Controller,
   Post,
   UseGuards,
+  Request,
 } from '@nestjs/common';
 import {
   ApiOperation,
@@ -19,11 +20,11 @@ import { OtpAuthDto } from '../user/dto/auth-otp.dto';
 import { ForgetPasswordDto } from '../user/dto/forget-password.dto';
 import { ResetPasswordDto } from '../user/dto/reset-password.dto';
 import { ChangePasswordDto } from '../user/dto/change-password.dto';
-import { CurrentUser } from '../../shared/decorators/current-user.decorator';
-import { JwtAuthGuard } from './guards/jwt-auth.guard';
-import { VerificationGuard } from './guards/verification.guard';
+import { JwtAuthGuard } from '../../shared/guards/jwt-auth.guard';
+import { VerificationGuard } from '../../shared/guards/verification.guard';
 import { RegisterResponseDto } from '../user/dto/register-response.dto';
 import { AuthTokensResponse } from '../user/types/user-token.type';
+import { UserInfoResponseWithTokensDto } from '../user/dto/user-info-response.dto';
 
 @ApiTags('auth')
 @Controller('auth')
@@ -62,10 +63,10 @@ export class AuthController {
   @ApiBearerAuth()
   @ApiOperation({ summary: 'Change user password (requires authentication)' })
   async changePassword(
-    @CurrentUser() user: any,
+    @Request() req: { user: UserInfoResponseWithTokensDto },
     @Body() dto: ChangePasswordDto,
   ): Promise<{ message: string }> {
-    return await this.authService.changePassword(user, dto);
+    return await this.authService.changePassword(req.user.userId, dto);
   }
 
   @Post('forgot-password')

@@ -1,8 +1,8 @@
 import { Body, Controller, Get, Post, Put, UseGuards, Request, Patch } from "@nestjs/common";
 import { ApiBearerAuth, ApiOperation, ApiTags } from "@nestjs/swagger";
 import { TargetAudienceService } from "./target-audience.service";
-import { JwtAuthGuard } from "../auth/guards/jwt-auth.guard";
-import { VerificationGuard } from "../auth/guards/verification.guard";
+import { JwtAuthGuard } from "../../shared/guards/jwt-auth.guard";
+import { VerificationGuard } from "../../shared/guards/verification.guard";
 import { UserInfoResponseWithTokensDto } from "../user/dto/user-info-response.dto";
 import { UpdateTargetAudienceDto } from "./dto/UpdateTargetAudience.dto";
 

@@ -1,7 +1,7 @@
 import { Entity, OneToOne, JoinColumn, Column, OneToMany } from 'typeorm';
 import { BaseEntity } from '../../../database/base-entity';
 import { UserEntity } from '../../user/entities/user.entity';
-import { OrderEntity } from '../../orders/entities/order.entity';
+import { ClientServiceRequestEntity } from '../../marketplace/entities/client-service-request.entity';
 import { ClientAddressEntity } from './client-address.entity';
 import { ClientPaymentMethodEntity } from './client-payment-method.entity';
 import { ClientCouponEntity } from '../../promotions/entities/client-coupon.entity';
@@ -19,8 +19,8 @@ export class ClientProfileEntity extends BaseEntity {
     @JoinColumn()
     user: UserEntity;
 
-    @OneToMany(() => OrderEntity, (order) => order.client)
-    orders: OrderEntity[];
+    @OneToMany(() => ClientServiceRequestEntity, (request) => request.client)
+    clientServiceRequests: ClientServiceRequestEntity[];
 
     @OneToMany(() => ClientAddressEntity, (address) => address.client)
     addresses: ClientAddressEntity[];

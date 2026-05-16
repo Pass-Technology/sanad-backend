@@ -4,6 +4,7 @@ import { ServiceEntity } from './service.entity';
 import { ProviderProfileEntity } from '../../provider-profile/entities/provider-profile.entity';
 import { ProviderServicePricingEntity } from '../entities/provider-service-pricing.entity';
 
+// sepecific provider's services that is different from the global services
 @Entity('provider_services')
 export class ProviderServiceEntity extends BaseEntity {
     @Column({ type: 'text', nullable: true })
@@ -11,6 +12,9 @@ export class ProviderServiceEntity extends BaseEntity {
 
     @Column({ default: true, name: 'is_active' })
     isActive: boolean;
+
+    @Column({ default: false })
+    isEmergencyEnabled: boolean;
 
     @ManyToOne(() => ProviderProfileEntity, (profile) => profile.providerServices, { onDelete: 'CASCADE' })
     @JoinColumn({ name: 'profile_id' })

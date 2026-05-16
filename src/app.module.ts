@@ -1,6 +1,6 @@
 import { Module } from '@nestjs/common';
 // import { ThrottlerModule } from '@nestjs/throttler';
-// import { EventEmitterModule } from '@nestjs/event-emitter';
+import { EventEmitterModule } from '@nestjs/event-emitter';
 import { DatabaseModule } from './database/database.module';
 import { UserModule } from './modules/user/user.module';
 import { OtpModule } from './modules/otp/otp.module';
@@ -21,8 +21,14 @@ import { TargetAudienceModule } from './modules/target-audience-profile/target-a
 import { ValidatorModule } from './modules/validator/validator.module';
 import { LegalModule } from './modules/legal/legal.module';
 import { ClientModule } from './modules/client/client.module';
-import { OrdersModule } from './modules/orders/orders.module';
+import { ClientRequestsModule } from './modules/client-requests/client-requests.module';
+import { ProviderJobsModule } from './modules/provider-jobs/provider-jobs.module';
 import { PromotionsModule } from './modules/promotions/promotions.module';
+import { EarningsModule } from './modules/earnings/earnings.module';
+import { ReviewModule } from './modules/reviews/review.module';
+import { EmergencyModule } from './modules/emergency/emergency.module';
+import { DocumentationModule } from './modules/documentation/documentation.module';
+import { NotificationModule } from './modules/notifications/notification.module';
 
 @Module({
   imports: [
@@ -31,7 +37,7 @@ import { PromotionsModule } from './modules/promotions/promotions.module';
     //   ttl: 60000,
     //   limit: 10,
     // }]),
-    // EventEmitterModule.forRoot(),
+    EventEmitterModule.forRoot(),
     DatabaseModule,
     UserModule,
     AuthModule,
@@ -50,8 +56,14 @@ import { PromotionsModule } from './modules/promotions/promotions.module';
     ValidatorModule,
     LegalModule,
     ClientModule,
-    OrdersModule,
-    PromotionsModule
+    ClientRequestsModule,
+    ProviderJobsModule,
+    PromotionsModule,
+    EarningsModule,
+    ReviewModule,
+    EmergencyModule,
+    DocumentationModule,
+    NotificationModule
   ],
   controllers: [HealthController],
 })
