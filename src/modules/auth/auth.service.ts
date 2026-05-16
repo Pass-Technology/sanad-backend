@@ -4,6 +4,7 @@ import * as bcrypt from 'bcrypt';
 import { AppConfigService } from '../../config/config.service';
 import { UserRepository } from '../user/user.repository';
 import { UserPayloadType } from '../user/types/user-payload.type';
+import { JwtPayload } from '../../shared/types/jwt-payload.type';
 import { AuthTokensResponse } from '../user/types/user-token.type';
 import { RegisterDto } from '../user/dto/register.dto';
 import { AuthDto } from '../user/dto/auth.dto';
@@ -137,8 +138,9 @@ export class AuthService {
 
   async generateTokens(userPayload: UserPayloadType): Promise<AuthTokensResponse> {
     const { id, identifier, identifierType, isVerified, isProfileCompleted, type } = userPayload;
-    const payload = {
+    const payload: JwtPayload = {
       sub: id,
+      userId: id,
       identifier: identifier,
       identifierType: identifierType,
       isVerified: isVerified,
