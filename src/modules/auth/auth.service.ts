@@ -16,6 +16,7 @@ import { MailService } from '../mail/mail.service';
 import { OtpPurposeEnum } from '../otp/enum/otp-purpose.enum';
 import { UserIdentifierType } from '../user/enums/user-identifier-type.enum';
 import { UserInfoResponseWithTokensDto } from '../user/dto/user-info-response.dto';
+import { JwtPayload } from 'src/shared/types/jwt-payload.type';
 
 @Injectable()
 export class AuthService {
@@ -87,7 +88,7 @@ export class AuthService {
     const { identifier, otp } = dto;
 
     await this.otpService.validateOtp(identifier, otp, OtpPurposeEnum.REGISTER);
-    
+
     const user = await this.userRepository.findByIdentifier(identifier);
     if (!user) {
       throw new UnauthorizedException('User not found');
@@ -158,8 +159,9 @@ export class AuthService {
 
   async generateTokens(userPayload: UserPayloadType): Promise<AuthTokensResponse> {
     const { id, identifier, identifierType, isVerified, isProfileCompleted, type } = userPayload;
-    const payload = {
+    const payload: JwtPayload = {
       sub: id,
+      userId: id,
       identifier: identifier,
       identifierType: identifierType,
       isVerified: isVerified,
