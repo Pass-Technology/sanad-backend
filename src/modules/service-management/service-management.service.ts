@@ -45,14 +45,29 @@ export class ServiceManagementService {
         return localize(categories, lang)
     }
 
-    async findAllActiveCategories(lang: string = 'en') {
-        const categories = await this.categoryRepo.find({
-            where: { isActive: true },
-            order: {
-                name: 'ASC'
+    async findProviderCategories(lang: string = 'en', userId: string) {
+        const providerServices = await this.providerServiceRepo.find({
+            where: { profile: { user: { id: userId } } },
+            relations: {
+                service: {
+                    category: true
+                }
             }
         });
-        return localize(categories, lang)
+
+        const categoryMap = new Map();
+
+        for (const ps of providerServices) {
+            const category = ps.service?.category;
+            if (category && !categoryMap.has(category.id)) {
+                // Strip any relations from the category object
+                const { services, ...cleanCategory } = category;
+                categoryMap.set(category.id, cleanCategory);
+            }
+        }
+
+        const categories = Array.from(categoryMap.values());
+        return localize(categories, lang);
     }
 
     async getServicesByCategory(categoryId: string, lang: string = 'en') {

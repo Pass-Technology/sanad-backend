@@ -13,10 +13,15 @@ import { GetMyServicesQueryDto } from './Dto/get-my-services-query.dto';
 export class ServiceManagementController {
     constructor(private readonly serviceManagementService: ServiceManagementService) { }
 
-    @Get('active-categories')
-    @ApiOperation({ summary: 'Get all active categories' })
-    async findAllActiveCategories(@Headers('accept-language') lang: string = 'en') {
-        return this.serviceManagementService.findAllActiveCategories(lang);
+    @Get('provider/categories')
+    @ApiOperation({ summary: 'Get all categories for provider' })
+    @UseGuards(JwtAuthGuard, VerificationGuard)
+    @ApiBearerAuth()
+    async findProviderCategories(
+        @Headers('accept-language') lang: string = 'en',
+        @Request() req: { user: UserInfoResponseWithTokensDto }
+    ) {
+        return this.serviceManagementService.findProviderCategories(lang, req.user.userId);
     }
 
     @Get('categories')
