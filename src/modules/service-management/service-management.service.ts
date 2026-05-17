@@ -45,6 +45,15 @@ export class ServiceManagementService {
         return localize(categories, lang)
     }
 
+    async findAllActiveCategories(lang: string = 'en') {
+        const categories = await this.categoryRepo.find({
+            where: { isActive: true },
+            order: {
+                name: 'ASC'
+            }
+        });
+        return localize(categories, lang)
+    }
 
     async getServicesByCategory(categoryId: string, lang: string = 'en') {
         const services = await this.serviceRepo.find({
