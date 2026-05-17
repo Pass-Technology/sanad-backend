@@ -57,6 +57,12 @@ export class ProfileController {
         return await this.profileService.submitFullProfile(req.user.userId, dto);
     }
 
+    @Patch('approve-test')
+    @ApiOperation({ summary: 'FOR TESTING: Instantly approve the logged-in provider profile' })
+    async approveTest(@Request() req: { user: UserInfoResponseWithTokensDto }) {
+        return await this.profileService.approveProfileForTesting(req.user.userId);
+    }
+
     @Get('me')
     @ApiOperation({ summary: 'Get full completed profile' })
     async getMyProfile(@Request() req: { user: UserInfoResponseWithTokensDto }) {

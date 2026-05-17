@@ -2,19 +2,14 @@ import {
     Injectable,
     NotFoundException,
     BadRequestException,
-    // HttpException,
-    // HttpStatus,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository, DataSource, EntityManager } from 'typeorm';
 import { ProfileRepository } from './profile.repository';
 import { UserRepository } from '../user/user.repository';
 import { ProviderWorkerEntity } from './entities/provider-worker.entity';
-import { ProviderProfileChangeEntity } from './entities/provider-profile-change.entity';
 import { ProfileChangeType } from './enums/profile-change-type.enum';
 import { ProfileStatusStaticCode } from '../lookups/enums/lookup-static-codes.enum';
-// import { UserEntity } from '../user/entities/user.entity';
-// import { CreateBranchDto } from './dto/step-3-branches.dto';
 import { CreateFullProfileDto } from './dto/create-full-profile.dto';
 import { CreateCompanyInfoDto } from './dto/create-company-info.dto';
 import {
@@ -27,21 +22,19 @@ import {
 
 import { ProviderProfileEntity } from './entities/provider-profile.entity';
 import { ProviderUserInfoEntity } from './entities/provider-user-info.entity';
-import { BranchEntity } from './entities/branch.entity';
 import { ProviderComplianceEntity } from './entities/provider-compliance.entity';
-import { ServingAreaEntity } from './entities/serving-area.entity';
 import { ProviderServiceEntity } from '../service-management/entities/provider-service.entity';
 import { ProviderServicePricingEntity } from '../service-management/entities/provider-service-pricing.entity';
 import { LookUpService } from '../lookups/lookup.service';
 import { ServiceManagementService } from '../service-management/service-management.service';
-// import { CreateServicesDto } from './dto/step-4-services.dto';
 import { PaymentService } from '../payment/payment.service';
 import { LOOKUP_IDS } from '../../shared/constants/lookup-ids';
 import { UpdatePaymentDto } from '../payment/dto/update-payment.dto';
-import { CreateBranchDto, CreateBranchesDto, ServingAreaDto } from './dto/create-branches.dto';
+import { CreateBranchDto } from './dto/create-branches.dto';
 import { UpdateProviderServiceDto, UpdateProviderServicePricingDto } from './dto/update-provider-service.dto';
 import { EventEmitter2 } from '@nestjs/event-emitter';
-// import { PricingDto } from '../service-management/Dto/pricing.dto';
+import { ProfileStagingService } from './profile-staging.service';
+import { ProfileBranchService } from './profile-branch.service';
 
 @Injectable()
 export class ProfileService {
@@ -50,21 +43,37 @@ export class ProfileService {
         private readonly lookupService: LookUpService,
         private readonly serviceManagement: ServiceManagementService,
         private readonly paymentService: PaymentService,
-        @InjectRepository(ProviderUserInfoEntity)
-        private readonly userInfoRepo: Repository<ProviderUserInfoEntity>,
-        @InjectRepository(BranchEntity)
-        private readonly branchRepo: Repository<BranchEntity>,
-        @InjectRepository(ServingAreaEntity)
-        private readonly servingAreaRepo: Repository<ServingAreaEntity>,
+        private readonly stagingService: ProfileStagingService,
+        private readonly branchService: ProfileBranchService,
         @InjectRepository(ProviderWorkerEntity)
         private readonly workerRepo: Repository<ProviderWorkerEntity>,
         private readonly userRepo: UserRepository,
         private readonly dataSource: DataSource,
         private readonly eventEmitter: EventEmitter2,
-        @InjectRepository(ProviderProfileChangeEntity)
-        private readonly changeRequestRepo: Repository<ProviderProfileChangeEntity>,
     ) { }
 
+    // Unified DRY execution wrapper for mutations that require Staging checks
+    private async runProfileMutation<T>(
+        userId: string,
+        changeType: ProfileChangeType,
+        dto: T,
+        mutateFn: (profile: ProviderProfileEntity, manager: EntityManager) => Promise<any>
+    ) {
+        const profile = await this.profileRepo.findProfileByUserId(userId);
+
+        // If profile is approved, divert changes to the staging system immediately (no transaction needed)
+        if (profile.status?.staticCode === ProfileStatusStaticCode.APPROVED) {
+            return await this.stagingService.stageChange(profile.id, changeType, dto);
+        }
+
+        // Only start a transaction if we are actually mutating the profile directly
+        return await this.dataSource.transaction(async (manager) => {
+            const transactionalProfile = await this.profileRepo.findProfileByUserId(userId, manager);
+            const result = await mutateFn(transactionalProfile, manager);
+            this.eventEmitter.emit('profile.updated', { userId });
+            return result;
+        });
+    }
 
     async submitFullProfile(userId: string, profileDto: CreateFullProfileDto) {
         const hasProfile = await this.profileRepo.isUserHaveProfile(userId);
@@ -81,7 +90,6 @@ export class ProfileService {
         // 2. build and save the full profile in one step inside a transaction
         return await this.dataSource.transaction(async (manager) => {
             const profileData = await this.buildFullProfileObject(manager, userId, profileDto);
-            // const profile = await this.profileRepo.createProfile(profileData as any, manager);
 
             // 3. Mark user profile as complete
             await this.userRepo.updateProfileCompletionStatus(userId, true, manager);
@@ -95,7 +103,6 @@ export class ProfileService {
 
     private async buildFullProfileObject(manager: EntityManager, userId: string, dto: CreateFullProfileDto) {
         const { companyInfo, userInfo, services, branches, payment, compliance } = dto;
-
 
         return manager.save(ProviderProfileEntity, {
             user: { id: userId },
@@ -111,10 +118,9 @@ export class ProfileService {
             languages: companyInfo.languageIds ? companyInfo.languageIds.map(id => ({ id })) : [],
             providerServices: services.selectedServiceIds.map(id => ({ service: { id } })),
             userInfo: manager.create(ProviderUserInfoEntity, userInfo),
-            branches: this.buildBranchEntities(branches),
+            branches: this.branchService.buildBranchEntities(branches),
             payment: this.paymentService.buildPaymentEntity(payment, manager),
             compliance: manager.create(ProviderComplianceEntity, compliance),
-
         });
     }
 
@@ -127,129 +133,112 @@ export class ProfileService {
     }
 
     async updateCompanyInfo(userId: string, updateCompanyInfoDto: UpdateCompanyInfoDto) {
-        const profile = await this.profileRepo.findProfileByUserId(userId);
+        return this.runProfileMutation(
+            userId,
+            ProfileChangeType.COMPANY_INFO,
+            updateCompanyInfoDto,
+            async (profile, manager) => {
+                const { languageIds, ...basicInfo } = updateCompanyInfoDto;
 
-        // If approved, divert to staging
-        if (profile.status?.staticCode === ProfileStatusStaticCode.APPROVED) {
-            return await this.stageChange(profile.id, ProfileChangeType.COMPANY_INFO, updateCompanyInfoDto);
-        }
+                if (languageIds) {
+                    profile.languages = languageIds.map(id => ({ id } as any));
+                }
 
-        const { languageIds, ...basicInfo } = updateCompanyInfoDto;
-
-        if (languageIds) {
-            profile.languages = languageIds.map(id => ({ id } as any));
-        }
-
-        Object.assign(profile, basicInfo);
-        const updated = await this.dataSource.manager.save(ProviderProfileEntity, profile);
-        this.eventEmitter.emit('profile.updated', { userId });
-        return updated;
-    }
-
-    private async stageChange(profileId: string, type: ProfileChangeType, newData: any) {
-        return await this.changeRequestRepo.save({
-            profileId,
-            changeType: type,
-            newData,
-            statusId: LOOKUP_IDS.PROFILE_STATUS.PENDING_REVIEW,
-        });
+                Object.assign(profile, basicInfo);
+                await manager.save(ProviderProfileEntity, profile);
+                return await this.profileRepo.findProfileByUserId(userId, manager);
+            }
+        );
     }
 
     async updateUserInfo(userId: string, updateUserInfoInfoDto: UpdateUserInfoDto) {
-        const profile = await this.profileRepo.findProfileByUserId(userId);
-
-        if (profile.status?.staticCode === ProfileStatusStaticCode.APPROVED) {
-            return await this.stageChange(profile.id, ProfileChangeType.USER_INFO, updateUserInfoInfoDto);
-        }
-
-        const userInfo = profile.userInfo;
-
-        Object.assign(userInfo, updateUserInfoInfoDto);
-        await this.userInfoRepo.save(userInfo);
-        this.eventEmitter.emit('profile.updated', { userId });
-        return await this.profileRepo.findProfileByUserId(userId);
+        return this.runProfileMutation(
+            userId,
+            ProfileChangeType.USER_INFO,
+            updateUserInfoInfoDto,
+            async (profile, manager) => {
+                const userInfo = profile.userInfo;
+                Object.assign(userInfo, updateUserInfoInfoDto);
+                await manager.save(ProviderUserInfoEntity, userInfo);
+                return await this.profileRepo.findProfileByUserId(userId, manager);
+            }
+        );
     }
 
     async addService(userId: string, dto: UpdateProviderServiceDto) {
-        return await this.dataSource.transaction(async (manager) => {
-            const profile = await this.profileRepo.findProfileByUserId(userId, manager);
+        return this.runProfileMutation(
+            userId,
+            ProfileChangeType.SERVICES,
+            dto,
+            async (profile, manager) => {
+                // Check if already exists
+                const existing = profile.providerServices.find(ps => ps.service.id === dto.serviceId);
+                if (existing) {
+                    throw new BadRequestException('Service already added to profile');
+                }
 
-            if (profile.status?.staticCode === ProfileStatusStaticCode.APPROVED) {
-                return await this.stageChange(profile.id, ProfileChangeType.SERVICES, dto);
+                const newProviderService = manager.create(ProviderServiceEntity, {
+                    profile: { id: profile.id },
+                    service: { id: dto.serviceId },
+                    description: dto.description,
+                });
+
+                const saved = await manager.save(newProviderService);
+
+                if (dto.pricingDetails && dto.pricingDetails.length > 0) {
+                    await this.syncPricingDetails(manager, saved, dto.pricingDetails);
+                }
+
+                return await this.profileRepo.findProfileByUserId(userId, manager);
             }
-
-            // Check if already exists
-            const existing = profile.providerServices.find(ps => ps.service.id === dto.serviceId);
-            if (existing) {
-                throw new BadRequestException('Service already added to profile');
-            }
-
-            const newProviderService = manager.create(ProviderServiceEntity, {
-                profile: { id: profile.id },
-                service: { id: dto.serviceId },
-                description: dto.description,
-            });
-
-            const saved = await manager.save(newProviderService);
-
-            if (dto.pricingDetails && dto.pricingDetails.length > 0) {
-                await this.syncPricingDetails(manager, saved, dto.pricingDetails);
-            }
-
-            this.eventEmitter.emit('profile.updated', { userId });
-            return await this.profileRepo.findProfileByUserId(userId, manager);
-        });
+        );
     }
 
     async updateService(userId: string, providerServiceId: string, dto: UpdateProviderServiceDto) {
-        return await this.dataSource.transaction(async (manager) => {
-            const profile = await this.profileRepo.findProfileByUserId(userId, manager);
+        return this.runProfileMutation(
+            userId,
+            ProfileChangeType.SERVICES,
+            { providerServiceId, ...dto },
+            async (profile, manager) => {
+                const providerService = await manager.findOne(ProviderServiceEntity, {
+                    where: { id: providerServiceId, profile: { user: { id: userId } } },
+                    relations: { pricingDetails: true }
+                });
 
-            if (profile.status?.staticCode === ProfileStatusStaticCode.APPROVED) {
-                return await this.stageChange(profile.id, ProfileChangeType.SERVICES, { providerServiceId, ...dto });
+                if (!providerService) {
+                    throw new NotFoundException('Provider service not found');
+                }
+
+                providerService.description = dto.description ?? providerService.description;
+
+                if (dto.pricingDetails) {
+                    await this.syncPricingDetails(manager, providerService, dto.pricingDetails);
+                }
+
+                await manager.save(providerService);
+                return await this.profileRepo.findProfileByUserId(userId, manager);
             }
-
-            const providerService = await manager.findOne(ProviderServiceEntity, {
-                where: { id: providerServiceId, profile: { user: { id: userId } } },
-                relations: { pricingDetails: true }
-            });
-
-            if (!providerService) {
-                throw new NotFoundException('Provider service not found');
-            }
-
-            providerService.description = dto.description ?? providerService.description;
-
-            if (dto.pricingDetails) {
-                await this.syncPricingDetails(manager, providerService, dto.pricingDetails);
-            }
-
-            await manager.save(providerService);
-            this.eventEmitter.emit('profile.updated', { userId });
-            return await this.profileRepo.findProfileByUserId(userId, manager);
-        });
+        );
     }
 
     async deleteService(userId: string, providerServiceId: string) {
-        return await this.dataSource.transaction(async (manager) => {
-            const profile = await this.profileRepo.findProfileByUserId(userId, manager);
+        return this.runProfileMutation(
+            userId,
+            ProfileChangeType.SERVICES,
+            { providerServiceId, action: 'DELETE' },
+            async (profile, manager) => {
+                const providerService = await manager.findOne(ProviderServiceEntity, {
+                    where: { id: providerServiceId, profile: { user: { id: userId } } }
+                });
 
-            if (profile.status?.staticCode === ProfileStatusStaticCode.APPROVED) {
-                return await this.stageChange(profile.id, ProfileChangeType.SERVICES, { providerServiceId, action: 'DELETE' });
+                if (!providerService) {
+                    throw new NotFoundException('Provider service not found');
+                }
+
+                await manager.remove(providerService);
+                return await this.profileRepo.findProfileByUserId(userId, manager);
             }
-
-            const providerService = await manager.findOne(ProviderServiceEntity, {
-                where: { id: providerServiceId, profile: { user: { id: userId } } }
-            });
-
-            if (!providerService) {
-                throw new NotFoundException('Provider service not found');
-            }
-
-            await manager.remove(providerService);
-            this.eventEmitter.emit('profile.updated', { userId });
-            return await this.profileRepo.findProfileByUserId(userId, manager);
-        });
+        );
     }
 
     private async syncPricingDetails(manager: EntityManager, providerService: ProviderServiceEntity, pricingDtos: UpdateProviderServicePricingDto[]) {
@@ -282,187 +271,83 @@ export class ProfileService {
     }
 
     async updateCompliance(userId: string, updateComplianceDto: UpdateComplianceDto) {
-        const profile = await this.profileRepo.findProfileByUserId(userId);
-
-        if (profile.status?.staticCode === ProfileStatusStaticCode.APPROVED) {
-            return await this.stageChange(profile.id, ProfileChangeType.COMPLIANCE, updateComplianceDto);
-        }
-
-        const compliance = profile.compliance;
-
-        Object.assign(compliance, updateComplianceDto);
-        await this.dataSource.manager.save(ProviderComplianceEntity, compliance);
-        this.eventEmitter.emit('profile.updated', { userId });
-        return await this.profileRepo.findProfileByUserId(userId);
+        return this.runProfileMutation(
+            userId,
+            ProfileChangeType.COMPLIANCE,
+            updateComplianceDto,
+            async (profile, manager) => {
+                const compliance = profile.compliance;
+                Object.assign(compliance, updateComplianceDto);
+                await manager.save(ProviderComplianceEntity, compliance);
+                return await this.profileRepo.findProfileByUserId(userId, manager);
+            }
+        );
     }
 
     async updatePayment(userId: string, updatePaymentDto: UpdatePaymentDto) {
-        const profile = await this.profileRepo.findProfileByUserId(userId);
-
-        if (profile.status?.staticCode === ProfileStatusStaticCode.APPROVED) {
-            return await this.stageChange(profile.id, ProfileChangeType.PAYMENT, updatePaymentDto);
-        }
-
-        await this.paymentService.syncPayment(userId, updatePaymentDto);
-        this.eventEmitter.emit('profile.updated', { userId });
-        return await this.profileRepo.findProfileByUserId(userId);
+        return this.runProfileMutation(
+            userId,
+            ProfileChangeType.PAYMENT,
+            updatePaymentDto,
+            async (profile, manager) => {
+                await this.paymentService.syncPayment(userId, updatePaymentDto);
+                return await this.profileRepo.findProfileByUserId(userId, manager);
+            }
+        );
     }
 
     async syncBranches(userId: string, updateBranchesDto: UpdateBranchesDto) {
-        return await this.dataSource.transaction(async (manager) => {
-            const profile = await this.profileRepo.findProfileByUserId(userId, manager);
-
-            if (profile.status?.staticCode === ProfileStatusStaticCode.APPROVED) {
-                return await this.stageChange(profile.id, ProfileChangeType.BRANCHES, updateBranchesDto);
+        return this.runProfileMutation(
+            userId,
+            ProfileChangeType.BRANCHES,
+            updateBranchesDto,
+            async (profile, manager) => {
+                await this.branchService.syncBranches(userId, profile, updateBranchesDto, manager);
+                return await this.profileRepo.findProfileByUserId(userId, manager);
             }
-
-            const activeBranchIds: string[] = [];
-
-            for (const branchDto of updateBranchesDto.branches) {
-                if (branchDto.id) {
-                    // Update Branch
-                    const existingBranch = profile.branches.find(b => b.id === branchDto.id);
-                    if (!existingBranch) continue;
-
-                    activeBranchIds.push(branchDto.id);
-
-                    const { servingAreas, ...basicInfo } = branchDto;
-                    Object.assign(existingBranch, basicInfo);
-
-                    if (servingAreas) {
-                        await this.syncServingAreas(manager, existingBranch, servingAreas);
-                    }
-                    await manager.save(existingBranch);
-                } else {
-                    // Add new branch
-                    const newBranch = this.buildBranchEntity(branchDto);
-                    newBranch.providerProfile = profile;
-                    const saved = await manager.save(newBranch);
-                    activeBranchIds.push(saved.id);
-                }
-            }
-
-            //Remove branches not in the incoming list
-            const branchesToDelete = profile.branches.filter(b => !activeBranchIds.includes(b.id));
-            if (branchesToDelete.length > 0) {
-                for (const branch of branchesToDelete) {
-                    await this.profileRepo.deleteServingAreasByBranchId(branch.id, manager);
-                    await manager.remove(branch);
-                }
-            }
-        });
-
-        this.eventEmitter.emit('profile.updated', { userId });
-        return await this.profileRepo.findProfileByUserId(userId);
-    }
-
-    private async syncServingAreas(manager: EntityManager, branch: BranchEntity, dtos: ServingAreaDto[]) {
-        const activeAreaIds: string[] = [];
-
-        if (!branch.servingAreas) {
-            branch.servingAreas = [];
-        }
-
-        const updatedAreas: ServingAreaEntity[] = [];
-
-        for (const dto of dtos) {
-            if (dto.id) {
-                // UPDATE: Match by ID
-                const existingArea = branch.servingAreas.find(a => (a.id) === (dto.id));
-
-                if (existingArea) {
-                    Object.assign(existingArea, dto);
-                    await manager.save(existingArea);
-                    activeAreaIds.push(existingArea.id);
-                    updatedAreas.push(existingArea);
-                }
-            } else {
-                // CREATE: No ID provided
-                const newArea = manager.create(ServingAreaEntity, {
-                    ...dto,
-                    branch: { id: branch.id }
-                });
-                const saved = await manager.save(newArea);
-                activeAreaIds.push((saved.id));
-                updatedAreas.push(saved);
-            }
-        }
-
-        // Remove areas belonging to this branch that were not in the incoming list
-        const areasToDelete = branch.servingAreas.filter(a => !activeAreaIds.includes(String(a.id)));
-        if (areasToDelete.length > 0) {
-            await manager.remove(areasToDelete);
-        }
-
-        branch.servingAreas = updatedAreas;
+        );
     }
 
     async updateBranch(userId: string, branchId: string, updateBranchDto: UpdateBranchDto) {
-        const branch = await this.profileRepo.findBranchById(branchId);
-        if (!branch) throw new NotFoundException('Branch not found');
-
-        const { servingAreas, ...basicInfo } = updateBranchDto;
-
-        Object.assign(branch, basicInfo);
-
-        if (servingAreas) {
-            await this.profileRepo.deleteServingAreasByBranchId(branchId);
-            branch.servingAreas = servingAreas.map(area =>
-                this.servingAreaRepo.create({ ...area, branch })
-            );
-        }
-
-        await this.dataSource.manager.save(BranchEntity, branch);
+        await this.branchService.updateBranch(userId, branchId, updateBranchDto);
         this.eventEmitter.emit('profile.updated', { userId });
-
         return await this.profileRepo.findProfileByUserId(userId);
     }
 
     async addBranch(userId: string, addBranchDto: CreateBranchDto) {
-        const profile = await this.profileRepo.findProfileByUserId(userId);
-
-        if (profile.status?.staticCode === ProfileStatusStaticCode.APPROVED) {
-            return await this.stageChange(profile.id, ProfileChangeType.BRANCHES, addBranchDto);
-        }
-
-        const newBranch = this.buildBranchEntity(addBranchDto);
-        newBranch.providerProfile = profile;
-
-        await this.dataSource.manager.save(BranchEntity, newBranch);
-        this.eventEmitter.emit('profile.updated', { userId });
-
-        return await this.profileRepo.findProfileByUserId(userId);
+        return this.runProfileMutation(
+            userId,
+            ProfileChangeType.BRANCHES,
+            addBranchDto,
+            async (profile, manager) => {
+                await this.branchService.addBranch(profile, addBranchDto);
+                return await this.profileRepo.findProfileByUserId(userId, manager);
+            }
+        );
     }
 
-    async deleteBranch(
-        userId: string,
-        branchId: string,
-    ) {
-        const profile = await this.profileRepo.findProfileByUserId(userId);
-
-        if (profile.status?.staticCode === ProfileStatusStaticCode.APPROVED) {
-            return await this.stageChange(profile.id, ProfileChangeType.BRANCHES, { branchId, action: 'DELETE' });
-        }
-
-        const branch = await this.profileRepo.findBranchById(branchId);
-
-        if (!branch) {
-            throw new NotFoundException('Branch not found');
-        }
-
-        await this.profileRepo.deleteServingAreasByBranchId(branchId);
-        await this.profileRepo.deleteBranch(branchId);
-
-        this.eventEmitter.emit('profile.updated', { userId });
-
-        return await this.profileRepo.findProfileByUserId(userId);
+    async deleteBranch(userId: string, branchId: string) {
+        return this.runProfileMutation(
+            userId,
+            ProfileChangeType.BRANCHES,
+            { branchId, action: 'DELETE' },
+            async (profile, manager) => {
+                await this.branchService.deleteBranch(branchId);
+                return await this.profileRepo.findProfileByUserId(userId, manager);
+            }
+        );
     }
-
-
 
     // ------- private helper methods ------- //
 
-    // generate reference number 
+    async approveProfileForTesting(userId: string) {
+        const profile = await this.profileRepo.findProfileByUserId(userId);
+        profile.status = { id: LOOKUP_IDS.PROFILE_STATUS.APPROVED } as any;
+        await this.dataSource.manager.save(ProviderProfileEntity, profile);
+        this.eventEmitter.emit('profile.updated', { userId });
+        return { success: true, message: 'Profile instantly approved for testing', status: 'APPROVED' };
+    }
+
     private async generateReferenceNumber() {
         const prefix = 'SND-';
         const characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
@@ -473,7 +358,7 @@ export class ProfileService {
         }
         return prefix + result;
     }
-    // check if company has valid provider type and company type
+
     private async validateCompanyInfo(companyInfo: CreateCompanyInfoDto) {
         const isValidProvider = await this.lookupService.isProviderTypeExist(companyInfo.providerTypeId);
         if (!isValidProvider) throw new BadRequestException('Invalid provider type id');
@@ -484,7 +369,6 @@ export class ProfileService {
         }
     }
 
-    // check if services are valid and active
     private async validateServiceIds(serviceIds: string[]) {
         if (!serviceIds || serviceIds.length === 0) return;
         const validServices = await this.serviceManagement.findServicesByIds(serviceIds);
@@ -494,36 +378,6 @@ export class ProfileService {
         if (invalidIds.length > 0) {
             throw new BadRequestException('Some service IDs are invalid or inactive');
         }
-    }
-
-    // build branch entities
-    private buildBranchEntities(branchesData: UpdateBranchesDto | CreateBranchesDto): BranchEntity[] {
-        return branchesData.branches.map((branchDto) => this.buildBranchEntity(branchDto));
-    }
-
-    private buildBranchEntity(branchDto: CreateBranchDto | UpdateBranchDto): BranchEntity {
-        const servingAreas = (branchDto.servingAreas ?? []).map((area: ServingAreaDto) =>
-            this.servingAreaRepo.create({
-                radiusKm: area.radiusKm,
-                phone: area.phone ?? null,
-                mapLink: area.mapLink ?? null,
-                lat: area.lat ?? null,
-                lng: area.lng ?? null,
-            })
-        );
-
-        return this.branchRepo.create({
-            branchName: branchDto.branchName,
-            branchManagerName: branchDto.branchManagerName,
-            branchAddress: branchDto.branchAddress,
-            city: branchDto.city,
-            branchPhone: branchDto.branchPhone ?? null,
-            managerPhone: branchDto.managerPhone ?? null,
-            googleMapsLink: branchDto.googleMapsLink ?? null,
-            socialMediaLink: branchDto.socialMediaLink ?? null,
-            isAvailable: branchDto.isAvailable ?? true,
-            servingAreas,
-        });
     }
 
     async getWorkerOrThrow(workerId: string, providerId: string): Promise<ProviderWorkerEntity> {

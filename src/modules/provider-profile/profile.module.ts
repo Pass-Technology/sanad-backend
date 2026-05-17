@@ -19,6 +19,8 @@ import { AuthModule } from '../auth/auth.module';
 
 import { ProviderWorkerEntity } from './entities/provider-worker.entity';
 import { ProviderProfileChangeEntity } from './entities/provider-profile-change.entity';
+import { ProfileStagingService } from './profile-staging.service';
+import { ProfileBranchService } from './profile-branch.service';
 
 @Module({
     imports: [
@@ -41,7 +43,7 @@ import { ProviderProfileChangeEntity } from './entities/provider-profile-change.
         PaymentModule,
     ],
     controllers: [ProfileController],
-    providers: [ProfileService, ProfileRepository],
-    exports: [ProfileService, ProfileRepository],
+    providers: [ProfileService, ProfileRepository, ProfileStagingService, ProfileBranchService],
+    exports: [ProfileService, ProfileRepository, ProfileStagingService, ProfileBranchService],
 })
 export class ProfileModule { }

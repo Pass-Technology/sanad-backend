@@ -79,6 +79,87 @@ The `shared` folder contains reusable code across the entire app. Use what is in
 - `setE2eContext` / `getE2eApp` / `getE2eDataSource` from `test/config/e2e-context.ts` hold the test app and TypeORM instance.
 - Clear DB in `beforeEach` for isolation.
 - Register setup/teardown in `test/config/jest-e2e-setup.ts` and `test/config/setup-e2e.ts`.
+# Sanad Backend - Project Rules
+
+## Stack & Overview
+- **Framework**: NestJS 11
+- **Database**: PostgreSQL with TypeORM
+- **Validation**: class-validator, class-transformer
+- **Docs**: Swagger at `/api`
+- **Auth**: JWT via @nestjs/jwt
+
+## Architecture
+Use the **Controller → Service → Repository** pattern:
+
+- **Controller**: HTTP handling, DTOs, Swagger decorators
+- **Repository**: Data access only. Inject TypeORM repositories using `@InjectRepository()`. Methods should optionally accept an `EntityManager` to support transactions (e.g., `manager ? manager.getRepository(Entity) : this.repo`). Use repositories or `QueryBuilder` for complex relations.
+
+- **Transactions & Complex Relations**: When saving multiple related entities or performing complex business logic involving multiple steps, ALWAYS use transactions via `this.dataSource.transaction(async (manager) => { ... })`. Pass the `manager` to repository methods.
+
+## Event Emitter
+Follow the structure and placement from the official sample:
+
+- **Event payloads**: Define in `src/modules/<module>/events/` as **classes** in `*.event.ts` files.
+- **Event name constants**: Never use magic strings for event names. Define constants in a **constants file in the module that owns the event**: `src/modules/<module>/constants/events.constants.ts`.
+- **Listeners**: Place in `src/modules/<module>/listeners/` in `*.listener.ts` files. Use `@OnEvent(EVENT_CONSTANT)`. Do **not** put `@OnEvent` handlers inside services; keep them in dedicated listener classes.
+- **Registration**: Register each listener in the module’s `providers` array.
+- **Emitting**: Services that emit inject `EventEmitter2` and call `this.eventEmitter.emit(EVENT_CONSTANT, eventInstance)`.
+
+## Module Structure
+Each feature module lives flat under `src/modules/<module>/`:
+- `*.controller.ts` – routes
+- `*.service.ts` – business logic
+- `*.repository.ts` – TypeORM queries and data access logic
+- `entities/*.entity.ts` – TypeORM entities
+- `constants/events.constants.ts` – event name constants for this module’s events
+- `events/*.event.ts` – event payload classes
+- `listeners/*.listener.ts` – event listeners
+- `dto/*.dto.ts` – DTOs with validation
+- `enums/*.enum.ts` – Module specific enums
+- `validators/` – custom validators when needed
+
+Ideally **each module should only have one core domain connected to it** in the database. 
+
+## Staging & Approval Workflow
+- When a user's profile status is `APPROVED` (using `ProfileStatusStaticCode.APPROVED`), their direct edit capabilities are restricted.
+- Updates made by approved providers must be diverted to the `ProviderProfileChangeEntity` staging table.
+- The `ProfileService` should intercept these requests, save the JSON payload to the staging table with a `PENDING_REVIEW` status, and wait for admin approval before applying to the main entities.
+
+## DTOs & Validation
+- Use `class-validator` decorators on all DTOs
+- For “exactly one of A or B” (e.g. email XOR mobile), use `@ValidateIf((o) => !o.mobile)` and `@ValidateIf((o) => !o.email)` with `@IsNotEmpty`
+- Add `@ApiProperty` / `@ApiPropertyOptional` on DTO fields for Swagger
+- Prefer shared validators in `src/shared/validators/` (e.g. `ExistingEntityRecordValidator` with `inverse` for uniqueness)
+- **IMPORTANT**: Entity existence checks (e.g., "user exists", "user not found") should be validated in DTOs using validator decorators, NOT in service methods. 
+
+## Swagger
+- Add `@ApiTags` on controllers and `@ApiOperation` on each endpoint
+- **Return types**: Always add explicit TypeScript return types to controller methods. Do **not** add `@ApiResponse` decorators for successful (2xx) responses.
+- **Error responses**: Do **not** add `@ApiResponse` decorators for failing responses (400, 401, 403, 404, etc.).
+- Document DTOs with `@ApiProperty` / `@ApiPropertyOptional`.
+
+## Types & Shared Module (`src/shared/`)
+The `shared` folder contains reusable code across the entire app. Use what is inside instead of duplicating logic:
+- **Decorators**: `src/shared/decorators/` (e.g., `@CurrentUser()` to extract the `JwtPayload` from the request, `@UserTypes()` for role guards).
+- **Guards**: `src/shared/guards/` (e.g., `JwtAuthGuard`, `VerificationGuard`). Apply these to controllers/endpoints to protect them.
+- **Validators**: `src/shared/validators/` (e.g., `ExistingEntityRecordValidator` for unique/exists checks in DTOs).
+- **Types**: `src/shared/types/` (e.g., `JwtPayload`).
+- **Base Classes**: `src/shared/generics/repository.abstract.ts`.
+
+## Auth & JWT
+- **JWT Implementation**: We use standard JWT via `@nestjs/jwt`.
+- **Payload Structure**: The payload uses the `JwtPayload` type (`src/shared/types/jwt-payload.type.ts`), which contains: `sub`, `userId`, `identifier`, `identifierType`, `isVerified`, `isProfileCompleted`, and `type` (UserType).
+- **Getting the User**:
+  - **In Controllers**: Use the `@CurrentUser() user: JwtPayload` decorator on endpoint arguments.
+  - **In Guards/Interceptors**: Access it via `request.user` after the `JwtAuthGuard` has processed the request.
+- **Protecting Endpoints**: Use `@UseGuards(JwtAuthGuard)` to ensure the user is authenticated.
+
+## E2E Tests
+- **Test folder structure**: Group tests by folder parallel to the module under test (e.g., `src/modules/user/` → `test/user/`). Use `../config/...` and `../helpers/...` for shared imports.
+- Use `testRequest` from `test/config/request.ts` with `HTTP_METHODS_ENUM`.
+- `setE2eContext` / `getE2eApp` / `getE2eDataSource` from `test/config/e2e-context.ts` hold the test app and TypeORM instance.
+- Clear DB in `beforeEach` for isolation.
+- Register setup/teardown in `test/config/jest-e2e-setup.ts` and `test/config/setup-e2e.ts`.
 
 ## Code Style
 - Use TypeScript strict mode
@@ -90,3 +171,4 @@ The `shared` folder contains reusable code across the entire app. Use what is in
 - **Minimize Code**: Write as few lines of code as possible while maintaining readability. Less code means fewer bugs and easier maintenance.
 - **Reuse Existing Code**: Before implementing *any* new function, review the existing codebase. Take notes on what is already available and make use of existing utilities, validators, or services instead of rewriting logic.
 - **SOLID & OOP**: Apply SOLID principles and Object-Oriented Programming (OOP) in the optimal way to ensure the codebase remains scalable, modular, and easy to test.
+- **Strict Backward Compatibility (Frontend Contract)**: NEVER break the frontend. When refactoring or adding features, existing inputs (routes, HTTP methods, DTO payloads) and outputs (response shapes, JSON structures) MUST remain exactly the same. Refactoring should be strictly internal (under-the-hood).
