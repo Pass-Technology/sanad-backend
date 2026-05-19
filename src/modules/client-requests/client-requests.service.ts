@@ -13,6 +13,7 @@ import { ClientService } from '../client/client.service';
 import { ServiceManagementService } from '../service-management/service-management.service';
 import { GetClientRequestsQueryDto } from './dto/get-client-requests-query.dto';
 import { GetClientJobsQueryDto } from './dto/get-client-jobs-query.dto';
+import { JobQueryType } from './enums/job-query-type.enum';
 
 @Injectable()
 export class ClientRequestsService {
@@ -191,9 +192,9 @@ export class ClientRequestsService {
     // CLIENT JOBS
     // ═══════════════════════════════════════════════════════
 
-    async getClientJobs(userId: string, type?: string, query?: GetClientJobsQueryDto) {
+    async getClientJobs(userId: string, query?: GetClientJobsQueryDto): Promise<JobEntity[]> {
         const client = await this.getClientByUserId(userId);
-        const statuses = this.resolveJobStatuses(type);
+        const statuses = this.resolveJobStatuses(query?.type);
 
         const where: FindOptionsWhere<JobEntity> = {
             client: { id: client.id },
@@ -252,10 +253,10 @@ export class ClientRequestsService {
     // PRIVATE HELPERS
     // ═══════════════════════════════════════════════════════
 
-    private resolveJobStatuses(type?: string): JobStatus[] {
-        const t = type?.toLowerCase() || 'all';
+    private resolveJobStatuses(type?: JobQueryType): JobStatus[] {
+        const t = type || JobQueryType.ALL;
         switch (t) {
-            case 'all':
+            case JobQueryType.ALL:
                 return [
                     JobStatus.ASSIGNED,
                     JobStatus.PROVIDER_ON_THE_WAY,
@@ -264,18 +265,14 @@ export class ClientRequestsService {
                     JobStatus.COMPLETED,
                     JobStatus.CANCELLED,
                 ];
-            case 'active':
+            case JobQueryType.ACTIVE:
                 return [JobStatus.PROVIDER_ON_THE_WAY, JobStatus.PROVIDER_ARRIVED, JobStatus.IN_PROGRESS];
-            case 'scheduled':
+            case JobQueryType.SCHEDULED:
                 return [JobStatus.ASSIGNED];
-            case 'completed':
+            case JobQueryType.COMPLETED:
                 return [JobStatus.COMPLETED];
-            case 'cancelled':
+            case JobQueryType.CANCELLED:
                 return [JobStatus.CANCELLED];
-            default:
-                throw new BadRequestException(
-                    `Invalid job type: ${type}. Use: all, active, scheduled, completed, cancelled`,
-                );
         }
     }
 

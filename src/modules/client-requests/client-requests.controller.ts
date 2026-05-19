@@ -1,5 +1,5 @@
 import { Controller, Post, Get, Body, Param, UseGuards, Query, Patch, Delete, Request } from '@nestjs/common';
-import { ApiTags, ApiBearerAuth, ApiOperation, ApiQuery } from '@nestjs/swagger';
+import { ApiTags, ApiBearerAuth, ApiOperation } from '@nestjs/swagger';
 import { JwtAuthGuard } from '../../shared/guards/jwt-auth.guard';
 import { UserTypes } from '../../shared/decorators/userTypes.decorator';
 import { UserType } from '../user/enums/user-type.enum';
@@ -10,6 +10,7 @@ import { ClientRequestsService } from './client-requests.service';
 import { CreateServiceRequestDto } from './dto/create-service-request.dto';
 import { GetClientRequestsQueryDto } from './dto/get-client-requests-query.dto';
 import { GetClientJobsQueryDto } from './dto/get-client-jobs-query.dto';
+import { JobEntity } from '../marketplace/entities/job.entity';
 
 @ApiTags('Client Requests')
 @ApiBearerAuth()
@@ -74,14 +75,12 @@ export class ClientRequestsController {
     }
 
     @Get('jobs')
-    @ApiOperation({ summary: 'Get my jobs by type (all, active, scheduled, completed, cancelled)' })
-    @ApiQuery({ name: 'type', required: false, enum: ['all', 'active', 'scheduled', 'completed', 'cancelled'] })
+    @ApiOperation({ summary: 'Get my jobs' })
     getMyJobs(
         @Request() req: { user: UserInfoResponseWithTokensDto },
-        @Query('type') type?: string,
         @Query() query?: GetClientJobsQueryDto,
-    ) {
-        return this.clientRequestsService.getClientJobs(req.user.userId, type, query);
+    ): Promise<JobEntity[]> {
+        return this.clientRequestsService.getClientJobs(req.user.userId, query);
     }
 
     @Get('jobs/:id')

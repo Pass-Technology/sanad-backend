@@ -2,8 +2,14 @@ import { IsOptional, IsEnum, IsUUID } from 'class-validator';
 import { ApiProperty } from '@nestjs/swagger';
 import { JobStatus } from '../../marketplace/enums/job-status.enum';
 import { PaginationQueryDto } from '../../../shared/dto/pagination-query.dto';
+import { JobQueryType } from '../enums/job-query-type.enum';
 
 export class GetClientJobsQueryDto extends PaginationQueryDto {
+    @ApiProperty({ required: false, enum: JobQueryType, default: JobQueryType.ALL })
+    @IsOptional()
+    @IsEnum(JobQueryType)
+    type?: JobQueryType;
+
     @ApiProperty({ required: false, description: 'Filter by service category' })
     @IsOptional()
     @IsUUID()
