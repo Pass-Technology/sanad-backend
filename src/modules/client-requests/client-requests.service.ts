@@ -191,7 +191,7 @@ export class ClientRequestsService {
     // CLIENT JOBS
     // ═══════════════════════════════════════════════════════
 
-    async getClientJobs(userId: string, type: string, query: GetClientJobsQueryDto) {
+    async getClientJobs(userId: string, type?: string, query?: GetClientJobsQueryDto) {
         const client = await this.getClientByUserId(userId);
         const statuses = this.resolveJobStatuses(type);
 
@@ -200,14 +200,14 @@ export class ClientRequestsService {
             status: In(statuses),
         };
 
-        if (query.serviceId) where.serviceRequest = { service: { id: query.serviceId } };
-        if (query.status) where.status = query.status;
+        if (query?.serviceId) where.serviceRequest = { service: { id: query.serviceId } };
+        if (query?.status) where.status = query.status;
 
         return this.jobRepository.find({
             where,
             relations: {
                 serviceRequest: { service: true, address: true },
-                provider: true,
+                provider: { userInfo: true },
                 assignedWorker: true,
             },
             order: { updatedAt: 'DESC' },
@@ -219,7 +219,7 @@ export class ClientRequestsService {
         const job = await this.getJobOrThrow(jobId, {
             serviceRequest: { service: true, address: true },
             client: true,
-            provider: true,
+            provider: { userInfo: true },
             acceptedOffer: true,
             assignedWorker: true,
         });
@@ -252,16 +252,30 @@ export class ClientRequestsService {
     // PRIVATE HELPERS
     // ═══════════════════════════════════════════════════════
 
-    private resolveJobStatuses(type: string): JobStatus[] {
-        switch (type) {
+    private resolveJobStatuses(type?: string): JobStatus[] {
+        const t = type?.toLowerCase() || 'all';
+        switch (t) {
+            case 'all':
+                return [
+                    JobStatus.ASSIGNED,
+                    JobStatus.PROVIDER_ON_THE_WAY,
+                    JobStatus.PROVIDER_ARRIVED,
+                    JobStatus.IN_PROGRESS,
+                    JobStatus.COMPLETED,
+                    JobStatus.CANCELLED,
+                ];
             case 'active':
-                return [JobStatus.ASSIGNED, JobStatus.PROVIDER_ON_THE_WAY, JobStatus.PROVIDER_ARRIVED, JobStatus.IN_PROGRESS];
+                return [JobStatus.PROVIDER_ON_THE_WAY, JobStatus.PROVIDER_ARRIVED, JobStatus.IN_PROGRESS];
+            case 'scheduled':
+                return [JobStatus.ASSIGNED];
             case 'completed':
                 return [JobStatus.COMPLETED];
             case 'cancelled':
                 return [JobStatus.CANCELLED];
             default:
-                throw new BadRequestException(`Invalid job type: ${type}. Use: active, completed, cancelled`);
+                throw new BadRequestException(
+                    `Invalid job type: ${type}. Use: all, active, scheduled, completed, cancelled`,
+                );
         }
     }
 

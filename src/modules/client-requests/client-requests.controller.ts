@@ -1,5 +1,5 @@
 import { Controller, Post, Get, Body, Param, UseGuards, Query, Patch, Delete, Request } from '@nestjs/common';
-import { ApiTags, ApiBearerAuth, ApiOperation } from '@nestjs/swagger';
+import { ApiTags, ApiBearerAuth, ApiOperation, ApiQuery } from '@nestjs/swagger';
 import { JwtAuthGuard } from '../../shared/guards/jwt-auth.guard';
 import { UserTypes } from '../../shared/decorators/userTypes.decorator';
 import { UserType } from '../user/enums/user-type.enum';
@@ -74,11 +74,12 @@ export class ClientRequestsController {
     }
 
     @Get('jobs')
-    @ApiOperation({ summary: 'Get my jobs by type (active, completed, cancelled)' })
+    @ApiOperation({ summary: 'Get my jobs by type (all, active, scheduled, completed, cancelled)' })
+    @ApiQuery({ name: 'type', required: false, enum: ['all', 'active', 'scheduled', 'completed', 'cancelled'] })
     getMyJobs(
         @Request() req: { user: UserInfoResponseWithTokensDto },
-        @Query('type') type: string,
-        @Query() query: GetClientJobsQueryDto,
+        @Query('type') type?: string,
+        @Query() query?: GetClientJobsQueryDto,
     ) {
         return this.clientRequestsService.getClientJobs(req.user.userId, type, query);
     }
