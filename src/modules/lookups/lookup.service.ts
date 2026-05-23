@@ -9,6 +9,8 @@ import { LookUpPaymentEntity } from "./entities/lookup-payment.entity";
 import { LookUpPaymentCategoryEntity } from "./entities/lookup-payment-category.entity";
 import { LookupNationalityEntity } from "./entities/lookup-nationality.entity";
 import { LookupCityEntity } from "./entities/lookup-city.entity";
+import { LookupUnitEntity } from "./entities/lookup-unit.entity";
+import { LookupCurrencyEntity } from "./entities/lookup-currency.entity";
 import { SharedCacheService } from "../../shared/cache/shared-cache.service";
 import { localize } from '../../shared/localization.util'
 
@@ -31,6 +33,10 @@ export class LookUpService {
         private readonly nationalityRepo: Repository<LookupNationalityEntity>,
         @InjectRepository(LookupCityEntity)
         private readonly cityRepo: Repository<LookupCityEntity>,
+        @InjectRepository(LookupUnitEntity)
+        private readonly unitRepo: Repository<LookupUnitEntity>,
+        @InjectRepository(LookupCurrencyEntity)
+        private readonly currencyRepo: Repository<LookupCurrencyEntity>,
         private readonly cacheService: SharedCacheService,
     ) { }
 
@@ -128,6 +134,34 @@ export class LookUpService {
         } else {
             data = await this.cityRepo.find();
             await this.cacheService.set('lookup:', 'cities', data);
+        }
+
+        return data.map(item => this.localize(item, lang));
+    }
+
+    async getUnits(lang: string = 'en') {
+        const cached = await this.cacheService.get<LookupUnitEntity[]>('lookup:', 'units');
+        let data: LookupUnitEntity[];
+
+        if (cached) {
+            data = cached;
+        } else {
+            data = await this.unitRepo.find();
+            await this.cacheService.set('lookup:', 'units', data);
+        }
+
+        return data.map(item => this.localize(item, lang));
+    }
+
+    async getCurrencies(lang: string = 'en') {
+        const cached = await this.cacheService.get<LookupCurrencyEntity[]>('lookup:', 'currencies');
+        let data: LookupCurrencyEntity[];
+
+        if (cached) {
+            data = cached;
+        } else {
+            data = await this.currencyRepo.find();
+            await this.cacheService.set('lookup:', 'currencies', data);
         }
 
         return data.map(item => this.localize(item, lang));

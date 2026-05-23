@@ -55,6 +55,18 @@ export class LookUpController {
     async getCities(@Headers('accept-language') lang: string = 'en') {
         return await this.lookUpService.getCities(lang)
     }
+
+    @Get('units')
+    @ApiOperation({ summary: 'get pricing units' })
+    async getUnits(@Headers('accept-language') lang: string = 'en') {
+        return await this.lookUpService.getUnits(lang)
+    }
+
+    @Get('currencies')
+    @ApiOperation({ summary: 'get currencies' })
+    async getCurrencies(@Headers('accept-language') lang: string = 'en') {
+        return await this.lookUpService.getCurrencies(lang)
+    }
 }
 
 // shared lookup table

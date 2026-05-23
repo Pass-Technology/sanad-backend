@@ -204,3 +204,20 @@ export enum CityStaticCode {
     AL_KHATIM = 'alKhatim',
     AL_TAWEELAH = 'alTaweelah',
 }
+
+export enum UnitStaticCode {
+    METER = 'METER',
+    HOUR = 'HOUR',
+    DAY = 'DAY',
+    PIECE = 'PIECE',
+    KILOGRAM = 'KILOGRAM',
+    KILOMETER = 'KILOMETER',
+}
+
+export enum CurrencyStaticCode {
+    AED = 'AED',
+    USD = 'USD',
+    SAR = 'SAR',
+    EUR = 'EUR',
+}
+

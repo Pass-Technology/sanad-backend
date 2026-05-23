@@ -12,6 +12,8 @@ import { paymentLookupSeed } from './lookup-seeds/payment/payment.seed';
 import { assetTypeSeed } from './lookup-seeds/asset-type.seed';
 import { nationalitiesSeed } from './lookup-seeds/nationalities.seed';
 import { citiesSeed } from './lookup-seeds/cities.seed';
+import { unitSeed } from './lookup-seeds/unit.seed';
+import { currencySeed } from './lookup-seeds/currency.seed';
 
 
 async function runSeed() {
@@ -28,6 +30,8 @@ async function runSeed() {
     await assetTypeSeed(dataSource);
     await nationalitiesSeed(dataSource);
     await citiesSeed(dataSource);
+    await unitSeed(dataSource);
+    await currencySeed(dataSource);
 
     console.log('Plans starting to seed');
 
