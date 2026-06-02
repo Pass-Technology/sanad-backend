@@ -17,14 +17,21 @@ services:
       retries: 5
 
   app:
-    build: .
+    build:
+      context: .
+      target: development # <--- Tells Docker to stop at the development stage
     container_name: sanad-app
     ports:
       - "3000:3000"
+      - "9229:9229" # Expose debugging port if you want to attach a debugger
     environment:
-      DATABASE_URL: postgresql://postgres:postgres@postgres:5432/sanad_test?schema=public
+      DATABASE_URL: postgresql://postgres:postgres@postgres:5432/sanad_test
+      NODE_ENV: development
       JWT_SECRET: ${JWT_SECRET:-test-secret-key}
       PORT: 3000
+    volumes:
+      - .:/app            # Mounts your local files into the container for hot-reloading
+      - /app/node_modules # Anonymous volume to prevent your host's node_modules from overwriting the container's Linux-native ones
     depends_on:
       postgres:
         condition: service_healthy
