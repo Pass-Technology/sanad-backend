@@ -5,25 +5,20 @@ on:
     branches: [main, develop]
 
 env:
-  REGISTRY: ghcr.io
-  IMAGE_NAME: pass-technology/sanad-backend
+  REGISTRY: docker.io
+  IMAGE_NAME: hossamhass/sanad-backend
 
 jobs:
   build-and-deploy:
     runs-on: ubuntu-latest
-    permissions:
-      contents: read
-      packages: write
-
     steps:
       - uses: actions/checkout@v4
 
-      - name: Log in to Container Registry
+      - name: Log in to Docker Hub
         uses: docker/login-action@v3
         with:
-          registry: ${{ env.REGISTRY }}
-          username: ${{ github.actor }}
-          password: ${{ secrets.GITHUB_TOKEN }}
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
 
       - name: Set tag
         id: tag
@@ -45,7 +40,10 @@ jobs:
 
       - name: Trigger Dokploy deploy
         run: |
-          curl -s -X POST "https://deploy.trysanad.us/api/application.deploy" \
+          resp=$(curl -sS -w "\n%{http_code}" -X POST "https://deploy.trysanad.us/api/application.deploy" \
             -H "x-api-key: ${{ secrets.DOKPLOY_TOKEN }}" \
             -H "Content-Type: application/json" \
-            -d "{\"applicationId\":\"${{ steps.tag.outputs.app_id }}\"}"
+            -d "{\"applicationId\":\"${{ steps.tag.outputs.app_id }}\"}")
+          code=$(echo "$resp" | tail -n1); body=$(echo "$resp" | sed "\$d")
+          echo "Dokploy ($code): $body"
+          [ "$code" = "200" ] || exit 1
