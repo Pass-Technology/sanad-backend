@@ -1,12 +1,13 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { Type } from 'class-transformer';
-import { ValidateNested } from 'class-validator';
+import { IsArray, IsOptional, ValidateNested } from 'class-validator';
 import { CreateCompanyInfoDto } from './create-company-info.dto';
 import { CreateUserInfoDto } from './create-user-info.dto';
 import { CreateBranchesDto } from './create-branches.dto';
 import { CreateServicesDto } from './create-services.dto';
 import { CreateComplianceDto } from './create-compliance.dto';
 import { CreatePaymentDto } from '../../payment/dto/create-payment.dto';
+import { Availability } from './availability.dto';
 
 export class CreateFullProfileDto {
     @ApiProperty({ type: CreateCompanyInfoDto })
@@ -38,4 +39,18 @@ export class CreateFullProfileDto {
     @ValidateNested()
     @Type(() => CreatePaymentDto)
     payment: CreatePaymentDto;
+
+    @ApiProperty({
+        type: [Availability],
+        required: false,
+        example: [
+            { day: 'Monday', slots: [{ from: '09:00', to: '12:00' }] },
+            { day: 'Tuesday', slots: [{ from: '09:00', to: '12:00' }] },
+        ],
+    })
+    @IsOptional()
+    @IsArray()
+    @ValidateNested({ each: true })
+    @Type(() => Availability)
+    availability?: Availability[];
 }

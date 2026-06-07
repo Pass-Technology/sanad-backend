@@ -1,8 +1,4 @@
-import {
-    Injectable,
-    NotFoundException,
-    BadRequestException,
-} from '@nestjs/common';
+import { Injectable, NotFoundException, BadRequestException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository, DataSource, EntityManager } from 'typeorm';
 import { ProfileRepository } from './profile.repository';
@@ -35,6 +31,7 @@ import { UpdateProviderServiceDto, UpdateProviderServicePricingDto } from './dto
 import { EventEmitter2 } from '@nestjs/event-emitter';
 import { ProfileStagingService } from './profile-staging.service';
 import { ProfileBranchService } from './profile-branch.service';
+import { AvailabilityDto } from './dto/availability.dto';
 
 @Injectable()
 export class ProfileService {
@@ -50,14 +47,14 @@ export class ProfileService {
         private readonly userRepo: UserRepository,
         private readonly dataSource: DataSource,
         private readonly eventEmitter: EventEmitter2,
-    ) { }
+    ) {}
 
     // Unified DRY execution wrapper for mutations that require Staging checks
     private async runProfileMutation<T>(
         userId: string,
         changeType: ProfileChangeType,
         dto: T,
-        mutateFn: (profile: ProviderProfileEntity, manager: EntityManager) => Promise<any>
+        mutateFn: (profile: ProviderProfileEntity, manager: EntityManager) => Promise<any>,
     ) {
         const profile = await this.profileRepo.findProfileByUserId(userId);
 
@@ -102,7 +99,7 @@ export class ProfileService {
     }
 
     private async buildFullProfileObject(manager: EntityManager, userId: string, dto: CreateFullProfileDto) {
-        const { companyInfo, userInfo, services, branches, payment, compliance } = dto;
+        const { companyInfo, userInfo, services, branches, payment, compliance, availability } = dto;
 
         return manager.save(ProviderProfileEntity, {
             user: { id: userId },
@@ -115,12 +112,13 @@ export class ProfileService {
             companyDescription: companyInfo.companyDescription,
             socialMediaLink: companyInfo.socialMediaLink,
             websiteLink: companyInfo.websiteLink,
-            languages: companyInfo.languageIds ? companyInfo.languageIds.map(id => ({ id })) : [],
-            providerServices: services.selectedServiceIds.map(id => ({ service: { id } })),
+            languages: companyInfo.languageIds ? companyInfo.languageIds.map((id) => ({ id })) : [],
+            providerServices: services.selectedServiceIds.map((id) => ({ service: { id } })),
             userInfo: manager.create(ProviderUserInfoEntity, userInfo),
             branches: this.branchService.buildBranchEntities(branches),
             payment: this.paymentService.buildPaymentEntity(payment, manager),
             compliance: manager.create(ProviderComplianceEntity, compliance),
+            availability,
         });
     }
 
@@ -141,13 +139,13 @@ export class ProfileService {
                 const { languageIds, ...basicInfo } = updateCompanyInfoDto;
 
                 if (languageIds) {
-                    profile.languages = languageIds.map(id => ({ id } as any));
+                    profile.languages = languageIds.map((id) => ({ id }) as any);
                 }
 
                 Object.assign(profile, basicInfo);
                 await manager.save(ProviderProfileEntity, profile);
                 return await this.profileRepo.findProfileByUserId(userId, manager);
-            }
+            },
         );
     }
 
@@ -161,37 +159,32 @@ export class ProfileService {
                 Object.assign(userInfo, updateUserInfoInfoDto);
                 await manager.save(ProviderUserInfoEntity, userInfo);
                 return await this.profileRepo.findProfileByUserId(userId, manager);
-            }
+            },
         );
     }
 
     async addService(userId: string, dto: UpdateProviderServiceDto) {
-        return this.runProfileMutation(
-            userId,
-            ProfileChangeType.SERVICES,
-            dto,
-            async (profile, manager) => {
-                // Check if already exists
-                const existing = profile.providerServices.find(ps => ps.service.id === dto.serviceId);
-                if (existing) {
-                    throw new BadRequestException('Service already added to profile');
-                }
-
-                const newProviderService = manager.create(ProviderServiceEntity, {
-                    profile: { id: profile.id },
-                    service: { id: dto.serviceId },
-                    description: dto.description,
-                });
-
-                const saved = await manager.save(newProviderService);
-
-                if (dto.pricingDetails && dto.pricingDetails.length > 0) {
-                    await this.syncPricingDetails(manager, saved, dto.pricingDetails);
-                }
-
-                return await this.profileRepo.findProfileByUserId(userId, manager);
+        return this.runProfileMutation(userId, ProfileChangeType.SERVICES, dto, async (profile, manager) => {
+            // Check if already exists
+            const existing = profile.providerServices.find((ps) => ps.service.id === dto.serviceId);
+            if (existing) {
+                throw new BadRequestException('Service already added to profile');
             }
-        );
+
+            const newProviderService = manager.create(ProviderServiceEntity, {
+                profile: { id: profile.id },
+                service: { id: dto.serviceId },
+                description: dto.description,
+            });
+
+            const saved = await manager.save(newProviderService);
+
+            if (dto.pricingDetails && dto.pricingDetails.length > 0) {
+                await this.syncPricingDetails(manager, saved, dto.pricingDetails);
+            }
+
+            return await this.profileRepo.findProfileByUserId(userId, manager);
+        });
     }
 
     async updateService(userId: string, providerServiceId: string, dto: UpdateProviderServiceDto) {
@@ -202,7 +195,7 @@ export class ProfileService {
             async (profile, manager) => {
                 const providerService = await manager.findOne(ProviderServiceEntity, {
                     where: { id: providerServiceId, profile: { user: { id: userId } } },
-                    relations: { pricingDetails: true }
+                    relations: { pricingDetails: true },
                 });
 
                 if (!providerService) {
@@ -217,7 +210,7 @@ export class ProfileService {
 
                 await manager.save(providerService);
                 return await this.profileRepo.findProfileByUserId(userId, manager);
-            }
+            },
         );
     }
 
@@ -228,7 +221,10 @@ export class ProfileService {
             { providerServiceId, action: 'DELETE' },
             async (profile, manager) => {
                 const providerService = await manager.findOne(ProviderServiceEntity, {
-                    where: { id: providerServiceId, profile: { user: { id: userId } } }
+                    where: {
+                        id: providerServiceId,
+                        profile: { user: { id: userId } },
+                    },
                 });
 
                 if (!providerService) {
@@ -237,11 +233,15 @@ export class ProfileService {
 
                 await manager.remove(providerService);
                 return await this.profileRepo.findProfileByUserId(userId, manager);
-            }
+            },
         );
     }
 
-    private async syncPricingDetails(manager: EntityManager, providerService: ProviderServiceEntity, pricingDtos: UpdateProviderServicePricingDto[]) {
+    private async syncPricingDetails(
+        manager: EntityManager,
+        providerService: ProviderServiceEntity,
+        pricingDtos: UpdateProviderServicePricingDto[],
+    ) {
         if (!providerService.pricingDetails) {
             providerService.pricingDetails = [];
         }
@@ -250,7 +250,7 @@ export class ProfileService {
 
         for (const dto of pricingDtos) {
             if (dto.id) {
-                const existingPricing = providerService.pricingDetails.find(p => p.id === dto.id);
+                const existingPricing = providerService.pricingDetails.find((p) => p.id === dto.id);
                 if (!existingPricing) throw new NotFoundException('Pricing not found');
 
                 Object.assign(existingPricing, dto);
@@ -259,7 +259,7 @@ export class ProfileService {
                 const newPricing = manager.create(ProviderServicePricingEntity, {
                     description: dto.description,
                     price: dto.price,
-                    providerService: { id: providerService.id }
+                    providerService: { id: providerService.id },
                 });
 
                 providerService.pricingDetails.push(newPricing);
@@ -280,7 +280,7 @@ export class ProfileService {
                 Object.assign(compliance, updateComplianceDto);
                 await manager.save(ProviderComplianceEntity, compliance);
                 return await this.profileRepo.findProfileByUserId(userId, manager);
-            }
+            },
         );
     }
 
@@ -292,8 +292,26 @@ export class ProfileService {
             async (profile, manager) => {
                 await this.paymentService.syncPayment(userId, updatePaymentDto);
                 return await this.profileRepo.findProfileByUserId(userId, manager);
-            }
+            },
         );
+    }
+
+    async upsertAvailabilty(userId: string, dto: AvailabilityDto) {
+        return this.runProfileMutation(userId, ProfileChangeType.AVAILABILITY, dto, async (profile, manager) => {
+            await manager.upsert(
+                ProviderProfileEntity,
+                {
+                    id: profile.id,
+                    availability: dto.availability ?? null,
+                },
+                ['id'],
+            );
+            return await this.profileRepo.getProviderAvailability(userId, manager);
+        });
+    }
+
+    async getAvailabilty(userId: string) {
+        return await this.profileRepo.getProviderAvailability(userId);
     }
 
     async syncBranches(userId: string, updateBranchesDto: UpdateBranchesDto) {
@@ -304,7 +322,7 @@ export class ProfileService {
             async (profile, manager) => {
                 await this.branchService.syncBranches(userId, profile, updateBranchesDto, manager);
                 return await this.profileRepo.findProfileByUserId(userId, manager);
-            }
+            },
         );
     }
 
@@ -315,15 +333,10 @@ export class ProfileService {
     }
 
     async addBranch(userId: string, addBranchDto: CreateBranchDto) {
-        return this.runProfileMutation(
-            userId,
-            ProfileChangeType.BRANCHES,
-            addBranchDto,
-            async (profile, manager) => {
-                await this.branchService.addBranch(profile, addBranchDto);
-                return await this.profileRepo.findProfileByUserId(userId, manager);
-            }
-        );
+        return this.runProfileMutation(userId, ProfileChangeType.BRANCHES, addBranchDto, async (profile, manager) => {
+            await this.branchService.addBranch(profile, addBranchDto);
+            return await this.profileRepo.findProfileByUserId(userId, manager);
+        });
     }
 
     async deleteBranch(userId: string, branchId: string) {
@@ -334,7 +347,7 @@ export class ProfileService {
             async (profile, manager) => {
                 await this.branchService.deleteBranch(branchId);
                 return await this.profileRepo.findProfileByUserId(userId, manager);
-            }
+            },
         );
     }
 
@@ -372,9 +385,9 @@ export class ProfileService {
     private async validateServiceIds(serviceIds: string[]) {
         if (!serviceIds || serviceIds.length === 0) return;
         const validServices = await this.serviceManagement.findServicesByIds(serviceIds);
-        const validIds = new Set(validServices.map(s => s.id));
+        const validIds = new Set(validServices.map((s) => s.id));
 
-        const invalidIds = serviceIds.filter(id => !validIds.has(id));
+        const invalidIds = serviceIds.filter((id) => !validIds.has(id));
         if (invalidIds.length > 0) {
             throw new BadRequestException('Some service IDs are invalid or inactive');
         }
@@ -382,7 +395,7 @@ export class ProfileService {
 
     async getWorkerOrThrow(workerId: string, providerId: string): Promise<ProviderWorkerEntity> {
         const worker = await this.workerRepo.findOne({
-            where: { id: workerId, provider: { id: providerId } }
+            where: { id: workerId, provider: { id: providerId } },
         });
         if (!worker) {
             throw new NotFoundException('Worker not found');
@@ -392,7 +405,7 @@ export class ProfileService {
 
     async getWorkersByProvider(providerId: string): Promise<ProviderWorkerEntity[]> {
         return this.workerRepo.find({
-            where: { provider: { id: providerId } }
+            where: { provider: { id: providerId } },
         });
     }
 }

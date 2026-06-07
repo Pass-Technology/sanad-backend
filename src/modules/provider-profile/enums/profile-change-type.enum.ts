@@ -5,4 +5,5 @@ export enum ProfileChangeType {
     BRANCHES = 'BRANCHES',
     SERVICES = 'SERVICES',
     PAYMENT = 'PAYMENT',
+    AVAILABILITY = 'AVAILABILITY',
 }
