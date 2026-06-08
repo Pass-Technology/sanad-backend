@@ -175,6 +175,7 @@ export class ProfileService {
                 profile: { id: profile.id },
                 service: { id: dto.serviceId },
                 description: dto.description,
+                availability: dto.availability ?? profile.availability,
             });
 
             const saved = await manager.save(newProviderService);
@@ -203,6 +204,7 @@ export class ProfileService {
                 }
 
                 providerService.description = dto.description ?? providerService.description;
+                providerService.availability = dto.availability ?? providerService.availability ?? profile.availability;
 
                 if (dto.pricingDetails) {
                     await this.syncPricingDetails(manager, providerService, dto.pricingDetails);

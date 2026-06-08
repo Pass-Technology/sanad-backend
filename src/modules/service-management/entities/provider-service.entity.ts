@@ -26,4 +26,12 @@ export class ProviderServiceEntity extends BaseEntity {
 
     @OneToMany(() => ProviderServicePricingEntity, (pricing) => pricing.providerService, { cascade: true })
     pricingDetails: ProviderServicePricingEntity[];
+
+    @Column({ type: 'jsonb', nullable: true })
+    availability:
+        | {
+              day: string;
+              slots: { from: string; to: string }[];
+          }[]
+        | null;
 }
