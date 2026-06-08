@@ -4,13 +4,14 @@ import { Repository, ILike, DataSource, In } from 'typeorm';
 import { CategoryEntity } from './entities/category.entity';
 import { ServiceEntity } from './entities/service.entity';
 
-import { localize } from '../../shared/localization.util'
+import { localize } from '../../shared/localization.util';
 import { RequestServiceDto } from './Dto/request-service.dto';
 import { RequestServiceEntity } from './entities/request-service.entity';
 import { RequestServiceResponseDto } from './Dto/request-service-response.dto';
 import { ProviderServiceEntity } from './entities/provider-service.entity';
 import { GetMyServicesQueryDto } from './Dto/get-my-services-query.dto';
 import { PaginatedResponseDto } from '../../shared/dto/paginated-response.dto';
+import { GetProviderCategoryServicesQueryDto } from './Dto/get-provider-category-services.dto';
 @Injectable()
 export class ServiceManagementService {
     constructor(
@@ -23,26 +24,28 @@ export class ServiceManagementService {
         @InjectRepository(ProviderServiceEntity)
         private readonly providerServiceRepo: Repository<ProviderServiceEntity>,
         private readonly dataSource: DataSource,
-    ) { }
+    ) {}
 
     // get all categories and their services in profile setup page
     async findAllCategories(lang: string = 'en', searchString?: string) {
         const categories = await this.categoryRepo.find({
-            where: searchString ? [
-                { isActive: true, services: { nameEn: ILike(`%${searchString}%`) } },
-                { isActive: true, services: { nameAr: ILike(`%${searchString}%`) } }
-            ] : { isActive: true },
+            where: searchString
+                ? [
+                      { isActive: true, services: { nameEn: ILike(`%${searchString}%`) } },
+                      { isActive: true, services: { nameAr: ILike(`%${searchString}%`) } },
+                  ]
+                : { isActive: true },
             relations: { services: true },
             order: {
                 name: 'ASC',
                 services: {
-                    sortOrder: 'ASC'
-                }
-            }
+                    sortOrder: 'ASC',
+                },
+            },
         });
 
         // return categories.map(category => this.localize(category, lang));
-        return localize(categories, lang)
+        return localize(categories, lang);
     }
 
     async findProviderCategories(lang: string = 'en', userId: string) {
@@ -50,9 +53,9 @@ export class ServiceManagementService {
             where: { profile: { user: { id: userId } } },
             relations: {
                 service: {
-                    category: true
-                }
-            }
+                    category: true,
+                },
+            },
         });
 
         const categoryMap = new Map();
@@ -70,20 +73,51 @@ export class ServiceManagementService {
         return localize(categories, lang);
     }
 
+    async findProviderCategoryServices(
+        lang: string = 'en',
+        userId: string,
+        categoryId: string,
+        dto: GetProviderCategoryServicesQueryDto,
+    ) {
+        const { name, page, limit } = dto;
+        const query = this.providerServiceRepo
+            .createQueryBuilder('providerService')
+            .innerJoin('providerService.profile', 'profile')
+            .innerJoin('profile.user', 'user')
+            .innerJoinAndSelect('providerService.service', 'service')
+            .innerJoin('service.category', 'category')
+
+            .where('user.id = :userId', { userId })
+            .andWhere('category.id = :categoryId', { categoryId });
+
+        if (name) {
+            if (lang === 'ar') {
+                query.andWhere('service.name_ar ILIKE :serviceName', { serviceName: `%${name}%` });
+            } else {
+                query.andWhere('service.name_en ILIKE :serviceName', { serviceName: `%${name}%` });
+            }
+        }
+
+        return await query
+            .skip((page - 1) * limit)
+            .take(limit)
+            .getMany();
+    }
+
     async getServicesByCategory(categoryId: string, lang: string = 'en') {
         const services = await this.serviceRepo.find({
             where: { category: { id: categoryId }, isActive: true },
             relations: { children: true },
-            order: { sortOrder: 'ASC' }
+            order: { sortOrder: 'ASC' },
         });
 
-        return services.map(service => this.localize(service, lang));
+        return services.map((service) => this.localize(service, lang));
     }
 
     async findServiceById(serviceId: string, lang: string = 'en') {
         const service = await this.serviceRepo.findOne({
             where: { id: serviceId, isActive: true },
-            relations: { children: true }
+            relations: { children: true },
         });
 
         return this.localize(service, lang);
@@ -91,7 +125,7 @@ export class ServiceManagementService {
 
     async getServiceOrThrow(serviceId: string) {
         const service = await this.serviceRepo.findOne({
-            where: { id: serviceId, isActive: true }
+            where: { id: serviceId, isActive: true },
         });
         if (!service) {
             throw new NotFoundException('Service not found');
@@ -102,7 +136,7 @@ export class ServiceManagementService {
     async findServicesByIds(serviceIds: string[]) {
         if (!serviceIds || serviceIds.length === 0) return [];
         return await this.serviceRepo.find({
-            where: { id: In(serviceIds), isActive: true }
+            where: { id: In(serviceIds), isActive: true },
         });
     }
 
@@ -124,7 +158,7 @@ export class ServiceManagementService {
             .getMany();
 
         const baseWhere: any = {
-            profile: { user: { id: userId } }
+            profile: { user: { id: userId } },
         };
 
         let whereCondition: any;
@@ -133,7 +167,7 @@ export class ServiceManagementService {
             const serviceBase = categoryId ? { category: { id: categoryId } } : {};
             whereCondition = [
                 { ...baseWhere, service: { ...serviceBase, nameEn: ILike(`%${searchString}%`) } },
-                { ...baseWhere, service: { ...serviceBase, nameAr: ILike(`%${searchString}%`) } }
+                { ...baseWhere, service: { ...serviceBase, nameAr: ILike(`%${searchString}%`) } },
             ];
         } else {
             whereCondition = baseWhere;
@@ -146,10 +180,10 @@ export class ServiceManagementService {
             where: whereCondition,
             relations: {
                 service: { category: true },
-                pricingDetails: true
+                pricingDetails: true,
             },
             order: {
-                service: { sortOrder: 'ASC' }
+                service: { sortOrder: 'ASC' },
             },
             skip,
             take: limit,
@@ -169,16 +203,16 @@ export class ServiceManagementService {
                         id: category.id,
                         name: category.name,
                         nameAr: category.nameAr,
-                        icon: category.icon
+                        icon: category.icon,
                     },
-                    services: []
+                    services: [],
                 });
             }
 
             const { category: _cat, ...serviceWithoutCat } = item.service;
             groupedMap.get(category.id).services.push({
                 ...item,
-                service: serviceWithoutCat
+                service: serviceWithoutCat,
             });
         }
 
@@ -191,9 +225,9 @@ export class ServiceManagementService {
                 itemCount: items.length,
                 itemsPerPage: limit,
                 totalPages,
-                currentPage: page
+                currentPage: page,
             },
-            providerCategories: localize(allCategories, lang)
+            providerCategories: localize(allCategories, lang),
         };
     }
 
@@ -222,24 +256,23 @@ export class ServiceManagementService {
         const requestService = this.requestServiceRepo.create({
             name: requestServiceDto.name,
             ...(category && { category }),
-            user: { id: userId }
+            user: { id: userId },
         });
         return this.requestServiceRepo.save(requestService);
     }
 
     async getRequestedServices(userId: string): Promise<RequestServiceResponseDto[]> {
         const response = await this.requestServiceRepo.find({
-            where: { user: { id: userId } }
+            where: { user: { id: userId } },
         });
 
         return response.map((e) => {
             return {
                 id: e.id,
                 name: e.name,
-            } as RequestServiceResponseDto
-        })
+            } as RequestServiceResponseDto;
+        });
     }
-
 
     private localize(entity: any, lang: string) {
         if (!entity) return null;
@@ -247,21 +280,17 @@ export class ServiceManagementService {
         const { name, nameAr, services, children, ...rest } = entity;
         const localized: any = {
             ...rest,
-            name: lang === 'ar' ? nameAr : name
+            name: lang === 'ar' ? nameAr : name,
         };
 
         if (services) {
-            localized.services = services.map(s => this.localize(s, lang));
+            localized.services = services.map((s) => this.localize(s, lang));
         }
 
         if (children) {
-            localized.children = children.map(c => this.localize(c, lang));
+            localized.children = children.map((c) => this.localize(c, lang));
         }
 
         return localized;
     }
-
-
 }
-
-
