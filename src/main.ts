@@ -1,5 +1,6 @@
 import { NestFactory } from '@nestjs/core';
-import { ValidationPipe, VersioningType } from '@nestjs/common';
+import { Logger, ValidationPipe, VersioningType } from '@nestjs/common';
+import type { Request, Response, NextFunction } from 'express';
 import { useContainer } from 'class-validator';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import { AppModule } from './app.module';
@@ -8,6 +9,19 @@ import { AppConfigService } from './config/config.service';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
+
+  // HTTP request logging — one line per request so runtime activity is visible in logs.
+  const httpLogger = new Logger('HTTP');
+  app.use((req: Request, res: Response, next: NextFunction) => {
+    const start = Date.now();
+    res.on('finish', () => {
+      httpLogger.log(
+        `${req.method} ${req.originalUrl} ${res.statusCode} ${Date.now() - start}ms`,
+      );
+    });
+    next();
+  });
+
   app.enableCors({
     origin: true,
     methods: 'GET,HEAD,PUT,PATCH,POST,DELETE,OPTIONS',
