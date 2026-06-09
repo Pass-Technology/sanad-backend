@@ -1,5 +1,5 @@
-import { Controller, Get, Param, Headers, Query, Body, Post, UseGuards, Request } from '@nestjs/common';
-import { ApiOperation, ApiTags, ApiParam, ApiQuery, ApiBearerAuth } from '@nestjs/swagger';
+import { Controller, Get, Param, Headers, Query, Body, Post, UseGuards, Request, Put } from '@nestjs/common';
+import { ApiOperation, ApiTags, ApiResponse, ApiParam, ApiQuery, ApiBearerAuth } from '@nestjs/swagger';
 import { ServiceManagementService } from './service-management.service';
 import { RequestServiceDto } from './Dto/request-service.dto';
 import { JwtAuthGuard } from '../../shared/guards/jwt-auth.guard';
@@ -8,6 +8,7 @@ import { UserInfoResponseWithTokensDto } from '../user/dto/user-info-response.dt
 import { ToggleServiceDto } from './Dto/toggle-service.dto';
 import { GetMyServicesQueryDto } from './Dto/get-my-services-query.dto';
 import { GetProviderCategoryServicesQueryDto } from './Dto/get-provider-category-services.dto';
+import { Availability, AvailabilityDto } from '../provider-profile/dto/availability.dto';
 
 @ApiTags('Service Management')
 @Controller('service-management')
@@ -55,7 +56,59 @@ export class ServiceManagementController {
         @Param('categoryId') categoryId: string,
         @Headers('accept-language') lang: string = 'en',
     ) {
-        return this.serviceManagementService.getServicesByCategory(categoryId, lang);
+        return await this.serviceManagementService.getServicesByCategory(categoryId, lang);
+    }
+
+    @Get('provider/services/stats')
+    @ApiOperation({ summary: 'Get provider service stats' })
+    @UseGuards(JwtAuthGuard, VerificationGuard)
+    async getProviderServiceStats(@Request() req: { user: UserInfoResponseWithTokensDto }) {
+        return await this.serviceManagementService.getStatsq(req.user.userId);
+    }
+
+    @Get('provider/services/:serviceId')
+    @ApiOperation({ summary: 'Get provider service details' })
+    @UseGuards(JwtAuthGuard, VerificationGuard)
+    @ApiParam({ name: 'serviceId', description: 'Servicec UUID' })
+    async getProviderService(
+        @Param('serviceId') serviceId: string,
+        @Request() req: { user: UserInfoResponseWithTokensDto },
+        @Headers('accept-language') lang: string = 'en',
+    ) {
+        return this.serviceManagementService.getproviderService(serviceId, req.user.userId, lang);
+    }
+
+    @Get('provider/services/:serviceId/availability')
+    @ApiOperation({ summary: 'Get service availability' })
+    @UseGuards(JwtAuthGuard, VerificationGuard)
+    @ApiResponse({
+        type: Availability,
+        isArray: true,
+        description: 'Returns service availability',
+    })
+    async getAvailability(
+        @Request() req: { user: UserInfoResponseWithTokensDto },
+        @Param('serviceId') serviceId: string,
+    ) {
+        return await this.serviceManagementService.getAvailabilty(req.user.userId, serviceId);
+    }
+
+    @Put('provider/services/:serviceId/availability')
+    @ApiOperation({ summary: 'Add or updated availability for a service' })
+    @UseGuards(JwtAuthGuard, VerificationGuard)
+    async upsertAvailability(
+        @Request() req: { user: UserInfoResponseWithTokensDto },
+        @Body() dto: AvailabilityDto,
+        @Param('serviceId') serviceId: string,
+    ) {
+        return await this.serviceManagementService.upsertAvailabilty(req.user.userId, dto, serviceId);
+    }
+
+    @Get('provider/categories/stats')
+    @ApiOperation({ summary: 'Get provider category stats' })
+    @UseGuards(JwtAuthGuard, VerificationGuard)
+    async getProviderCategoryStats(@Request() req: { user: UserInfoResponseWithTokensDto }) {
+        return await this.serviceManagementService.getProviderCategoryStats(req.user.userId);
     }
 
     @Get('services/:serviceId')
@@ -73,7 +126,6 @@ export class ServiceManagementController {
         @Body() requestServiceDto: RequestServiceDto,
         @Request() req: { user: UserInfoResponseWithTokensDto },
     ) {
-        // console.log(req.user.userId)
         return this.serviceManagementService.requestService(requestServiceDto, req.user.userId);
     }
 
