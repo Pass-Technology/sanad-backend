@@ -8,6 +8,7 @@ import { SubscriptionEntity } from '../../../subscription/entities/subscription.
 import { RequestServiceEntity } from '../../../modules/service-management/entities/request-service.entity';
 import { UserType } from '../enums/user-type.enum';
 import { ClientProfileEntity } from '../../client/entity/client-profile.entity';
+import { BlogEntity } from '../../blogs/entities/blog.entity';
 
 
 
@@ -63,5 +64,8 @@ export class UserEntity extends BaseEntity {
 
     @OneToMany(() => RequestServiceEntity, (requestService) => requestService.user)
     requestServices: RequestServiceEntity[];
+
+    @OneToMany(() => BlogEntity, (blog) => blog.author)
+    blogs: BlogEntity[];
 }
 
