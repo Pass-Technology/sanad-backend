@@ -12,6 +12,9 @@ import { ProviderServiceEntity } from './entities/provider-service.entity';
 import { GetMyServicesQueryDto } from './Dto/get-my-services-query.dto';
 import { PaginatedResponseDto } from '../../shared/dto/paginated-response.dto';
 import { GetProviderCategoryServicesQueryDto } from './Dto/get-provider-category-services.dto';
+import { AvailabilityDto } from '../provider-profile/dto/availability.dto';
+import { JobEntity } from '../marketplace/entities/job.entity';
+
 @Injectable()
 export class ServiceManagementService {
     constructor(
@@ -24,6 +27,8 @@ export class ServiceManagementService {
         @InjectRepository(ProviderServiceEntity)
         private readonly providerServiceRepo: Repository<ProviderServiceEntity>,
         private readonly dataSource: DataSource,
+        @InjectRepository(JobEntity)
+        private readonly jobRepo: Repository<JobEntity>,
     ) {}
 
     // get all categories and their services in profile setup page
@@ -112,6 +117,60 @@ export class ServiceManagementService {
         });
 
         return services.map((service) => this.localize(service, lang));
+    }
+
+    async getproviderService(serviceId: string, userId: string, lang: string = 'en') {
+        const service = await this.providerServiceRepo.findOne({
+            where: { profile: { user: { id: userId } }, id: serviceId },
+            relations: { service: true, pricingDetails: true },
+            order: { createdAt: 'DESC' },
+        });
+
+        return this.localize(service, lang);
+    }
+
+    async upsertAvailabilty(userId: string, dto: AvailabilityDto, serviceId: string) {
+        await this.providerServiceRepo.upsert({ ...dto, id: serviceId }, ['id']);
+        return await this.providerServiceRepo.find({
+            select: { availability: true },
+            where: { id: serviceId, profile: { user: { id: userId } } },
+        });
+    }
+
+    async getAvailabilty(userId: string, serviceId: string) {
+        return await this.providerServiceRepo.find({
+            select: { availability: true },
+            where: { id: serviceId, profile: { user: { id: userId } } },
+        });
+    }
+
+    async getProviderServicesStats(userId: string) {
+        const [totalServicesCount, totalRequestsCount] = await Promise.all([
+            this.providerServiceRepo.count({
+                where: { profile: { user: { id: userId } }, isActive: true },
+            }),
+            this.jobRepo.count({ where: { provider: { user: { id: userId } } } }),
+        ]);
+        return { totalServicesCount, totalRequestsCount };
+    }
+
+    async getProviderCategoryStats(userId: string) {
+        const [categoriesCountResult, totalRequestsCount] = await Promise.all([
+            this.providerServiceRepo
+                .createQueryBuilder('providerService')
+                .innerJoin('providerService.profile', 'profile')
+                .innerJoin('profile.user', 'user')
+                .innerJoin('providerService.service', 'service')
+                .innerJoin('service.category', 'category')
+                .where('user.id = :userId', { userId })
+                .select('COUNT(DISTINCT category.id)', 'totalCategories')
+                .getRawOne(),
+            this.jobRepo.count({ where: { provider: { user: { id: userId } } } }),
+        ]);
+        return {
+            totalCategoriesCount: categoriesCountResult ? parseInt(categoriesCountResult.totalCategories, 10) : 0,
+            totalRequestsCount,
+        };
     }
 
     async findServiceById(serviceId: string, lang: string = 'en') {
