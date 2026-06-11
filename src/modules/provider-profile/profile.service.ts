@@ -205,7 +205,7 @@ export class ProfileService {
                     throw new NotFoundException('Provider service not found');
                 }
 
-                providerService.description = dto.description ?? null;
+                providerService.description = dto.description ?? providerService.description ?? null;
                 providerService.availability = dto.availability ?? providerService.availability ?? profile.availability;
 
                 if (dto.pricingDetails) {
