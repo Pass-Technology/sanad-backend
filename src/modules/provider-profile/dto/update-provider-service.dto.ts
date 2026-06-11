@@ -1,7 +1,18 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
-import { IsArray, IsNumber, IsOptional, IsString, IsUUID, ValidateNested } from 'class-validator';
+import {
+    IsArray,
+    IsInt,
+    IsNotEmpty,
+    IsNumber,
+    IsOptional,
+    IsString,
+    IsUUID,
+    Min,
+    ValidateNested,
+} from 'class-validator';
 import { Type } from 'class-transformer';
 import { Availability } from './availability.dto';
+import { Description as DescriptionInterface } from 'src/modules/service-management/interfaces/category-description.interface';
 
 export class UpdateProviderServicePricingDto {
     @ApiPropertyOptional({ example: 'f490f1ee-6c54-4b01-90e6-d701748f0851' })
@@ -25,10 +36,11 @@ export class UpdateProviderServiceDto {
     @IsUUID()
     serviceId: string;
 
-    @ApiPropertyOptional({ example: 'Custom description for this service' })
+    @ApiPropertyOptional({ example: { en: 'English', ar: 'Arabic' } })
     @IsOptional()
-    @IsString()
-    description?: string;
+    @ValidateNested()
+    @Type(() => Description)
+    description?: DescriptionInterface;
 
     @ApiProperty({
         type: [Availability],
@@ -49,6 +61,26 @@ export class UpdateProviderServiceDto {
     @ValidateNested({ each: true })
     @Type(() => UpdateProviderServicePricingDto)
     pricingDetails: UpdateProviderServicePricingDto[];
+
+    @ApiPropertyOptional({
+        description: 'Min price',
+        example: 80,
+        minimum: 1,
+    })
+    @Type(() => Number)
+    @IsInt()
+    @Min(1)
+    minPrice: number;
+
+    @ApiPropertyOptional({
+        description: 'Max price',
+        example: 200,
+        minimum: 1,
+    })
+    @Type(() => Number)
+    @IsInt()
+    @Min(1)
+    maxPrice: number;
 }
 
 export class UpdateDetailedServicesDto {
@@ -57,4 +89,12 @@ export class UpdateDetailedServicesDto {
     @ValidateNested({ each: true })
     @Type(() => UpdateProviderServiceDto)
     services: UpdateProviderServiceDto[];
+}
+
+class Description {
+    @IsString()
+    en: string;
+
+    @IsString()
+    ar: string;
 }

@@ -176,6 +176,8 @@ export class ProfileService {
                 service: { id: dto.serviceId },
                 description: dto.description,
                 availability: dto.availability ?? profile.availability,
+                minPrice: dto.minPrice,
+                maxPrice: dto.maxPrice,
             });
 
             const saved = await manager.save(newProviderService);
@@ -203,7 +205,7 @@ export class ProfileService {
                     throw new NotFoundException('Provider service not found');
                 }
 
-                providerService.description = dto.description ?? providerService.description;
+                providerService.description = dto.description ?? null;
                 providerService.availability = dto.availability ?? providerService.availability ?? profile.availability;
 
                 if (dto.pricingDetails) {

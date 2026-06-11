@@ -1,4 +1,4 @@
-import { Controller, Get, Param, Headers, Query, Body, Post, UseGuards, Request, Put } from '@nestjs/common';
+import { Controller, Get, Param, Headers, Query, Body, Post, UseGuards, Request, Put, Patch } from '@nestjs/common';
 import { ApiOperation, ApiTags, ApiResponse, ApiParam, ApiQuery, ApiBearerAuth } from '@nestjs/swagger';
 import { ServiceManagementService } from './service-management.service';
 import { RequestServiceDto } from './Dto/request-service.dto';
@@ -63,7 +63,7 @@ export class ServiceManagementController {
     @ApiOperation({ summary: 'Get provider service stats' })
     @UseGuards(JwtAuthGuard, VerificationGuard)
     async getProviderServiceStats(@Request() req: { user: UserInfoResponseWithTokensDto }) {
-        return await this.serviceManagementService.getStatsq(req.user.userId);
+        return await this.serviceManagementService.getProviderServicesStats(req.user.userId);
     }
 
     @Get('provider/services/:serviceId')
@@ -129,12 +129,31 @@ export class ServiceManagementController {
         return this.serviceManagementService.requestService(requestServiceDto, req.user.userId);
     }
 
+    @Patch('provider/request-service/:id')
+    @UseGuards(JwtAuthGuard, VerificationGuard)
+    @ApiBearerAuth()
+    @ApiOperation({ summary: 'Request a new service' })
+    async updateRequstService(
+        @Body() requestServiceDto: RequestServiceDto,
+        @Param('id') requestServiceId: string,
+        @Request() req: { user: UserInfoResponseWithTokensDto },
+    ) {
+        return await this.serviceManagementService.editRequestService(
+            requestServiceDto,
+            req.user.userId,
+            requestServiceId,
+        );
+    }
+
     @Get('provider/requested-services')
     @UseGuards(JwtAuthGuard, VerificationGuard)
     @ApiBearerAuth()
     @ApiOperation({ summary: 'Get all requested services by user' })
-    async getRequestedServices(@Request() req: { user: UserInfoResponseWithTokensDto }) {
-        return await this.serviceManagementService.getRequestedServices(req.user.userId);
+    async getRequestedServices(
+        @Request() req: { user: UserInfoResponseWithTokensDto },
+        @Headers('accept-language') lang: string = 'en',
+    ) {
+        return await this.serviceManagementService.getRequestedServices(req.user.userId, lang);
     }
 
     // get the services of the provider inside the profile
@@ -154,7 +173,10 @@ export class ServiceManagementController {
     @UseGuards(JwtAuthGuard, VerificationGuard)
     @ApiBearerAuth()
     @ApiOperation({ summary: 'Toggle activation status of a provider service' })
-    async toggleStatus(@Body() toggleServiceDto: ToggleServiceDto) {
-        return await this.serviceManagementService.serviceToggleStatus(toggleServiceDto.id);
+    async toggleStatus(
+        @Body() toggleServiceDto: ToggleServiceDto,
+        @Request() req: { user: UserInfoResponseWithTokensDto },
+    ) {
+        return await this.serviceManagementService.serviceToggleStatus(toggleServiceDto.id, req.user.userId);
     }
 }

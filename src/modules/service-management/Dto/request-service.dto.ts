@@ -1,11 +1,29 @@
-import { IsNotEmpty, IsOptional, IsString } from "class-validator";
+import { IsNotEmpty, IsObject, IsOptional, IsString, ValidateNested } from 'class-validator';
+import { Type } from 'class-transformer';
+
+class LocalizedNameDto {
+    @IsNotEmpty()
+    @IsString()
+    en: string;
+
+    @IsNotEmpty()
+    @IsString()
+    ar: string;
+}
 
 export class RequestServiceDto {
     @IsNotEmpty()
+    @IsObject()
+    @ValidateNested()
+    @Type(() => LocalizedNameDto)
+    name: LocalizedNameDto;
+
+    @IsNotEmpty()
     @IsString()
-    name: string;
+    description: string;
 
     @IsOptional()
     @IsString()
     categoryId?: string;
 }
+
