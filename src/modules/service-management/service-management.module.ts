@@ -11,6 +11,7 @@ import { ProviderServiceEntity } from './entities/provider-service.entity';
 import { ProviderServicePricingEntity } from './entities/provider-service-pricing.entity';
 import { UserModule } from '../user/user.module';
 import { JobEntity } from '../marketplace/entities/job.entity';
+import { PayoutEntity } from '../earnings/entities/payout.entity';
 
 @Module({
     imports: [
@@ -22,6 +23,7 @@ import { JobEntity } from '../marketplace/entities/job.entity';
             ProviderServiceEntity,
             ProviderServicePricingEntity,
             JobEntity,
+            PayoutEntity,
         ]),
         UserModule,
         AuthModule,

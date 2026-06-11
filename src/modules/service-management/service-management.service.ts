@@ -16,6 +16,9 @@ import { AvailabilityDto } from '../provider-profile/dto/availability.dto';
 import { JobEntity } from '../marketplace/entities/job.entity';
 import { ProviderServiceStatus } from './enums/provider-services-status.enums';
 import { RequestServiceStatus } from './enums/request-service-status.enum';
+import { PayoutEntity } from '../earnings/entities/payout.entity';
+import { PayoutStatus } from '../earnings/enums/payout-status.enum';
+import { JobStatus } from '../marketplace/enums/job-status.enum';
 
 @Injectable()
 export class ServiceManagementService {
@@ -31,6 +34,8 @@ export class ServiceManagementService {
         private readonly dataSource: DataSource,
         @InjectRepository(JobEntity)
         private readonly jobRepo: Repository<JobEntity>,
+        @InjectRepository(PayoutEntity)
+        private readonly earningRepo: Repository<PayoutEntity>,
     ) {}
 
     // get all categories and their services in profile setup page
@@ -195,17 +200,7 @@ export class ServiceManagementService {
     }
 
     async getProviderServicesStats(userId: string) {
-        const [totalServicesCount, totalRequestsCount] = await Promise.all([
-            this.providerServiceRepo.count({
-                where: { profile: { user: { id: userId } }, isActive: true },
-            }),
-            this.jobRepo.count({ where: { provider: { user: { id: userId } } } }),
-        ]);
-        return { totalServicesCount, totalRequestsCount };
-    }
-
-    async getProviderCategoryStats(userId: string) {
-        const [categoriesCountResult, totalRequestsCount] = await Promise.all([
+        const [totalCategoriesCount, totalActiveServicesCount, totalCustomersCount, totalEarnings] = await Promise.all([
             this.providerServiceRepo
                 .createQueryBuilder('providerService')
                 .innerJoin('providerService.profile', 'profile')
@@ -215,11 +210,29 @@ export class ServiceManagementService {
                 .where('user.id = :userId', { userId })
                 .select('COUNT(DISTINCT category.id)', 'totalCategories')
                 .getRawOne(),
-            this.jobRepo.count({ where: { provider: { user: { id: userId } } } }),
+            this.providerServiceRepo.count({
+                where: { profile: { user: { id: userId } }, isActive: true },
+            }),
+            this.jobRepo
+                .createQueryBuilder('job')
+                .leftJoin('job.provider', 'provider')
+                .leftJoin('provider.user', 'user')
+                .setParameters({ userId, status: JobStatus.COMPLETED })
+                .getCount(),
+            this.earningRepo
+                .createQueryBuilder('earnings')
+                .select('SUM(earnings.amount)', 'sum')
+                .leftJoin('earnings.provider', 'provider')
+                .leftJoin('provider.user', 'user')
+                .where('user.id = :userId', { userId })
+                .andWhere('earnings.status = :status', { status: PayoutStatus.PAID })
+                .getRawOne(),
         ]);
         return {
-            totalCategoriesCount: categoriesCountResult ? parseInt(categoriesCountResult.totalCategories, 10) : 0,
-            totalRequestsCount,
+            totalCategoriesCount: totalCategoriesCount.totalCategories,
+            totalActiveServicesCount,
+            totalCustomersCount,
+            totalEarnings: totalEarnings ? parseFloat(totalEarnings.sum) : 0,
         };
     }
 

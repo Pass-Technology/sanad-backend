@@ -104,13 +104,6 @@ export class ServiceManagementController {
         return await this.serviceManagementService.upsertAvailabilty(req.user.userId, dto, serviceId);
     }
 
-    @Get('provider/categories/stats')
-    @ApiOperation({ summary: 'Get provider category stats' })
-    @UseGuards(JwtAuthGuard, VerificationGuard)
-    async getProviderCategoryStats(@Request() req: { user: UserInfoResponseWithTokensDto }) {
-        return await this.serviceManagementService.getProviderCategoryStats(req.user.userId);
-    }
-
     @Get('services/:serviceId')
     @ApiOperation({ summary: 'Get a single service by ID' })
     @ApiParam({ name: 'serviceId', description: 'Service UUID' })
