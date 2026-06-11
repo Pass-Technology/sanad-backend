@@ -1,6 +1,7 @@
-import { IsOptional, IsString, IsInt, Min, Max } from 'class-validator';
+import { IsOptional, IsString, IsInt, Min, Max, IsEnum } from 'class-validator';
 import { Type, Transform } from 'class-transformer';
 import { ApiPropertyOptional } from '@nestjs/swagger';
+import { ProviderServiceStatus } from '../enums/provider-services-status.enums';
 
 export class GetProviderCategoryServicesQueryDto {
     @ApiPropertyOptional({ description: 'Filter services by name matching the active language' })
@@ -14,6 +15,15 @@ export class GetProviderCategoryServicesQueryDto {
         return null;
     })
     name?: string | null;
+
+    @ApiPropertyOptional({
+        enum: ProviderServiceStatus,
+        description: 'Filter services by their current status. Possible values: ',
+        example: ProviderServiceStatus.PENDING,
+    })
+    @IsOptional()
+    @IsEnum(ProviderServiceStatus)
+    status?: ProviderServiceStatus;
 
     @ApiPropertyOptional({ minimum: 1, default: 1, description: 'Page number' })
     @IsOptional()

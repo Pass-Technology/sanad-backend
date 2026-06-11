@@ -14,6 +14,8 @@ import { PaginatedResponseDto } from '../../shared/dto/paginated-response.dto';
 import { GetProviderCategoryServicesQueryDto } from './Dto/get-provider-category-services.dto';
 import { AvailabilityDto } from '../provider-profile/dto/availability.dto';
 import { JobEntity } from '../marketplace/entities/job.entity';
+import { ProviderServiceStatus } from './enums/provider-services-status.enums';
+import { RequestServiceStatus } from './enums/request-service-status.enum';
 
 @Injectable()
 export class ServiceManagementService {
@@ -54,14 +56,18 @@ export class ServiceManagementService {
     }
 
     async findProviderCategories(lang: string = 'en', userId: string) {
-        const providerServices = await this.providerServiceRepo.find({
-            where: { profile: { user: { id: userId } } },
-            relations: {
-                service: {
-                    category: true,
+        const [providerServices, totalServices, activeServices] = await Promise.all([
+            this.providerServiceRepo.find({
+                where: { profile: { user: { id: userId } } },
+                relations: {
+                    service: {
+                        category: true,
+                    },
                 },
-            },
-        });
+            }),
+            this.providerServiceRepo.count({ where: { profile: { user: { id: userId } } } }),
+            this.providerServiceRepo.count({ where: { profile: { user: { id: userId } }, isActive: true } }),
+        ]);
 
         const categoryMap = new Map();
 
@@ -70,12 +76,14 @@ export class ServiceManagementService {
             if (category && !categoryMap.has(category.id)) {
                 // Strip any relations from the category object
                 const { services, ...cleanCategory } = category;
+                cleanCategory.description = cleanCategory.description ? cleanCategory.description[lang] : null;
                 categoryMap.set(category.id, cleanCategory);
             }
         }
 
         const categories = Array.from(categoryMap.values());
-        return localize(categories, lang);
+        const localizedCategories = localize(categories, lang);
+        return { categories: localizedCategories, totalServices, activeServices };
     }
 
     async findProviderCategoryServices(
@@ -84,14 +92,27 @@ export class ServiceManagementService {
         categoryId: string,
         dto: GetProviderCategoryServicesQueryDto,
     ) {
-        const { name, page, limit } = dto;
+        const { name, status, page, limit } = dto;
+
         const query = this.providerServiceRepo
             .createQueryBuilder('providerService')
             .innerJoin('providerService.profile', 'profile')
             .innerJoin('profile.user', 'user')
-            .innerJoinAndSelect('providerService.service', 'service')
+            .leftJoinAndSelect('providerService.service', 'service')
             .innerJoin('service.category', 'category')
-
+            .leftJoinAndSelect('providerService.pricingDetails', 'pricingDetails')
+            .select([
+                'providerService.id',
+                'providerService.description',
+                'providerService.isActive',
+                'providerService.status',
+                'providerService.availability',
+                'pricingDetails.id',
+                'pricingDetails.description',
+                'pricingDetails.price',
+                'service.nameAr',
+                'service.nameEn',
+            ])
             .where('user.id = :userId', { userId })
             .andWhere('category.id = :categoryId', { categoryId });
 
@@ -102,11 +123,24 @@ export class ServiceManagementService {
                 query.andWhere('service.name_en ILIKE :serviceName', { serviceName: `%${name}%` });
             }
         }
+        if (status) {
+            query.andWhere('providerService.status = :status', { status });
+        }
 
-        return await query
+        const results = await query
             .skip((page - 1) * limit)
             .take(limit)
             .getMany();
+
+        return results.map((ps) => ({
+            id: ps.id,
+            description: ps.description ? ps.description[lang] : null,
+            isActive: ps.isActive,
+            status: ps.status,
+            availability: ps.availability,
+            name: lang == 'en' ? ps.service?.nameEn : ps.service.nameAr,
+            pricingDetails: ps.pricingDetails,
+        }));
     }
 
     async getServicesByCategory(categoryId: string, lang: string = 'en') {
@@ -120,13 +154,29 @@ export class ServiceManagementService {
     }
 
     async getproviderService(serviceId: string, userId: string, lang: string = 'en') {
-        const service = await this.providerServiceRepo.findOne({
+        const providerService = await this.providerServiceRepo.findOne({
             where: { profile: { user: { id: userId } }, id: serviceId },
-            relations: { service: true, pricingDetails: true },
+            relations: { service: { category: true }, pricingDetails: true },
             order: { createdAt: 'DESC' },
         });
 
-        return this.localize(service, lang);
+        if (!providerService) {
+            throw new NotFoundException('Service was not found');
+        }
+
+        return {
+            id: providerService?.id,
+            description: providerService.description ? providerService.description[lang] : null,
+            isActive: providerService.isActive,
+            idEmrgencyEnabled: providerService.isEmergencyEnabled,
+            name: lang === 'en' ? providerService.service?.nameEn : providerService?.service?.nameAr,
+            pricingDetails: providerService.pricingDetails,
+            availability: providerService.availability,
+            status: providerService.status,
+            category: lang === 'en' ? providerService.service.category.name : providerService.service.category.nameAr,
+            minPrice: providerService.minPrice,
+            maxPrice: providerService.maxPrice,
+        };
     }
 
     async upsertAvailabilty(userId: string, dto: AvailabilityDto, serviceId: string) {
@@ -291,8 +341,11 @@ export class ServiceManagementService {
     }
 
     // toggle activation status for a provider's service
-    async serviceToggleStatus(providerServiceId: string) {
-        const providerService = await this.providerServiceRepo.findOneBy({ id: providerServiceId });
+    async serviceToggleStatus(providerServiceId: string, userId: string) {
+        const providerService = await this.providerServiceRepo.findOneBy({
+            id: providerServiceId,
+            profile: { user: { id: userId } },
+        });
         if (!providerService) {
             throw new NotFoundException('Provider service not found');
         }
@@ -316,11 +369,26 @@ export class ServiceManagementService {
             name: requestServiceDto.name,
             ...(category && { category }),
             user: { id: userId },
+            description: requestServiceDto.description,
         });
         return this.requestServiceRepo.save(requestService);
     }
 
-    async getRequestedServices(userId: string): Promise<RequestServiceResponseDto[]> {
+    async editRequestService(requestServiceDto: RequestServiceDto, userId: string, requestServiceId: string) {
+        const requestService = await this.requestServiceRepo.findOneOrFail({
+            where: { id: requestServiceId, user: { id: userId } },
+        });
+        if (requestService.status !== RequestServiceStatus.PENDING) {
+            throw new Error('Editing requested service is disabled');
+        }
+        requestService.description = requestServiceDto.description;
+        requestService.name = requestServiceDto.name;
+        await this.requestServiceRepo.save(requestService);
+
+        return { message: 'Updated successfully' };
+    }
+
+    async getRequestedServices(userId: string, lang: string): Promise<RequestServiceResponseDto[]> {
         const response = await this.requestServiceRepo.find({
             where: { user: { id: userId } },
         });
@@ -328,7 +396,7 @@ export class ServiceManagementService {
         return response.map((e) => {
             return {
                 id: e.id,
-                name: e.name,
+                name: e.name[lang] as string,
             } as RequestServiceResponseDto;
         });
     }
