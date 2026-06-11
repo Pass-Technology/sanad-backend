@@ -401,16 +401,25 @@ export class ServiceManagementService {
         return { message: 'Updated successfully' };
     }
 
-    async getRequestedServices(userId: string, lang: string): Promise<RequestServiceResponseDto[]> {
+    async getRequestedServices(userId: string) {
         const response = await this.requestServiceRepo.find({
             where: { user: { id: userId } },
         });
-
         return response.map((e) => {
             return {
                 id: e.id,
-                name: e.name[lang] as string,
-            } as RequestServiceResponseDto;
+                name: e.name,
+                description: e.description,
+            };
+        });
+    }
+
+    async getRequestedService(userId: string, serviceId: string) {
+        return await this.requestServiceRepo.findOne({
+            where: {
+                id: serviceId,
+                user: { id: userId },
+            },
         });
     }
 

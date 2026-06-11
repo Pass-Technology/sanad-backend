@@ -142,11 +142,19 @@ export class ServiceManagementController {
     @UseGuards(JwtAuthGuard, VerificationGuard)
     @ApiBearerAuth()
     @ApiOperation({ summary: 'Get all requested services by user' })
-    async getRequestedServices(
+    async getRequestedServices(@Request() req: { user: UserInfoResponseWithTokensDto }) {
+        return await this.serviceManagementService.getRequestedServices(req.user.userId);
+    }
+
+    @Get('provider/request-service/:id')
+    @UseGuards(JwtAuthGuard, VerificationGuard)
+    @ApiBearerAuth()
+    @ApiOperation({ summary: 'Get requested service' })
+    async getRequestedService(
         @Request() req: { user: UserInfoResponseWithTokensDto },
-        @Headers('accept-language') lang: string = 'en',
+        @Param('id') requestServiceId: string,
     ) {
-        return await this.serviceManagementService.getRequestedServices(req.user.userId, lang);
+        return await this.serviceManagementService.getRequestedService(req.user.userId, requestServiceId);
     }
 
     // get the services of the provider inside the profile
