@@ -1,8 +1,10 @@
-import { IsOptional, IsString, IsInt, Min, Max, IsEnum } from 'class-validator';
-import { Type, Transform } from 'class-transformer';
+import { IsOptional, IsString, IsEnum, IsIn } from 'class-validator';
+import { Transform } from 'class-transformer';
 import { ApiPropertyOptional } from '@nestjs/swagger';
 import { ProviderServiceStatus } from '../enums/provider-services-status.enums';
+import { RequestServiceStatus } from '../enums/request-service-status.enum';
 
+const CombinedStatusValues = [...Object.values(ProviderServiceStatus), ...Object.values(RequestServiceStatus)];
 export class GetProviderCategoryServicesQueryDto {
     @ApiPropertyOptional({ description: 'Filter services by name matching the active language' })
     @IsOptional()
@@ -17,26 +19,13 @@ export class GetProviderCategoryServicesQueryDto {
     name?: string | null;
 
     @ApiPropertyOptional({
-        enum: ProviderServiceStatus,
-        description: 'Filter services by their current status. Possible values: ',
+        enum: CombinedStatusValues,
+        description: 'Filter services by their current status (Provider or Request statuses allowed).',
         example: ProviderServiceStatus.PENDING,
     })
     @IsOptional()
-    @IsEnum(ProviderServiceStatus)
-    status?: ProviderServiceStatus;
-
-    @ApiPropertyOptional({ minimum: 1, default: 1, description: 'Page number' })
-    @IsOptional()
-    @Type(() => Number)
-    @IsInt()
-    @Min(1)
-    page: number = 1;
-
-    @ApiPropertyOptional({ minimum: 1, maximum: 100, default: 10, description: 'Items per page' })
-    @IsOptional()
-    @Type(() => Number)
-    @IsInt()
-    @Min(1)
-    @Max(100)
-    limit: number = 10;
+    @IsIn(CombinedStatusValues, {
+        message: `status must be one of the following values: ${CombinedStatusValues.join(', ')}`,
+    })
+    status?: ProviderServiceStatus | RequestServiceStatus;
 }
