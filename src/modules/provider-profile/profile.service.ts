@@ -32,6 +32,7 @@ import { EventEmitter2 } from '@nestjs/event-emitter';
 import { ProfileStagingService } from './profile-staging.service';
 import { ProfileBranchService } from './profile-branch.service';
 import { AvailabilityDto } from './dto/availability.dto';
+import { success } from 'zod';
 
 @Injectable()
 export class ProfileService {
@@ -213,7 +214,7 @@ export class ProfileService {
                 }
 
                 await manager.save(providerService);
-                return await this.profileRepo.findProfileByUserId(userId, manager);
+                return { success: true, message: 'Updated successfully' };
             },
         );
     }
