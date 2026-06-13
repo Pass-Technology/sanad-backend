@@ -108,6 +108,8 @@ export class ServiceManagementService {
                 'providerService.isActive',
                 'providerService.status',
                 'providerService.availability',
+                'providerService.minPrice',
+                'providerService.maxPrice',
                 'pricingDetails.id',
                 'pricingDetails.description',
                 'pricingDetails.price',
