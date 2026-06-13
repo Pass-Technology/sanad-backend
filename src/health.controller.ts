@@ -8,7 +8,6 @@ export class HealthController {
     @Get()
     @ApiOperation({ summary: 'Check if the application is up and running' })
     check() {
-        console.log('Everything is gonna be alright');
         return {
             status: 'ok',
             timestamp: new Date().toISOString(),
