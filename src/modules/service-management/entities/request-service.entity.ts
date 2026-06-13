@@ -17,7 +17,7 @@ export class RequestServiceEntity extends BaseEntity {
     @JoinColumn({ name: 'user_id' })
     user: UserEntity;
 
-    @Column('text')
+    @Column({ type: 'text', default: '' })
     description: string;
 
     @Column({
@@ -31,4 +31,3 @@ export class RequestServiceEntity extends BaseEntity {
     @Column({ nullable: true })
     rejectionReason: string;
 }
-
