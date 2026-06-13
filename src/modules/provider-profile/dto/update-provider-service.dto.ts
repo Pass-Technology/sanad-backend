@@ -12,7 +12,18 @@ import {
 } from 'class-validator';
 import { Type } from 'class-transformer';
 import { Availability } from './availability.dto';
-import { Description as DescriptionInterface } from 'src/modules/service-management/interfaces/category-description.interface';
+
+export class LocalizedStringDto {
+    @ApiProperty({ example: 'price details description', description: 'English description' })
+    @IsString()
+    @IsNotEmpty()
+    en: string;
+
+    @ApiProperty({ example: 'وصف الفئة', description: 'Arabic description' })
+    @IsString()
+    @IsNotEmpty()
+    ar: string;
+}
 
 export class UpdateProviderServicePricingDto {
     @ApiPropertyOptional({ example: 'f490f1ee-6c54-4b01-90e6-d701748f0851' })
@@ -20,10 +31,11 @@ export class UpdateProviderServicePricingDto {
     @IsUUID()
     id?: string;
 
-    @ApiProperty({ example: 'Standard Cleaning' })
-    @IsString()
-    @IsOptional()
-    description?: string;
+    @ApiProperty({ type: () => LocalizedStringDto })
+    @ValidateNested()
+    @Type(() => LocalizedStringDto)
+    @IsNotEmpty()
+    description: LocalizedStringDto;
 
     @ApiProperty({ example: 30.0 })
     @IsNumber()
@@ -39,8 +51,8 @@ export class UpdateProviderServiceDto {
     @ApiPropertyOptional({ example: { en: 'English', ar: 'Arabic' } })
     @IsOptional()
     @ValidateNested()
-    @Type(() => Description)
-    description?: DescriptionInterface;
+    @Type(() => LocalizedStringDto)
+    description?: LocalizedStringDto;
 
     @ApiProperty({
         type: [Availability],
@@ -91,10 +103,4 @@ export class UpdateDetailedServicesDto {
     services: UpdateProviderServiceDto[];
 }
 
-class Description {
-    @IsString()
-    en: string;
 
-    @IsString()
-    ar: string;
-}
