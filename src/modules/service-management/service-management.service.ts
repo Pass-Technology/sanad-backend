@@ -93,7 +93,7 @@ export class ServiceManagementService {
         categoryId: string,
         dto: GetProviderCategoryServicesQueryDto,
     ) {
-        const { name, status, page, limit } = dto;
+        const { name, status } = dto;
 
         const query = this.providerServiceRepo
             .createQueryBuilder('providerService')
@@ -110,6 +110,7 @@ export class ServiceManagementService {
                 'providerService.availability',
                 'providerService.minPrice',
                 'providerService.maxPrice',
+                'providerService.createdAt',
                 'pricingDetails.id',
                 'pricingDetails.description',
                 'pricingDetails.price',
@@ -117,7 +118,8 @@ export class ServiceManagementService {
                 'service.nameEn',
             ])
             .where('user.id = :userId', { userId })
-            .andWhere('category.id = :categoryId', { categoryId });
+            .andWhere('category.id = :categoryId', { categoryId })
+            .orderBy('providerService.createdAt', 'DESC');
 
         if (name) {
             if (lang === 'ar') {
@@ -126,26 +128,43 @@ export class ServiceManagementService {
                 query.andWhere('service.name_en ILIKE :serviceName', { serviceName: `%${name}%` });
             }
         }
+        const requestServiceWhere: any = { user: { id: userId } };
         if (status) {
             query.andWhere('providerService.status = :status', { status });
+            requestServiceWhere.status = status;
         }
+        const [rawProviderServices, rawRequestedServices] = await Promise.all([
+            query.getMany(),
+            this.requestServiceRepo.find({
+                where: requestServiceWhere,
+                order: { createdAt: 'DESC' },
+            }),
+        ]);
 
-        const results = await query
-            .skip((page - 1) * limit)
-            .take(limit)
-            .getMany();
-
-        return results.map((ps) => ({
+        const formattedProviderServices = rawProviderServices.map((ps) => ({
             id: ps.id,
             description: ps.description,
             isActive: ps.isActive,
             status: ps.status,
             availability: ps.availability,
-            serviceId: ps.service.id,
+            serviceId: ps.service?.id,
             pricingDetails: ps.pricingDetails,
             minPrice: ps.minPrice,
             maxPrice: ps.maxPrice,
+            createdAt: ps.createdAt,
+            timestamp: ps.createdAt ? new Date(ps.createdAt).getTime() : 0,
+            isRequestedService: false,
         }));
+
+        const formattedRequestedServices = rawRequestedServices.map((rs) => ({
+            ...rs,
+            timestamp: rs.createdAt ? new Date(rs.createdAt).getTime() : 0,
+            isRequestedService: true,
+        }));
+
+        const combinedServices = [...formattedProviderServices, ...formattedRequestedServices];
+
+        return combinedServices.sort((a, b) => b.timestamp - a.timestamp);
     }
 
     async getServicesByCategory(categoryId: string, lang: string = 'en') {
