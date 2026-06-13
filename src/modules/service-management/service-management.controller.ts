@@ -1,4 +1,4 @@
-import { Controller, Get, Param, Headers, Query, Body, Post, UseGuards, Request, Put, Patch } from '@nestjs/common';
+import { Controller, Get, Param, Headers, Query, Body, Post, UseGuards, Request, Put, Patch, Delete } from '@nestjs/common';
 import { ApiOperation, ApiTags, ApiResponse, ApiParam, ApiQuery, ApiBearerAuth } from '@nestjs/swagger';
 import { ServiceManagementService } from './service-management.service';
 import { RequestServiceDto } from './Dto/request-service.dto';
@@ -76,6 +76,18 @@ export class ServiceManagementController {
         @Headers('accept-language') lang: string = 'en',
     ) {
         return this.serviceManagementService.getproviderService(serviceId, req.user.userId, lang);
+    }
+
+    @Delete('provider/services/:serviceId')
+    @ApiOperation({ summary: 'Delete provider service by id' })
+    @UseGuards(JwtAuthGuard, VerificationGuard)
+    @ApiParam({ name: 'serviceId', description: 'Servicec UUID' })
+    async deleteProviderService(
+        @Param('serviceId') serviceId: string,
+        @Request() req: { user: UserInfoResponseWithTokensDto },
+        @Headers('accept-language') lang: string = 'en',
+    ) {
+        return this.serviceManagementService.deleteProviderService(serviceId, req.user.userId, lang);
     }
 
     @Get('provider/services/:serviceId/availability')

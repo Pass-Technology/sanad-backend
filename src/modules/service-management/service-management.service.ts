@@ -1,20 +1,16 @@
-import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository, ILike, DataSource, In } from 'typeorm';
 import { CategoryEntity } from './entities/category.entity';
 import { ServiceEntity } from './entities/service.entity';
-
 import { localize } from '../../shared/localization.util';
 import { RequestServiceDto } from './Dto/request-service.dto';
 import { RequestServiceEntity } from './entities/request-service.entity';
-import { RequestServiceResponseDto } from './Dto/request-service-response.dto';
 import { ProviderServiceEntity } from './entities/provider-service.entity';
 import { GetMyServicesQueryDto } from './Dto/get-my-services-query.dto';
-import { PaginatedResponseDto } from '../../shared/dto/paginated-response.dto';
 import { GetProviderCategoryServicesQueryDto } from './Dto/get-provider-category-services.dto';
 import { AvailabilityDto } from '../provider-profile/dto/availability.dto';
 import { JobEntity } from '../marketplace/entities/job.entity';
-import { ProviderServiceStatus } from './enums/provider-services-status.enums';
 import { RequestServiceStatus } from './enums/request-service-status.enum';
 import { PayoutEntity } from '../earnings/entities/payout.entity';
 import { PayoutStatus } from '../earnings/enums/payout-status.enum';
@@ -174,7 +170,7 @@ export class ServiceManagementService {
             description: providerService.description ? providerService.description[lang] : null,
             isActive: providerService.isActive,
             idEmrgencyEnabled: providerService.isEmergencyEnabled,
-            name: lang === 'en' ? providerService.service?.nameEn : providerService?.service?.nameAr,
+            serviceId: providerService.service.id,
             pricingDetails: providerService.pricingDetails,
             availability: providerService.availability,
             status: providerService.status,
@@ -182,6 +178,21 @@ export class ServiceManagementService {
             minPrice: providerService.minPrice,
             maxPrice: providerService.maxPrice,
         };
+    }
+
+    async deleteProviderService(serviceId: string, userId: string, lang: string = 'en') {
+        const providerService = await this.providerServiceRepo.findOne({
+            where: { profile: { user: { id: userId } }, id: serviceId },
+            relations: { service: { category: true }, pricingDetails: true },
+            order: { createdAt: 'DESC' },
+        });
+        if (!providerService) {
+            throw new NotFoundException('Could not find the provider service');
+        }
+
+        await this.providerServiceRepo.remove(providerService);
+
+        return { success: true, message: 'Deleted successfully' };
     }
 
     async upsertAvailabilty(userId: string, dto: AvailabilityDto, serviceId: string) {
