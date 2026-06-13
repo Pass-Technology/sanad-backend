@@ -94,8 +94,7 @@ export class ServiceManagementService {
         dto: GetProviderCategoryServicesQueryDto,
     ) {
         const { name, status } = dto;
-
-        const query = this.providerServiceRepo
+        const providerQuery = this.providerServiceRepo
             .createQueryBuilder('providerService')
             .innerJoin('providerService.profile', 'profile')
             .innerJoin('profile.user', 'user')
@@ -114,33 +113,43 @@ export class ServiceManagementService {
                 'pricingDetails.id',
                 'pricingDetails.description',
                 'pricingDetails.price',
+                'service.id',
                 'service.nameAr',
                 'service.nameEn',
             ])
             .where('user.id = :userId', { userId })
             .andWhere('category.id = :categoryId', { categoryId })
             .orderBy('providerService.createdAt', 'DESC');
+        const requestQuery = this.requestServiceRepo
+            .createQueryBuilder('requestService')
+            .innerJoin('requestService.user', 'user')
+            .where('user.id = :userId', { userId })
+            .andWhere('"requestService"."category_id" = :categoryId', { categoryId })
+            .orderBy('requestService.createdAt', 'DESC');
 
         if (name) {
             if (lang === 'ar') {
-                query.andWhere('service.name_ar ILIKE :serviceName', { serviceName: `%${name}%` });
+                providerQuery.andWhere('service.nameAr ILIKE :serviceName', { serviceName: `%${name}%` });
+                requestQuery.andWhere('"requestService"."name"->>\'ar\' ILIKE :serviceName', {
+                    serviceName: `%${name}%`,
+                });
             } else {
-                query.andWhere('service.name_en ILIKE :serviceName', { serviceName: `%${name}%` });
+                providerQuery.andWhere('service.nameEn ILIKE :serviceName', { serviceName: `%${name}%` });
+                requestQuery.andWhere('"requestService"."name"->>\'en\' ILIKE :serviceName', {
+                    serviceName: `%${name}%`,
+                });
             }
         }
-        const requestServiceWhere: any = { user: { id: userId } };
-        if (status) {
-            query.andWhere('providerService.status = :status', { status });
-            requestServiceWhere.status = status;
-        }
-        const [rawProviderServices, rawRequestedServices] = await Promise.all([
-            query.getMany(),
-            this.requestServiceRepo.find({
-                where: requestServiceWhere,
-                order: { createdAt: 'DESC' },
-            }),
-        ]);
 
+        if (status) {
+            providerQuery.andWhere('providerService.status = :status', { status });
+            requestQuery.andWhere('requestService.status = :status', { status });
+        }
+
+        const [rawProviderServices, rawRequestedServices] = await Promise.all([
+            providerQuery.getMany(),
+            requestQuery.getMany(),
+        ]);
         const formattedProviderServices = rawProviderServices.map((ps) => ({
             id: ps.id,
             description: ps.description,
@@ -161,7 +170,6 @@ export class ServiceManagementService {
             timestamp: rs.createdAt ? new Date(rs.createdAt).getTime() : 0,
             isRequestedService: true,
         }));
-
         const combinedServices = [...formattedProviderServices, ...formattedRequestedServices];
 
         return combinedServices.sort((a, b) => b.timestamp - a.timestamp);
