@@ -208,6 +208,8 @@ export class ProfileService {
 
                 providerService.description = dto.description ?? providerService.description ?? null;
                 providerService.availability = dto.availability ?? providerService.availability ?? profile.availability;
+                providerService.maxPrice = dto.maxPrice;
+                providerService.minPrice = dto.minPrice;
 
                 if (dto.pricingDetails) {
                     await this.syncPricingDetails(manager, providerService, dto.pricingDetails);

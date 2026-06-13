@@ -135,12 +135,14 @@ export class ServiceManagementService {
 
         return results.map((ps) => ({
             id: ps.id,
-            description: ps.description ? ps.description[lang] : null,
+            description: ps.description,
             isActive: ps.isActive,
             status: ps.status,
             availability: ps.availability,
-            name: lang == 'en' ? ps.service?.nameEn : ps.service.nameAr,
+            serviceId: ps.service.id,
             pricingDetails: ps.pricingDetails,
+            minPrice: ps.minPrice,
+            maxPrice: ps.maxPrice,
         }));
     }
 
@@ -174,7 +176,7 @@ export class ServiceManagementService {
             pricingDetails: providerService.pricingDetails,
             availability: providerService.availability,
             status: providerService.status,
-            category: lang === 'en' ? providerService.service.category.name : providerService.service.category.nameAr,
+            categoryId: providerService.service.category.id,
             minPrice: providerService.minPrice,
             maxPrice: providerService.maxPrice,
         };
