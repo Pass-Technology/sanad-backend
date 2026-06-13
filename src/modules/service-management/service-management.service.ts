@@ -198,7 +198,7 @@ export class ServiceManagementService {
 
         return {
             id: providerService?.id,
-            description: providerService.description ? providerService.description[lang] : null,
+            description: providerService.description,
             isActive: providerService.isActive,
             idEmrgencyEnabled: providerService.isEmergencyEnabled,
             serviceId: providerService.service.id,
