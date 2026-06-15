@@ -61,6 +61,7 @@ export class ServiceManagementController {
 
     @Get('provider/services/stats')
     @ApiOperation({ summary: 'Get provider service stats' })
+    @ApiBearerAuth()
     @UseGuards(JwtAuthGuard, VerificationGuard)
     async getProviderServiceStats(@Request() req: { user: UserInfoResponseWithTokensDto }) {
         return await this.serviceManagementService.getProviderServicesStats(req.user.userId);
@@ -69,6 +70,7 @@ export class ServiceManagementController {
     @Get('provider/services/:serviceId')
     @ApiOperation({ summary: 'Get provider service details' })
     @UseGuards(JwtAuthGuard, VerificationGuard)
+    @ApiBearerAuth()
     @ApiParam({ name: 'serviceId', description: 'Servicec UUID' })
     async getProviderService(
         @Param('serviceId') serviceId: string,
@@ -82,6 +84,7 @@ export class ServiceManagementController {
     @ApiOperation({ summary: 'Delete provider service by id' })
     @UseGuards(JwtAuthGuard, VerificationGuard)
     @ApiParam({ name: 'serviceId', description: 'Servicec UUID' })
+    @ApiBearerAuth()
     async deleteProviderService(
         @Param('serviceId') serviceId: string,
         @Request() req: { user: UserInfoResponseWithTokensDto },
@@ -93,6 +96,7 @@ export class ServiceManagementController {
     @Get('provider/services/:serviceId/availability')
     @ApiOperation({ summary: 'Get service availability' })
     @UseGuards(JwtAuthGuard, VerificationGuard)
+    @ApiBearerAuth()
     @ApiResponse({
         type: Availability,
         isArray: true,
@@ -108,6 +112,7 @@ export class ServiceManagementController {
     @Put('provider/services/:serviceId/availability')
     @ApiOperation({ summary: 'Add or updated availability for a service' })
     @UseGuards(JwtAuthGuard, VerificationGuard)
+    @ApiBearerAuth()
     async upsertAvailability(
         @Request() req: { user: UserInfoResponseWithTokensDto },
         @Body() dto: AvailabilityDto,

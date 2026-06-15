@@ -57,34 +57,30 @@ export class ServiceManagementService {
     }
 
     async findProviderCategories(lang: string = 'en', userId: string) {
-        const [providerServices, totalServices, activeServices] = await Promise.all([
-            this.providerServiceRepo.find({
-                where: { profile: { user: { id: userId } } },
-                relations: {
-                    service: {
-                        category: true,
-                    },
-                },
-            }),
-            this.providerServiceRepo.count({ where: { profile: { user: { id: userId } } } }),
-            this.providerServiceRepo.count({ where: { profile: { user: { id: userId } }, isActive: true } }),
-        ]);
+        const { entities, raw } = await this.categoryRepo
+            .createQueryBuilder('category')
+            .innerJoin('category.services', 'service')
+            .innerJoin('service.providerServices', 'providerService')
+            .innerJoin('providerService.profile', 'profile')
+            .innerJoin('profile.user', 'user')
+            .select('category')
+            .addSelect('COUNT(providerService.id)', 'totalServices')
+            .addSelect('COUNT(CASE WHEN providerService.isActive = true THEN 1 END)', 'activeServices')
+            .where('user.id = :userId', { userId })
+            .groupBy('category.id')
+            .getRawAndEntities();
 
-        const categoryMap = new Map();
+        return entities.map((category, index) => {
+            const localizedCategory = this.localize(category, lang);
+            const rawCategory = raw[index] as { totalServices: string; activeServices: string };
 
-        for (const ps of providerServices) {
-            const category = ps.service?.category;
-            if (category && !categoryMap.has(category.id)) {
-                // Strip any relations from the category object
-                const { services, ...cleanCategory } = category;
-                cleanCategory.description = cleanCategory.description ? cleanCategory.description[lang] : null;
-                categoryMap.set(category.id, cleanCategory);
-            }
-        }
-
-        const categories = Array.from(categoryMap.values());
-        const localizedCategories = localize(categories, lang);
-        return { categories: localizedCategories, totalServices, activeServices };
+            return {
+                ...localizedCategory,
+                description: lang === 'ar' ? category.description?.ar : category.description?.en,
+                totalServices: parseInt(rawCategory.totalServices, 10),
+                activeServices: parseInt(rawCategory.activeServices, 10),
+            };
+        });
     }
 
     async findProviderCategoryServices(
