@@ -2,7 +2,9 @@ import { Injectable, InternalServerErrorException, Logger } from '@nestjs/common
 import { IStorageProvider } from '../interfaces/storage-provider.interface';
 import { AppConfigService } from '../../../config/config.service';
 import { S3Client, PutObjectCommand, DeleteObjectCommand } from '@aws-sdk/client-s3';
+import { getSignedUrl } from '@aws-sdk/s3-request-presigner';
 import * as crypto from 'crypto';
+import { PresignedPutUrlResponse } from '../interfaces/storage-provider.interface';
 
 @Injectable()
 export class S3StorageProvider implements IStorageProvider {
@@ -64,5 +66,26 @@ export class S3StorageProvider implements IStorageProvider {
             this.logger.error(`Error deleting from S3: ${error.message}`, error.stack);
             throw new InternalServerErrorException('Failed to delete asset from S3');
         }
+    }
+
+    async getPresignedPutUrl(
+        filename: string,
+        contentType: string,
+        folder = 'uploads',
+    ): Promise<PresignedPutUrlResponse> {
+        const expiresIn = this.configService.aws.presignExpires;
+        const sanitizedFilename = filename.replace(/\s+/g, '_');
+        const key = `${folder}/${Date.now()}-${crypto.randomUUID()}-${sanitizedFilename}`;
+
+        const command = new PutObjectCommand({
+            Bucket: this.bucketName,
+            Key: key,
+            ContentType: contentType,
+        });
+
+        const url = await getSignedUrl(this.s3Client, command, { expiresIn });
+        const publicUrl = `https://${this.bucketName}.s3.${this.configService.aws.s3Region}.amazonaws.com/${key}`;
+
+        return { url, key, publicUrl, expiresIn };
     }
 }
