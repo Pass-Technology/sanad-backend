@@ -1,17 +1,21 @@
-import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository, ILike, DataSource, In } from 'typeorm';
 import { CategoryEntity } from './entities/category.entity';
 import { ServiceEntity } from './entities/service.entity';
-
 import { localize } from '../../shared/localization.util';
 import { RequestServiceDto } from './Dto/request-service.dto';
 import { RequestServiceEntity } from './entities/request-service.entity';
-import { RequestServiceResponseDto } from './Dto/request-service-response.dto';
 import { ProviderServiceEntity } from './entities/provider-service.entity';
 import { GetMyServicesQueryDto } from './Dto/get-my-services-query.dto';
-import { PaginatedResponseDto } from '../../shared/dto/paginated-response.dto';
 import { GetProviderCategoryServicesQueryDto } from './Dto/get-provider-category-services.dto';
+import { AvailabilityDto } from '../provider-profile/dto/availability.dto';
+import { JobEntity } from '../marketplace/entities/job.entity';
+import { RequestServiceStatus } from './enums/request-service-status.enum';
+import { PayoutEntity } from '../earnings/entities/payout.entity';
+import { PayoutStatus } from '../earnings/enums/payout-status.enum';
+import { JobStatus } from '../marketplace/enums/job-status.enum';
+
 @Injectable()
 export class ServiceManagementService {
     constructor(
@@ -24,6 +28,10 @@ export class ServiceManagementService {
         @InjectRepository(ProviderServiceEntity)
         private readonly providerServiceRepo: Repository<ProviderServiceEntity>,
         private readonly dataSource: DataSource,
+        @InjectRepository(JobEntity)
+        private readonly jobRepo: Repository<JobEntity>,
+        @InjectRepository(PayoutEntity)
+        private readonly earningRepo: Repository<PayoutEntity>,
     ) {}
 
     // get all categories and their services in profile setup page
@@ -49,28 +57,30 @@ export class ServiceManagementService {
     }
 
     async findProviderCategories(lang: string = 'en', userId: string) {
-        const providerServices = await this.providerServiceRepo.find({
-            where: { profile: { user: { id: userId } } },
-            relations: {
-                service: {
-                    category: true,
-                },
-            },
+        const { entities, raw } = await this.categoryRepo
+            .createQueryBuilder('category')
+            .innerJoin('category.services', 'service')
+            .innerJoin('service.providerServices', 'providerService')
+            .innerJoin('providerService.profile', 'profile')
+            .innerJoin('profile.user', 'user')
+            .select('category')
+            .addSelect('COUNT(providerService.id)', 'totalServices')
+            .addSelect('COUNT(CASE WHEN providerService.isActive = true THEN 1 END)', 'activeServices')
+            .where('user.id = :userId', { userId })
+            .groupBy('category.id')
+            .getRawAndEntities();
+
+        return entities.map((category, index) => {
+            const localizedCategory = this.localize(category, lang);
+            const rawCategory = raw[index] as { totalServices: string; activeServices: string };
+
+            return {
+                ...localizedCategory,
+                description: lang === 'ar' ? category.description?.ar : category.description?.en,
+                totalServices: parseInt(rawCategory.totalServices, 10),
+                activeServices: parseInt(rawCategory.activeServices, 10),
+            };
         });
-
-        const categoryMap = new Map();
-
-        for (const ps of providerServices) {
-            const category = ps.service?.category;
-            if (category && !categoryMap.has(category.id)) {
-                // Strip any relations from the category object
-                const { services, ...cleanCategory } = category;
-                categoryMap.set(category.id, cleanCategory);
-            }
-        }
-
-        const categories = Array.from(categoryMap.values());
-        return localize(categories, lang);
     }
 
     async findProviderCategoryServices(
@@ -79,29 +89,86 @@ export class ServiceManagementService {
         categoryId: string,
         dto: GetProviderCategoryServicesQueryDto,
     ) {
-        const { name, page, limit } = dto;
-        const query = this.providerServiceRepo
+        const { name, status } = dto;
+        const providerQuery = this.providerServiceRepo
             .createQueryBuilder('providerService')
             .innerJoin('providerService.profile', 'profile')
             .innerJoin('profile.user', 'user')
-            .innerJoinAndSelect('providerService.service', 'service')
+            .leftJoinAndSelect('providerService.service', 'service')
             .innerJoin('service.category', 'category')
-
+            .leftJoinAndSelect('providerService.pricingDetails', 'pricingDetails')
+            .select([
+                'providerService.id',
+                'providerService.description',
+                'providerService.isActive',
+                'providerService.status',
+                'providerService.availability',
+                'providerService.minPrice',
+                'providerService.maxPrice',
+                'providerService.createdAt',
+                'pricingDetails.id',
+                'pricingDetails.description',
+                'pricingDetails.price',
+                'service.id',
+                'service.nameAr',
+                'service.nameEn',
+            ])
             .where('user.id = :userId', { userId })
-            .andWhere('category.id = :categoryId', { categoryId });
+            .andWhere('category.id = :categoryId', { categoryId })
+            .orderBy('providerService.createdAt', 'DESC');
+        const requestQuery = this.requestServiceRepo
+            .createQueryBuilder('requestService')
+            .innerJoin('requestService.user', 'user')
+            .where('user.id = :userId', { userId })
+            .andWhere('"requestService"."category_id" = :categoryId', { categoryId })
+            .orderBy('requestService.createdAt', 'DESC');
 
         if (name) {
             if (lang === 'ar') {
-                query.andWhere('service.name_ar ILIKE :serviceName', { serviceName: `%${name}%` });
+                providerQuery.andWhere('service.nameAr ILIKE :serviceName', { serviceName: `%${name}%` });
+                requestQuery.andWhere('"requestService"."name"->>\'ar\' ILIKE :serviceName', {
+                    serviceName: `%${name}%`,
+                });
             } else {
-                query.andWhere('service.name_en ILIKE :serviceName', { serviceName: `%${name}%` });
+                providerQuery.andWhere('service.nameEn ILIKE :serviceName', { serviceName: `%${name}%` });
+                requestQuery.andWhere('"requestService"."name"->>\'en\' ILIKE :serviceName', {
+                    serviceName: `%${name}%`,
+                });
             }
         }
 
-        return await query
-            .skip((page - 1) * limit)
-            .take(limit)
-            .getMany();
+        if (status) {
+            providerQuery.andWhere('providerService.status = :status', { status });
+            requestQuery.andWhere('requestService.status = :status', { status });
+        }
+
+        const [rawProviderServices, rawRequestedServices] = await Promise.all([
+            providerQuery.getMany(),
+            requestQuery.getMany(),
+        ]);
+        const formattedProviderServices = rawProviderServices.map((ps) => ({
+            id: ps.id,
+            description: ps.description,
+            isActive: ps.isActive,
+            status: ps.status,
+            availability: ps.availability,
+            serviceId: ps.service?.id,
+            pricingDetails: ps.pricingDetails,
+            minPrice: ps.minPrice,
+            maxPrice: ps.maxPrice,
+            createdAt: ps.createdAt,
+            timestamp: ps.createdAt ? new Date(ps.createdAt).getTime() : 0,
+            isRequestedService: false,
+        }));
+
+        const formattedRequestedServices = rawRequestedServices.map((rs) => ({
+            ...rs,
+            timestamp: rs.createdAt ? new Date(rs.createdAt).getTime() : 0,
+            isRequestedService: true,
+        }));
+        const combinedServices = [...formattedProviderServices, ...formattedRequestedServices];
+
+        return combinedServices.sort((a, b) => b.timestamp - a.timestamp);
     }
 
     async getServicesByCategory(categoryId: string, lang: string = 'en') {
@@ -112,6 +179,99 @@ export class ServiceManagementService {
         });
 
         return services.map((service) => this.localize(service, lang));
+    }
+
+    async getproviderService(serviceId: string, userId: string, lang: string = 'en') {
+        const providerService = await this.providerServiceRepo.findOne({
+            where: { profile: { user: { id: userId } }, id: serviceId },
+            relations: { service: { category: true }, pricingDetails: true },
+            order: { createdAt: 'DESC' },
+        });
+
+        if (!providerService) {
+            throw new NotFoundException('Service was not found');
+        }
+
+        return {
+            id: providerService?.id,
+            description: providerService.description,
+            isActive: providerService.isActive,
+            idEmrgencyEnabled: providerService.isEmergencyEnabled,
+            serviceId: providerService.service.id,
+            pricingDetails: providerService.pricingDetails,
+            availability: providerService.availability,
+            status: providerService.status,
+            categoryId: providerService.service.category.id,
+            minPrice: providerService.minPrice,
+            maxPrice: providerService.maxPrice,
+        };
+    }
+
+    async deleteProviderService(serviceId: string, userId: string, lang: string = 'en') {
+        const providerService = await this.providerServiceRepo.findOne({
+            where: { profile: { user: { id: userId } }, id: serviceId },
+            relations: { service: { category: true }, pricingDetails: true },
+            order: { createdAt: 'DESC' },
+        });
+        if (!providerService) {
+            throw new NotFoundException('Could not find the provider service');
+        }
+
+        await this.providerServiceRepo.remove(providerService);
+
+        return { success: true, message: 'Deleted successfully' };
+    }
+
+    async upsertAvailabilty(userId: string, dto: AvailabilityDto, serviceId: string) {
+        await this.providerServiceRepo.upsert({ ...dto, id: serviceId }, ['id']);
+        return await this.providerServiceRepo.find({
+            select: { availability: true },
+            where: { id: serviceId, profile: { user: { id: userId } } },
+        });
+    }
+
+    async getAvailabilty(userId: string, serviceId: string) {
+        return await this.providerServiceRepo.find({
+            select: { availability: true },
+            where: { id: serviceId, profile: { user: { id: userId } } },
+        });
+    }
+
+    async getProviderServicesStats(userId: string) {
+        const [totalCategoriesCount, totalActiveServicesCount, totalCustomersCount, totalEarnings] = await Promise.all([
+            this.providerServiceRepo
+                .createQueryBuilder('providerService')
+                .innerJoin('providerService.profile', 'profile')
+                .innerJoin('profile.user', 'user')
+                .innerJoin('providerService.service', 'service')
+                .innerJoin('service.category', 'category')
+                .where('user.id = :userId', { userId })
+                .select('COUNT(DISTINCT category.id)', 'totalCategories')
+                .getRawOne(),
+            this.providerServiceRepo.count({
+                where: { profile: { user: { id: userId } }, isActive: true },
+            }),
+            this.jobRepo
+                .createQueryBuilder('job')
+                .leftJoin('job.provider', 'provider')
+                .leftJoin('provider.user', 'user')
+                .setParameters({ userId, status: JobStatus.COMPLETED })
+                .getCount(),
+            this.earningRepo
+                .createQueryBuilder('earnings')
+                .select('SUM(earnings.amount)', 'sum')
+                .leftJoin('earnings.provider', 'provider')
+                .leftJoin('provider.user', 'user')
+                .where('user.id = :userId', { userId })
+                .andWhere('earnings.status = :status', { status: PayoutStatus.PAID })
+                .getRawOne(),
+        ]);
+        return {
+            totalCategoriesCount: totalCategoriesCount.totalCategories,
+            totalActiveServicesCount,
+            totalCustomersCount,
+            totalEarnings: totalEarnings ? parseFloat(totalEarnings.sum) : 0,
+        };
     }
 
     async findServiceById(serviceId: string, lang: string = 'en') {
@@ -232,8 +392,11 @@ export class ServiceManagementService {
     }
 
     // toggle activation status for a provider's service
-    async serviceToggleStatus(providerServiceId: string) {
-        const providerService = await this.providerServiceRepo.findOneBy({ id: providerServiceId });
+    async serviceToggleStatus(providerServiceId: string, userId: string) {
+        const providerService = await this.providerServiceRepo.findOneBy({
+            id: providerServiceId,
+            profile: { user: { id: userId } },
+        });
         if (!providerService) {
             throw new NotFoundException('Provider service not found');
         }
@@ -257,20 +420,44 @@ export class ServiceManagementService {
             name: requestServiceDto.name,
             ...(category && { category }),
             user: { id: userId },
+            description: requestServiceDto.description,
         });
         return this.requestServiceRepo.save(requestService);
     }
 
-    async getRequestedServices(userId: string): Promise<RequestServiceResponseDto[]> {
+    async editRequestService(requestServiceDto: RequestServiceDto, userId: string, requestServiceId: string) {
+        const requestService = await this.requestServiceRepo.findOneOrFail({
+            where: { id: requestServiceId, user: { id: userId } },
+        });
+        if (requestService.status !== RequestServiceStatus.PENDING) {
+            throw new Error('Editing requested service is disabled');
+        }
+        requestService.description = requestServiceDto.description;
+        requestService.name = requestServiceDto.name;
+        await this.requestServiceRepo.save(requestService);
+
+        return { message: 'Updated successfully' };
+    }
+
+    async getRequestedServices(userId: string) {
         const response = await this.requestServiceRepo.find({
             where: { user: { id: userId } },
         });
-
         return response.map((e) => {
             return {
                 id: e.id,
                 name: e.name,
-            } as RequestServiceResponseDto;
+                description: e.description,
+            };
+        });
+    }
+
+    async getRequestedService(userId: string, serviceId: string) {
+        return await this.requestServiceRepo.findOne({
+            where: {
+                id: serviceId,
+                user: { id: userId },
+            },
         });
     }
 
