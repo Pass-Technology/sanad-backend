@@ -34,13 +34,18 @@ export class ServiceManagementService {
         private readonly earningRepo: Repository<PayoutEntity>,
     ) {}
 
-    // get all categories and their services in profile setup page
     async findAllCategories(lang: string = 'en', searchString?: string) {
         const categories = await this.categoryRepo.find({
             where: searchString
                 ? [
-                      { isActive: true, services: { nameEn: ILike(`%${searchString}%`) } },
-                      { isActive: true, services: { nameAr: ILike(`%${searchString}%`) } },
+                      {
+                          isActive: true,
+                          services: { nameEn: ILike(`%${searchString}%`) },
+                      },
+                      {
+                          isActive: true,
+                          services: { nameAr: ILike(`%${searchString}%`) },
+                      },
                   ]
                 : { isActive: true },
             relations: { services: true },
@@ -52,7 +57,6 @@ export class ServiceManagementService {
             },
         });
 
-        // return categories.map(category => this.localize(category, lang));
         return localize(categories, lang);
     }
 
@@ -65,18 +69,25 @@ export class ServiceManagementService {
             .innerJoin('profile.user', 'user')
             .select('category')
             .addSelect('COUNT(providerService.id)', 'totalServices')
-            .addSelect('COUNT(CASE WHEN providerService.isActive = true THEN 1 END)', 'activeServices')
+            .addSelect(
+                'COUNT(CASE WHEN providerService.isActive = true THEN 1 END)',
+                'activeServices',
+            )
             .where('user.id = :userId', { userId })
             .groupBy('category.id')
             .getRawAndEntities();
 
         return entities.map((category, index) => {
             const localizedCategory = this.localize(category, lang);
-            const rawCategory = raw[index] as { totalServices: string; activeServices: string };
+            const rawCategory = raw[index] as {
+                totalServices: string;
+                activeServices: string;
+            };
 
             return {
                 ...localizedCategory,
-                description: lang === 'ar' ? category.description?.ar : category.description?.en,
+                description:
+                    lang === 'ar' ? category.description?.ar : category.description?.en,
                 totalServices: parseInt(rawCategory.totalServices, 10),
                 activeServices: parseInt(rawCategory.activeServices, 10),
             };
@@ -125,15 +136,25 @@ export class ServiceManagementService {
 
         if (name) {
             if (lang === 'ar') {
-                providerQuery.andWhere('service.nameAr ILIKE :serviceName', { serviceName: `%${name}%` });
-                requestQuery.andWhere('"requestService"."name"->>\'ar\' ILIKE :serviceName', {
+                providerQuery.andWhere('service.nameAr ILIKE :serviceName', {
                     serviceName: `%${name}%`,
                 });
+                requestQuery.andWhere(
+                    '"requestService"."name"->>\'ar\' ILIKE :serviceName',
+                    {
+                        serviceName: `%${name}%`,
+                    },
+                );
             } else {
-                providerQuery.andWhere('service.nameEn ILIKE :serviceName', { serviceName: `%${name}%` });
-                requestQuery.andWhere('"requestService"."name"->>\'en\' ILIKE :serviceName', {
+                providerQuery.andWhere('service.nameEn ILIKE :serviceName', {
                     serviceName: `%${name}%`,
                 });
+                requestQuery.andWhere(
+                    '"requestService"."name"->>\'en\' ILIKE :serviceName',
+                    {
+                        serviceName: `%${name}%`,
+                    },
+                );
             }
         }
 
@@ -166,7 +187,10 @@ export class ServiceManagementService {
             timestamp: rs.createdAt ? new Date(rs.createdAt).getTime() : 0,
             isRequestedService: true,
         }));
-        const combinedServices = [...formattedProviderServices, ...formattedRequestedServices];
+        const combinedServices = [
+            ...formattedProviderServices,
+            ...formattedRequestedServices,
+        ];
 
         return combinedServices.sort((a, b) => b.timestamp - a.timestamp);
     }
@@ -201,7 +225,12 @@ export class ServiceManagementService {
             pricingDetails: providerService.pricingDetails,
             availability: providerService.availability,
             status: providerService.status,
-            categoryId: providerService.service.category.id,
+            category: {
+                id: providerService.service.category.id,
+                name: providerService.service.category.name,
+                nameAr: providerService.service.category.nameAr,
+            },
+            categoryId:providerService.service.category.id,
             minPrice: providerService.minPrice,
             maxPrice: providerService.maxPrice,
         };
@@ -238,7 +267,12 @@ export class ServiceManagementService {
     }
 
     async getProviderServicesStats(userId: string) {
-        const [totalCategoriesCount, totalActiveServicesCount, totalCustomersCount, totalEarnings] = await Promise.all([
+        const [
+            totalCategoriesCount,
+            totalActiveServicesCount,
+            totalCustomersCount,
+            totalEarnings,
+        ] = await Promise.all([
             this.providerServiceRepo
                 .createQueryBuilder('providerService')
                 .innerJoin('providerService.profile', 'profile')
@@ -300,12 +334,14 @@ export class ServiceManagementService {
         });
     }
 
-    // get all services of provider insdie profile page (search and pagination)
-    async getMyServices(userId: string, query: GetMyServicesQueryDto, lang: string = 'en'): Promise<any> {
+    async getMyServices(
+        userId: string,
+        query: GetMyServicesQueryDto,
+        lang: string = 'en',
+    ): Promise<any> {
         const { page = 1, limit = 10, searchString, categoryId } = query;
         const skip = (page - 1) * limit;
 
-        // Get all unique categories the provider has services in
         const allCategories = await this.categoryRepo
             .createQueryBuilder('category')
             .innerJoin('category.services', 'service')
@@ -326,8 +362,14 @@ export class ServiceManagementService {
         if (searchString) {
             const serviceBase = categoryId ? { category: { id: categoryId } } : {};
             whereCondition = [
-                { ...baseWhere, service: { ...serviceBase, nameEn: ILike(`%${searchString}%`) } },
-                { ...baseWhere, service: { ...serviceBase, nameAr: ILike(`%${searchString}%`) } },
+                {
+                    ...baseWhere,
+                    service: { ...serviceBase, nameEn: ILike(`%${searchString}%`) },
+                },
+                {
+                    ...baseWhere,
+                    service: { ...serviceBase, nameAr: ILike(`%${searchString}%`) },
+                },
             ];
         } else {
             whereCondition = baseWhere;
@@ -336,18 +378,21 @@ export class ServiceManagementService {
             }
         }
 
-        const [items, totalItems] = await this.dataSource.manager.findAndCount(ProviderServiceEntity, {
-            where: whereCondition,
-            relations: {
-                service: { category: true },
-                pricingDetails: true,
+        const [items, totalItems] = await this.dataSource.manager.findAndCount(
+            ProviderServiceEntity,
+            {
+                where: whereCondition,
+                relations: {
+                    service: { category: true },
+                    pricingDetails: true,
+                },
+                order: {
+                    service: { sortOrder: 'ASC' },
+                },
+                skip,
+                take: limit,
             },
-            order: {
-                service: { sortOrder: 'ASC' },
-            },
-            skip,
-            take: limit,
-        });
+        );
 
         const totalPages = Math.ceil(totalItems / limit);
 
@@ -391,8 +436,7 @@ export class ServiceManagementService {
         };
     }
 
-    // toggle activation status for a provider's service
-    async serviceToggleStatus(providerServiceId: string, userId: string) {
+    async toggleProviderServicecStatus(providerServiceId: string, userId: string) {
         const providerService = await this.providerServiceRepo.findOneBy({
             id: providerServiceId,
             profile: { user: { id: userId } },
@@ -404,13 +448,13 @@ export class ServiceManagementService {
         return await this.providerServiceRepo.save(providerService);
     }
 
-    // request service endpoints
-
     async requestService(requestServiceDto: RequestServiceDto, userId: string) {
         let category: CategoryEntity | null = null;
 
         if (requestServiceDto.categoryId) {
-            category = await this.categoryRepo.findOneBy({ id: requestServiceDto.categoryId });
+            category = await this.categoryRepo.findOneBy({
+                id: requestServiceDto.categoryId,
+            });
             if (!category) {
                 throw new NotFoundException('Category not found');
             }
@@ -425,7 +469,11 @@ export class ServiceManagementService {
         return this.requestServiceRepo.save(requestService);
     }
 
-    async editRequestService(requestServiceDto: RequestServiceDto, userId: string, requestServiceId: string) {
+    async editRequestService(
+        requestServiceDto: RequestServiceDto,
+        userId: string,
+        requestServiceId: string,
+    ) {
         const requestService = await this.requestServiceRepo.findOneOrFail({
             where: { id: requestServiceId, user: { id: userId } },
         });
@@ -453,12 +501,21 @@ export class ServiceManagementService {
     }
 
     async getRequestedService(userId: string, serviceId: string) {
-        return await this.requestServiceRepo.findOne({
-            where: {
-                id: serviceId,
-                user: { id: userId },
-            },
-        });
+        const requestedService = await this.requestServiceRepo
+            .createQueryBuilder('service')
+            .leftJoinAndSelect('service.category', 'category')
+            .where('service.id = :serviceId', { serviceId })
+            .andWhere('service.user = :userId', { userId })
+            .select([
+                'service',
+                'category.id',
+                'category.name',
+                'category.nameAr',
+                'category.description',
+            ])
+            .getOne();
+
+        return requestedService;
     }
 
     private localize(entity: any, lang: string) {
