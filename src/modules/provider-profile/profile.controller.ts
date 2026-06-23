@@ -11,13 +11,9 @@ import {
     UseGuards,
     UseInterceptors,
     ClassSerializerInterceptor,
+    Put,
 } from '@nestjs/common';
-import {
-    ApiBearerAuth,
-    ApiOperation,
-    ApiParam,
-    ApiTags,
-} from '@nestjs/swagger';
+import { ApiBearerAuth, ApiOperation, ApiParam, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { JwtAuthGuard } from '../../shared/guards/jwt-auth.guard';
 import { VerificationGuard } from '../../shared/guards/verification.guard';
 import { UserInfoResponseWithTokensDto } from '../user/dto/user-info-response.dto';
@@ -38,6 +34,7 @@ import { UpdatePaymentDto } from '../payment/dto/update-payment.dto';
 import { UserTypeGuard } from '../../shared/guards/user-types.guard';
 import { UserTypes } from '../../shared/decorators/userTypes.decorator';
 import { UserType } from '../user/enums/user-type.enum';
+import { Availability, AvailabilityDto } from './dto/availability.dto';
 
 @ApiTags('provider-profile')
 @ApiBearerAuth()
@@ -46,7 +43,7 @@ import { UserType } from '../user/enums/user-type.enum';
 @UseInterceptors(ClassSerializerInterceptor)
 @Controller('profile')
 export class ProfileController {
-    constructor(private readonly profileService: ProfileService) { }
+    constructor(private readonly profileService: ProfileService) {}
 
     @Post('setup')
     @ApiOperation({ summary: 'Submit full profile in one request' })
@@ -58,7 +55,9 @@ export class ProfileController {
     }
 
     @Patch('approve-test')
-    @ApiOperation({ summary: 'FOR TESTING: Instantly approve the logged-in provider profile' })
+    @ApiOperation({
+        summary: 'FOR TESTING: Instantly approve the logged-in provider profile',
+    })
     async approveTest(@Request() req: { user: UserInfoResponseWithTokensDto }) {
         return await this.profileService.approveProfileForTesting(req.user.userId);
     }
@@ -80,19 +79,13 @@ export class ProfileController {
 
     @Patch('update/user-info')
     @ApiOperation({ summary: 'Update provider user personal info' })
-    async updateUserInfo(
-        @Request() req: { user: UserInfoResponseWithTokensDto },
-        @Body() dto: UpdateUserInfoDto,
-    ) {
+    async updateUserInfo(@Request() req: { user: UserInfoResponseWithTokensDto }, @Body() dto: UpdateUserInfoDto) {
         return await this.profileService.updateUserInfo(req.user.userId, dto);
     }
 
     @Patch('update/compliance')
     @ApiOperation({ summary: 'Update compliance documents and info' })
-    async updateCompliance(
-        @Request() req: { user: UserInfoResponseWithTokensDto },
-        @Body() dto: UpdateComplianceDto,
-    ) {
+    async updateCompliance(@Request() req: { user: UserInfoResponseWithTokensDto }, @Body() dto: UpdateComplianceDto) {
         return await this.profileService.updateCompliance(req.user.userId, dto);
     }
 
@@ -114,6 +107,23 @@ export class ProfileController {
         return await this.profileService.syncBranches(req.user.userId, updateBranchesDto);
     }
 
+    @Get('availability')
+    @ApiOperation({ summary: 'Get provider availability' })
+    @ApiResponse({
+        type: Availability,
+        isArray: true,
+        description: 'Returns an array of availability objects',
+    })
+    async getAvailability(@Request() req: { user: UserInfoResponseWithTokensDto }) {
+        return await this.profileService.getAvailabilty(req.user.userId);
+    }
+
+    @Put('update/availability')
+    @ApiOperation({ summary: 'Add or updated availability' })
+    async upsertAvailability(@Request() req: { user: UserInfoResponseWithTokensDto }, @Body() dto: AvailabilityDto) {
+        return await this.profileService.upsertAvailabilty(req.user.userId, dto);
+    }
+
     @Patch('update/branches/:id')
     @ApiOperation({ summary: 'Partial update of an existing branch' })
     @ApiParam({ name: 'id', description: 'Branch UUID' })
@@ -127,10 +137,7 @@ export class ProfileController {
 
     @Post('add-new-branch')
     @ApiOperation({ summary: 'Add a new branch to the profile' })
-    async addBranch(
-        @Request() req: { user: UserInfoResponseWithTokensDto },
-        @Body() addBranchDto: CreateBranchDto,
-    ) {
+    async addBranch(@Request() req: { user: UserInfoResponseWithTokensDto }, @Body() addBranchDto: CreateBranchDto) {
         return await this.profileService.addBranch(req.user.userId, addBranchDto);
     }
 
@@ -147,16 +154,18 @@ export class ProfileController {
 
     @Post('add-service')
     @ApiOperation({ summary: 'Add a new service to the profile with details' })
-    async addService(
-        @Request() req: { user: UserInfoResponseWithTokensDto },
-        @Body() dto: UpdateProviderServiceDto,
-    ) {
+    async addService(@Request() req: { user: UserInfoResponseWithTokensDto }, @Body() dto: UpdateProviderServiceDto) {
         return await this.profileService.addService(req.user.userId, dto);
     }
 
     @Patch('update/services/:id')
-    @ApiOperation({ summary: 'Update a specific provider service (one-by-one)' })
-    @ApiParam({ name: 'id', description: 'Provider Service UUID (the link ID, not global service ID)' })
+    @ApiOperation({
+        summary: 'Update a specific provider service (one-by-one)',
+    })
+    @ApiParam({
+        name: 'id',
+        description: 'Provider Service UUID (the link ID, not global service ID)',
+    })
     async updateService(
         @Request() req: { user: UserInfoResponseWithTokensDto },
         @Param('id') id: string,
@@ -168,20 +177,14 @@ export class ProfileController {
     @Delete('delete-service/:id')
     @ApiOperation({ summary: 'Remove a service from the profile' })
     @ApiParam({ name: 'id', description: 'Provider Service UUID' })
-    async deleteService(
-        @Request() req: { user: UserInfoResponseWithTokensDto },
-        @Param('id') id: string,
-    ) {
+    async deleteService(@Request() req: { user: UserInfoResponseWithTokensDto }, @Param('id') id: string) {
         return await this.profileService.deleteService(req.user.userId, id);
     }
 
     @Delete('delete-branch/:id')
     @ApiOperation({ summary: 'Delete a branch' })
     @ApiParam({ name: 'id', description: 'Branch UUID' })
-    async deleteBranch(
-        @Request() req: { user: UserInfoResponseWithTokensDto },
-        @Param('id') branchId: string,
-    ) {
+    async deleteBranch(@Request() req: { user: UserInfoResponseWithTokensDto }, @Param('id') branchId: string) {
         return await this.profileService.deleteBranch(req.user.userId, branchId);
     }
 }

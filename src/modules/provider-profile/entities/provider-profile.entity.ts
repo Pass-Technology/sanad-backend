@@ -25,22 +25,26 @@ import { ReviewEntity } from '../../reviews/entities/review.entity';
 
 @Entity('provider_profiles')
 export class ProviderProfileEntity extends BaseEntity {
-
-    @ManyToOne(() => LookUpProfileStatusEntity, { cascade: true, onDelete: 'RESTRICT' })
+    @ManyToOne(() => LookUpProfileStatusEntity, {
+        cascade: true,
+        onDelete: 'RESTRICT',
+    })
     @JoinColumn()
     status: LookUpProfileStatusEntity;
-
 
     @ManyToOne(() => LookUpProviderTypeEntity, {
         nullable: true,
         cascade: true,
-        onDelete: 'RESTRICT'
+        onDelete: 'RESTRICT',
     })
     @JoinColumn()
     providerType: LookUpProviderTypeEntity;
 
-
-    @ManyToOne(() => LookUpCompanyTypeEntity, { cascade: true, nullable: true, onDelete: 'RESTRICT' })
+    @ManyToOne(() => LookUpCompanyTypeEntity, {
+        cascade: true,
+        nullable: true,
+        onDelete: 'RESTRICT',
+    })
     @JoinColumn({ name: 'companyTypeId' })
     companyType: LookUpCompanyTypeEntity | null;
 
@@ -59,41 +63,45 @@ export class ProviderProfileEntity extends BaseEntity {
     @Column({ type: 'varchar', nullable: true })
     websiteLink: string | null;
 
-
-    @OneToMany(() => ProviderServiceEntity, (providerService) => providerService.profile, { cascade: true })
+    @OneToMany(
+        () => ProviderServiceEntity,
+        (providerService) => providerService.profile,
+        { cascade: true },
+    )
     providerServices: ProviderServiceEntity[];
 
-
     @OneToOne(() => ProviderUserInfoEntity, (info) => info.providerProfile, {
-        cascade: true
+        cascade: true,
     })
     userInfo: ProviderUserInfoEntity;
 
     @OneToMany(() => BranchEntity, (branch) => branch.providerProfile, {
         onDelete: 'CASCADE',
-        cascade: true
+        cascade: true,
     })
     branches: BranchEntity[];
 
     @OneToOne(() => ProviderComplianceEntity, (c) => c.providerProfile, {
         onDelete: 'CASCADE',
-        cascade: true
+        cascade: true,
     })
     compliance: ProviderComplianceEntity;
 
-    // what is payment? 
+    // what is payment?
     // if its how the provider will pay for the subscription plan
     // then it should be in the user entity
     // if its how the provider will receive payments from customers
-    // then it should be in the provider profile entity and should be one to many relation as the provider will 
-    // provide payment channels to customers 
+    // then it should be in the provider profile entity and should be one to many relation as the provider will
+    // provide payment channels to customers
     @OneToOne(() => ProviderPaymentEntity, (p) => p.providerProfile, {
         onDelete: 'CASCADE',
-        cascade: true
+        cascade: true,
     })
     payment: ProviderPaymentEntity;
 
-    @OneToOne(() => UserEntity, (user) => user.providerProfile, { onDelete: 'CASCADE' })
+    @OneToOne(() => UserEntity, (user) => user.providerProfile, {
+        onDelete: 'CASCADE',
+    })
     @JoinColumn()
     user: UserEntity;
 
@@ -101,7 +109,7 @@ export class ProviderProfileEntity extends BaseEntity {
     @JoinTable({
         name: 'provider_profile_languages',
         joinColumn: { name: 'profile_id', referencedColumnName: 'id' },
-        inverseJoinColumn: { name: 'language_id', referencedColumnName: 'id' }
+        inverseJoinColumn: { name: 'language_id', referencedColumnName: 'id' },
     })
     languages: LookupLanguagesEntity[];
 
@@ -119,4 +127,12 @@ export class ProviderProfileEntity extends BaseEntity {
 
     @OneToMany(() => ProviderCouponEntity, (coupon) => coupon.provider)
     coupons: ProviderCouponEntity[];
+
+    @Column({ type: 'jsonb', nullable: true })
+    availability:
+        | {
+              day: string;
+              slots: { from: string; to: string }[];
+          }[]
+        | null;
 }
