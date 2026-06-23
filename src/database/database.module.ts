@@ -19,7 +19,7 @@ import { SnakeNamingStrategy } from 'typeorm-naming-strategies';
                 // database: config.database.database,
                 autoLoadEntities: true,
                 synchronize: false,
-                ssl: true,
+                ssl: { rejectUnauthorized: false },
                 namingStrategy: new SnakeNamingStrategy(),
                 extra: {
                     max: 1,
