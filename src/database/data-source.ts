@@ -16,7 +16,7 @@ export default new DataSource({
     logging: true,
     entities: [__dirname + '/../**/*.entity{.ts,.js}'],
     migrations: [__dirname + '/migrations/*{.ts,.js}'],
-    ssl: true,
+    ssl: { rejectUnauthorized: false },
     namingStrategy: new SnakeNamingStrategy(),
     extra: {
         ssl: {
