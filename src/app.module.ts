@@ -48,6 +48,7 @@ import { BlogsModule } from './modules/blogs/blogs.module';
     SubscriptionModule,
     ServiceManagementModule,
     PaymentModule,
+    UploadAssetsModule,
     MailModule,
     TemplateModule,
     ScoringSystemModule,
