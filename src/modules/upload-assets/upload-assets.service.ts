@@ -5,7 +5,7 @@ import { AssetEntity } from "./entities/asset.entity";
 import { AssetTypeEntity } from "./entities/asset-type.entity";
 import { AssetTypeEnum } from "./enums/asset-type.enum";
 import { AssetOwnerTypeEnum } from "./enums/asset-owner-type.enum";
-import { IStorageProvider, PresignedPutUrlResponse, STORAGE_PROVIDER } from "./interfaces/storage-provider.interface";
+import { IStorageProvider, PresignedPutUrlResponse, PresignedGetUrlResponse, STORAGE_PROVIDER } from "./interfaces/storage-provider.interface";
 
 @Injectable()
 export class UploadAssetsService {
@@ -79,6 +79,13 @@ export class UploadAssetsService {
         folder = 'uploads',
     ): Promise<PresignedPutUrlResponse> {
         return this.storageProvider.getPresignedPutUrl(filename, contentType, folder);
+    }
+
+    async getPresignedGetUrl(
+        key: string,
+        expiresIn?: number,
+    ): Promise<PresignedGetUrlResponse> {
+        return this.storageProvider.getPresignedGetUrl(key, expiresIn);
     }
 
     async deleteAsset(id: string): Promise<void> {

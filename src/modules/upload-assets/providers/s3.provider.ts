@@ -1,10 +1,18 @@
 import { Injectable, InternalServerErrorException, Logger } from '@nestjs/common';
 import { IStorageProvider } from '../interfaces/storage-provider.interface';
 import { AppConfigService } from '../../../config/config.service';
-import { S3Client, PutObjectCommand, DeleteObjectCommand } from '@aws-sdk/client-s3';
+import {
+    S3Client,
+    PutObjectCommand,
+    DeleteObjectCommand,
+    GetObjectCommand,
+} from '@aws-sdk/client-s3';
 import { getSignedUrl } from '@aws-sdk/s3-request-presigner';
 import * as crypto from 'crypto';
-import { PresignedPutUrlResponse } from '../interfaces/storage-provider.interface';
+import {
+    PresignedPutUrlResponse,
+    PresignedGetUrlResponse,
+} from '../interfaces/storage-provider.interface';
 
 @Injectable()
 export class S3StorageProvider implements IStorageProvider {
@@ -14,18 +22,23 @@ export class S3StorageProvider implements IStorageProvider {
 
     constructor(private readonly configService: AppConfigService) {
         const awsConfig = this.configService.aws;
-        this.bucketName = awsConfig.s3Bucket || '';
+        this.bucketName = awsConfig.s3Bucket;
 
         this.s3Client = new S3Client({
-            region: awsConfig.s3Region || 'us-east-1',
+            region: awsConfig.s3Region,
             credentials: {
-                accessKeyId: awsConfig.accessKeyId || '',
-                secretAccessKey: awsConfig.secretAccessKey || '',
+                accessKeyId: awsConfig.accessKeyId,
+                secretAccessKey: awsConfig.secretAccessKey,
             },
+            responseChecksumValidation: 'WHEN_REQUIRED',
+            requestChecksumCalculation: 'WHEN_REQUIRED',
         });
     }
 
-    async upload(file: Express.Multer.File, folder: string): Promise<{ path: string; url: string }> {
+    async upload(
+        file: Express.Multer.File,
+        folder: string,
+    ): Promise<{ path: string; url: string }> {
         try {
             const uniqueSuffix = crypto.randomUUID();
             const extension = file.originalname.split('.').pop();
@@ -37,6 +50,7 @@ export class S3StorageProvider implements IStorageProvider {
                 Key: key,
                 Body: file.buffer,
                 ContentType: file.mimetype,
+                ContentLength: file.size,
             });
 
             await this.s3Client.send(command);
@@ -87,5 +101,18 @@ export class S3StorageProvider implements IStorageProvider {
         const publicUrl = `https://${this.bucketName}.s3.${this.configService.aws.s3Region}.amazonaws.com/${key}`;
 
         return { url, key, publicUrl, expiresIn };
+    }
+
+    async getPresignedGetUrl(
+        key: string,
+        expiresIn: number = this.configService.aws.presignExpires,
+    ): Promise<PresignedGetUrlResponse> {
+        const command = new GetObjectCommand({
+            Bucket: this.bucketName,
+            Key: key,
+        });
+
+        const url = await getSignedUrl(this.s3Client, command, { expiresIn });
+        return { url, expiresIn };
     }
 }
