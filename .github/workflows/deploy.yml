@@ -2,7 +2,7 @@ name: Build & Deploy
 
 on:
   push:
-    branches: [main, development, staging]
+    branches: [main, development]
 
 env:
   REGISTRY: docker.io
@@ -20,13 +20,10 @@ jobs:
           username: ${{ secrets.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
 
-      - name: Set tag + app (main=prod, staging=staging, development=dev)
+      - name: Set tag + app (main=prod, development=dev)
         id: tag
         run: |
-          if [ "${{ github.ref_name }}" = "staging" ]; then
-            echo "tag=staging" >> $GITHUB_OUTPUT
-            echo "app_id=2frEXm-aQniOg3viilfda" >> $GITHUB_OUTPUT
-          elif [ "${{ github.ref_name }}" = "main" ]; then
+          if [ "${{ github.ref_name }}" = "main" ]; then
             echo "tag=prod" >> $GITHUB_OUTPUT
             echo "app_id=4D6jHnEzI2YyQ0dpXP3MG" >> $GITHUB_OUTPUT
           else
