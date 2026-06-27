@@ -30,6 +30,7 @@ import { EmergencyModule } from './modules/emergency/emergency.module';
 import { DocumentationModule } from './modules/documentation/documentation.module';
 import { NotificationModule } from './modules/notifications/notification.module';
 import { BlogsModule } from './modules/blogs/blogs.module';
+import { JobsModule } from './modules/jobs/jobs.module';
 
 @Module({
   imports: [
@@ -67,6 +68,7 @@ import { BlogsModule } from './modules/blogs/blogs.module';
     DocumentationModule,
     NotificationModule,
     BlogsModule,
+    JobsModule,
   ],
   controllers: [HealthController],
 })
