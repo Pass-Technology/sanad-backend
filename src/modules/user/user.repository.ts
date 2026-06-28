@@ -29,14 +29,12 @@ export class UserRepository extends BaseRepository<UserEntity> {
     identifierType: UserIdentifierType;
     password: string;
     type: UserType;
-    parentProvider?: any;
   }): Promise<UserEntity> {
     const user = this.userRepository.create({
       identifier: data.identifier,
       identifierType: data.identifierType,
       password: data.password,
       type: data.type,
-      parentProvider: data.parentProvider,
     });
     return this.userRepository.save(user);
   }

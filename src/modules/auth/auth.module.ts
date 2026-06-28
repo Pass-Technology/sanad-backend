@@ -6,8 +6,7 @@ import { OtpModule } from '../otp/otp.module';
 import { MailModule } from '../mail/mail.module';
 import { AuthController } from './auth.controller';
 import { AppConfigModule } from 'src/config/config.module';
-import { TypeOrmModule } from '@nestjs/typeorm';
-import { WorkerInvitationEntity } from '../provider-profile/entities/worker-invitation.entity';
+import { WorkerModule } from '../worker/worker.module';
 
 @Module({
   imports: [
@@ -16,7 +15,7 @@ import { WorkerInvitationEntity } from '../provider-profile/entities/worker-invi
     SharedAuthModule,
     OtpModule,
     MailModule,
-    TypeOrmModule.forFeature([WorkerInvitationEntity]),
+    WorkerModule,
   ],
   controllers: [AuthController],
   providers: [AuthService],

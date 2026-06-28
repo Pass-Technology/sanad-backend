@@ -1,9 +1,9 @@
 import { Injectable, NotFoundException, BadRequestException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository, Between } from 'typeorm';
-import { JobEntity } from '../marketplace/entities/job.entity';
+import { ContractEntity } from '../jobs/entities/contract.entity';
 import { PayoutEntity } from './entities/payout.entity';
-import { JobStatus } from '../marketplace/enums/job-status.enum';
+import { ContractStatus } from '../jobs/enums/contract-status.enum';
 import { PayoutStatus } from './enums/payout-status.enum';
 import { ProfileService } from '../provider-profile/profile.service';
 import { EarningsQueryDto, TimePeriod } from './dto/earnings-query.dto';
@@ -14,8 +14,8 @@ export class EarningsService {
     private readonly PLATFORM_FEE_PERCENT = 0.10;
 
     constructor(
-        @InjectRepository(JobEntity)
-        private readonly jobRepository: Repository<JobEntity>,
+        @InjectRepository(ContractEntity)
+        private readonly contractRepository: Repository<ContractEntity>,
         @InjectRepository(PayoutEntity)
         private readonly payoutRepository: Repository<PayoutEntity>,
         private readonly providerProfileService: ProfileService,
@@ -30,26 +30,24 @@ export class EarningsService {
         const providerId = provider.id;
         const dateRange = this.getDateRange(query);
 
-        // Get all completed jobs for this provider within date range
-        const completedJobs = await this.jobRepository.find({
+        const completedContracts = await this.contractRepository.find({
             where: {
-                status: JobStatus.COMPLETED,
+                status: ContractStatus.COMPLETED,
                 provider: { id: providerId },
-                completedAt: Between(dateRange.start, dateRange.end)
+                completedAt: Between(dateRange.start, dateRange.end),
             },
         });
 
-        const grossEarnings = completedJobs.reduce((sum, job) => {
-            return sum + Number(job.finalPrice || 0);
+        const grossEarnings = completedContracts.reduce((sum, contract) => {
+            return sum + Number(contract.price || 0);
         }, 0);
 
         const platformFee = grossEarnings * this.PLATFORM_FEE_PERCENT;
         const netEarnings = grossEarnings - platformFee;
 
-        // Get payout stats
         const payouts = await this.payoutRepository.find({
             where: { provider: { id: providerId } },
-            relations: { bankAccount: true }
+            relations: { bankAccount: true },
         });
 
         const completedPayouts = payouts
@@ -60,17 +58,14 @@ export class EarningsService {
             .filter(p => p.status === PayoutStatus.PROCESSING || p.status === PayoutStatus.PENDING)
             .reduce((sum, p) => sum + Number(p.amount), 0);
 
-        // Total balance available to withdraw
         const availableToWithdraw = netEarnings - (completedPayouts + processingPayouts);
 
-        // Get bank account info
         const primaryBankAccount = payouts.find(p => p.bankAccount)?.bankAccount || null;
         const bankAccountInfo = primaryBankAccount ? {
             bankName: primaryBankAccount.bankName,
-            last4: primaryBankAccount.iban ? primaryBankAccount.iban.slice(-4) : (primaryBankAccount.accountNumber ? primaryBankAccount.accountNumber.slice(-4) : '****')
+            last4: primaryBankAccount.iban ? primaryBankAccount.iban.slice(-4) : (primaryBankAccount.accountNumber ? primaryBankAccount.accountNumber.slice(-4) : '****'),
         } : null;
 
-        // Next payout estimation (simplified logic: every 15th and 30th)
         const now = new Date();
         const nextPayoutDate = new Date();
         if (now.getDate() < 15) {
@@ -84,7 +79,7 @@ export class EarningsService {
         return {
             totalBalance: availableToWithdraw,
             availableToWithdraw,
-            pendingBalance: processingPayouts, // Payouts currently being processed
+            pendingBalance: processingPayouts,
             grossEarnings,
             platformFee,
             netEarnings,
@@ -93,9 +88,9 @@ export class EarningsService {
             bankAccount: bankAccountInfo,
             nextPayout: {
                 estimatedDate: nextPayoutDate,
-                estimatedAmount: availableToWithdraw > 0 ? availableToWithdraw : 0
+                estimatedAmount: availableToWithdraw > 0 ? availableToWithdraw : 0,
             },
-            currency: 'AED'
+            currency: 'AED',
         };
     }
 
@@ -106,9 +101,7 @@ export class EarningsService {
         return await this.payoutRepository.find({
             where: { provider: { id: provider.id } },
             order: { createdAt: 'DESC' },
-            relations: {
-                bankAccount: true
-            }
+            relations: { bankAccount: true },
         });
     }
 
@@ -117,12 +110,11 @@ export class EarningsService {
         if (!provider) throw new NotFoundException('Provider profile not found');
 
         const stats = await this.getProviderStats(userId, { period: TimePeriod.WEEK });
-        
+
         if (dto.amount > stats.availableToWithdraw) {
             throw new BadRequestException('Insufficient balance for payout');
         }
 
-        // Find primary bank account
         const profile = await this.providerProfileService.getProfileById(provider.id);
         const bankAccount = profile.payment?.bankAccounts?.[0];
 
@@ -135,7 +127,7 @@ export class EarningsService {
             amount: dto.amount,
             status: PayoutStatus.PENDING,
             bankAccount,
-            method: 'Bank Transfer'
+            method: 'Bank Transfer',
         });
 
         return await this.payoutRepository.save(payout);
@@ -147,19 +139,17 @@ export class EarningsService {
 
         const dateRange = this.getDateRange(query);
 
-        const completedJobs = await this.jobRepository.find({
+        const completedContracts = await this.contractRepository.find({
             where: {
-                status: JobStatus.COMPLETED,
+                status: ContractStatus.COMPLETED,
                 provider: { id: provider.id },
-                completedAt: Between(dateRange.start, dateRange.end)
+                completedAt: Between(dateRange.start, dateRange.end),
             },
-            order: { completedAt: 'ASC' }
+            order: { completedAt: 'ASC' },
         });
 
-        // Group by day
         const trendMap = new Map<string, number>();
 
-        // Pre-fill with days in range
         const current = new Date(dateRange.start);
         while (current <= dateRange.end) {
             const label = current.toLocaleDateString('en-US', { weekday: 'short' });
@@ -167,15 +157,16 @@ export class EarningsService {
             current.setDate(current.getDate() + 1);
         }
 
-        completedJobs.forEach(job => {
-            const label = new Date(job.completedAt).toLocaleDateString('en-US', { weekday: 'short' });
-            const netAmount = Number(job.finalPrice || 0) * (1 - this.PLATFORM_FEE_PERCENT);
+        completedContracts.forEach(contract => {
+            if (!contract.completedAt) return;
+            const label = new Date(contract.completedAt).toLocaleDateString('en-US', { weekday: 'short' });
+            const netAmount = Number(contract.price || 0) * (1 - this.PLATFORM_FEE_PERCENT);
             trendMap.set(label, (trendMap.get(label) || 0) + netAmount);
         });
 
         return Array.from(trendMap.entries()).map(([label, amount]) => ({
             label,
-            amount: parseFloat(amount.toFixed(2))
+            amount: parseFloat(amount.toFixed(2)),
         }));
     }
 
@@ -192,10 +183,9 @@ export class EarningsService {
             start = new Date();
             start.setMonth(start.getMonth() - 1);
         } else {
-            // Default: This Week
             start = new Date();
             const day = start.getDay();
-            const diff = start.getDate() - day + (day === 0 ? -6 : 1); // Adjust to start of week (Monday)
+            const diff = start.getDate() - day + (day === 0 ? -6 : 1);
             start.setDate(diff);
             start.setHours(0, 0, 0, 0);
         }

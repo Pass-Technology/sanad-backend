@@ -3,7 +3,6 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository, DataSource, EntityManager } from 'typeorm';
 import { ProfileRepository } from './profile.repository';
 import { UserRepository } from '../user/user.repository';
-import { ProviderWorkerEntity } from './entities/provider-worker.entity';
 import { ProfileChangeType } from './enums/profile-change-type.enum';
 import { ProfileStatusStaticCode } from '../lookups/enums/lookup-static-codes.enum';
 import { CreateFullProfileDto } from './dto/create-full-profile.dto';
@@ -43,8 +42,6 @@ export class ProfileService {
         private readonly paymentService: PaymentService,
         private readonly stagingService: ProfileStagingService,
         private readonly branchService: ProfileBranchService,
-        @InjectRepository(ProviderWorkerEntity)
-        private readonly workerRepo: Repository<ProviderWorkerEntity>,
         private readonly userRepo: UserRepository,
         private readonly dataSource: DataSource,
         private readonly eventEmitter: EventEmitter2,
@@ -398,21 +395,5 @@ export class ProfileService {
         if (invalidIds.length > 0) {
             throw new BadRequestException('Some service IDs are invalid or inactive');
         }
-    }
-
-    async getWorkerOrThrow(workerId: string, providerId: string): Promise<ProviderWorkerEntity> {
-        const worker = await this.workerRepo.findOne({
-            where: { id: workerId, provider: { id: providerId } },
-        });
-        if (!worker) {
-            throw new NotFoundException('Worker not found');
-        }
-        return worker;
-    }
-
-    async getWorkersByProvider(providerId: string): Promise<ProviderWorkerEntity[]> {
-        return this.workerRepo.find({
-            where: { provider: { id: providerId } },
-        });
     }
 }

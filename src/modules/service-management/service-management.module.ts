@@ -10,7 +10,7 @@ import { RequestServiceEntity } from './entities/request-service.entity';
 import { ProviderServiceEntity } from './entities/provider-service.entity';
 import { ProviderServicePricingEntity } from './entities/provider-service-pricing.entity';
 import { UserModule } from '../user/user.module';
-import { JobEntity } from '../marketplace/entities/job.entity';
+import { ContractEntity } from '../jobs/entities/contract.entity';
 import { PayoutEntity } from '../earnings/entities/payout.entity';
 import { ProviderServiceController } from './provider-service.controller';
 import { RequestServiceController } from './request-service.controller';
@@ -24,7 +24,7 @@ import { RequestServiceController } from './request-service.controller';
       RequestServiceEntity,
       ProviderServiceEntity,
       ProviderServicePricingEntity,
-      JobEntity,
+      ContractEntity,
       PayoutEntity,
     ]),
     UserModule,

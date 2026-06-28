@@ -19,9 +19,7 @@ import { UserEntity } from '../../user/entities/user.entity';
 import { ProviderPaymentEntity } from '../../payment/entities/provider-payment.entity';
 import { ProviderServiceEntity } from '../../service-management/entities/provider-service.entity';
 import { LookupLanguagesEntity } from '../../lookups/entities/lookup-languages.entity';
-import { OfferEntity } from '../../marketplace/entities/offer.entity';
 import { ProviderCouponEntity } from '../../promotions/entities/provider-coupon.entity';
-import { ReviewEntity } from '../../reviews/entities/review.entity';
 
 @Entity('provider_profiles')
 export class ProviderProfileEntity extends BaseEntity {
@@ -119,11 +117,6 @@ export class ProviderProfileEntity extends BaseEntity {
     @Column({ type: 'varchar', nullable: true })
     referenceNumber: string | null;
 
-    @OneToMany(() => OfferEntity, (offer) => offer.provider)
-    offers: OfferEntity[];
-
-    @OneToMany(() => ReviewEntity, (review) => review.provider)
-    reviews: ReviewEntity[];
 
     @OneToMany(() => ProviderCouponEntity, (coupon) => coupon.provider)
     coupons: ProviderCouponEntity[];

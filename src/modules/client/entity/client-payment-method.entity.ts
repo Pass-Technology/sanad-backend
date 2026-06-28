@@ -1,7 +1,7 @@
 import { Entity, Column, ManyToOne, JoinColumn } from 'typeorm';
 import { BaseEntity } from '../../../database/base-entity';
 import { ClientProfileEntity } from './client-profile.entity';
-import { PaymentMethod } from '../../marketplace/enums/payment-method.enum';
+import { PaymentMethod } from '../enums/payment-method.enum';
 
 @Entity('client_payment_methods')
 export class ClientPaymentMethodEntity extends BaseEntity {

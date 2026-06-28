@@ -14,15 +14,8 @@ import { ResetPasswordDto } from '../user/dto/reset-password.dto';
 import { ChangePasswordDto } from '../user/dto/change-password.dto';
 import { OtpService } from '../otp/otp.service';
 import { OtpPurposeEnum } from '../otp/enum/otp-purpose.enum';
-import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
-import { WorkerInvitationEntity } from '../provider-profile/entities/worker-invitation.entity';
-import { InvitationStatus } from '../provider-profile/enums/invitation-status.enum';
 import { RegisterWorkerDto } from './dto/register-worker.dto';
-import { UserIdentifierType } from '../user/enums/user-identifier-type.enum';
-import { UserType } from '../user/enums/user-type.enum';
-
-
+import { WorkerService } from '../worker/worker.service';
 
 @Injectable()
 export class AuthService {
@@ -31,8 +24,7 @@ export class AuthService {
     private readonly config: AppConfigService,
     private readonly userRepository: UserRepository,
     private readonly otpService: OtpService,
-    @InjectRepository(WorkerInvitationEntity)
-    private readonly invitationRepository: Repository<WorkerInvitationEntity>,
+    private readonly workerService: WorkerService,
   ) { }
 
   async register(dto: RegisterDto) {
@@ -59,54 +51,8 @@ export class AuthService {
     };
   }
 
-  async registerWorker(dto: RegisterWorkerDto) {
-    const invitation = await this.invitationRepository.findOne({
-      where: { token: dto.token },
-      relations: { provider: true },
-    });
-
-    if (!invitation) {
-      throw new ForbiddenException('Invalid invitation token');
-    }
-
-    if (invitation.status !== InvitationStatus.PENDING) {
-      throw new ForbiddenException('Invitation token is no longer valid');
-    }
-
-    if (invitation.expiresAt < new Date()) {
-      invitation.status = InvitationStatus.EXPIRED;
-      await this.invitationRepository.save(invitation);
-      throw new ForbiddenException('Invitation token has expired');
-    }
-
-    const isUserExist = await this.userRepository.findByIdentifier(invitation.emailOrPhone);
-    if (isUserExist) {
-      throw new ForbiddenException('A user with this email or phone already exists');
-    }
-
-    const hashedPassword = await bcrypt.hash(dto.password, 10);
-    const identifierType = invitation.emailOrPhone.includes('@')
-      ? UserIdentifierType.EMAIL
-      : UserIdentifierType.MOBILE;
-
-    const user = await this.userRepository.create({
-      identifier: invitation.emailOrPhone,
-      identifierType,
-      password: hashedPassword,
-      type: UserType.WORKER,
-      parentProvider: invitation.provider,
-    });
-
-    user.isVerified = true;
-    await this.userRepository.save(user);
-
-    invitation.status = InvitationStatus.ACCEPTED;
-    await this.invitationRepository.save(invitation);
-
-    return {
-      message: 'Worker registration successful. You can now login.',
-      userId: user.id,
-    };
+  registerWorker(dto: RegisterWorkerDto): Promise<{ message: string; userId: string }> {
+    return this.workerService.registerFromInvitation(dto);
   }
 
   async auth(dto: AuthDto): Promise<AuthTokensResponse> {
@@ -158,9 +104,6 @@ export class AuthService {
 
   async resetPassword(dto: ResetPasswordDto): Promise<{ message: string }> {
     const { identifier, password } = dto;
-    // Note: OTP validation should be handled prior or via separate logic if removed from DTO
-
-    // await this.otpService.validateOtp(identifier, otp, OtpPurposeEnum.FORGOT_PASSWORD);
 
     const user = await this.userRepository.findByIdentifier(identifier);
     if (!user) {

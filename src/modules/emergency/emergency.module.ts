@@ -4,7 +4,7 @@ import { EmergencyController } from './emergency.controller';
 import { EmergencyService } from './emergency.service';
 import { ProviderProfileEntity } from '../provider-profile/entities/provider-profile.entity';
 import { ProviderServiceEntity } from '../service-management/entities/provider-service.entity';
-import { JobEntity } from '../marketplace/entities/job.entity';
+import { ContractEntity } from '../jobs/entities/contract.entity';
 import { ProfileModule } from '../provider-profile/profile.module';
 import { AuthModule } from '../auth/auth.module';
 
@@ -13,10 +13,10 @@ import { AuthModule } from '../auth/auth.module';
         TypeOrmModule.forFeature([
             ProviderProfileEntity,
             ProviderServiceEntity,
-            JobEntity
+            ContractEntity,
         ]),
         ProfileModule,
-        AuthModule
+        AuthModule,
     ],
     controllers: [EmergencyController],
     providers: [EmergencyService],

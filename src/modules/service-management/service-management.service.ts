@@ -10,11 +10,11 @@ import { ProviderServiceEntity } from './entities/provider-service.entity';
 import { GetMyServicesQueryDto } from './Dto/get-my-services-query.dto';
 import { GetProviderCategoryServicesQueryDto } from './Dto/get-provider-category-services.dto';
 import { AvailabilityDto } from '../provider-profile/dto/availability.dto';
-import { JobEntity } from '../marketplace/entities/job.entity';
+import { ContractEntity } from '../jobs/entities/contract.entity';
 import { RequestServiceStatus } from './enums/request-service-status.enum';
 import { PayoutEntity } from '../earnings/entities/payout.entity';
 import { PayoutStatus } from '../earnings/enums/payout-status.enum';
-import { JobStatus } from '../marketplace/enums/job-status.enum';
+import { ContractStatus } from '../jobs/enums/contract-status.enum';
 
 @Injectable()
 export class ServiceManagementService {
@@ -28,8 +28,8 @@ export class ServiceManagementService {
         @InjectRepository(ProviderServiceEntity)
         private readonly providerServiceRepo: Repository<ProviderServiceEntity>,
         private readonly dataSource: DataSource,
-        @InjectRepository(JobEntity)
-        private readonly jobRepo: Repository<JobEntity>,
+        @InjectRepository(ContractEntity)
+        private readonly contractRepo: Repository<ContractEntity>,
         @InjectRepository(PayoutEntity)
         private readonly earningRepo: Repository<PayoutEntity>,
     ) {}
@@ -285,11 +285,12 @@ export class ServiceManagementService {
             this.providerServiceRepo.count({
                 where: { profile: { user: { id: userId } }, isActive: true },
             }),
-            this.jobRepo
-                .createQueryBuilder('job')
-                .leftJoin('job.provider', 'provider')
+            this.contractRepo
+                .createQueryBuilder('contract')
+                .leftJoin('contract.provider', 'provider')
                 .leftJoin('provider.user', 'user')
-                .setParameters({ userId, status: JobStatus.COMPLETED })
+                .where('user.id = :userId', { userId })
+                .andWhere('contract.status = :status', { status: ContractStatus.COMPLETED })
                 .getCount(),
             this.earningRepo
                 .createQueryBuilder('earnings')

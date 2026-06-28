@@ -21,24 +21,18 @@ import { TargetAudienceModule } from './modules/target-audience-profile/target-a
 import { ValidatorModule } from './modules/validator/validator.module';
 import { LegalModule } from './modules/legal/legal.module';
 import { ClientModule } from './modules/client/client.module';
-import { ClientRequestsModule } from './modules/client-requests/client-requests.module';
-import { ProviderJobsModule } from './modules/provider-jobs/provider-jobs.module';
 import { PromotionsModule } from './modules/promotions/promotions.module';
 import { EarningsModule } from './modules/earnings/earnings.module';
-import { ReviewModule } from './modules/reviews/review.module';
 import { EmergencyModule } from './modules/emergency/emergency.module';
 import { DocumentationModule } from './modules/documentation/documentation.module';
 import { NotificationModule } from './modules/notifications/notification.module';
 import { BlogsModule } from './modules/blogs/blogs.module';
 import { JobsModule } from './modules/jobs/jobs.module';
+import { WorkerModule } from './modules/worker/worker.module';
 
 @Module({
   imports: [
     AppConfigModule,
-    // ThrottlerModule.forRoot([{
-    //   ttl: 60000,
-    //   limit: 10,
-    // }]),
     EventEmitterModule.forRoot(),
     DatabaseModule,
     UserModule,
@@ -54,21 +48,18 @@ import { JobsModule } from './modules/jobs/jobs.module';
     TemplateModule,
     ScoringSystemModule,
     SharedCacheModule,
-    UploadAssetsModule,
     TargetAudienceModule,
     ValidatorModule,
     LegalModule,
     ClientModule,
-    ClientRequestsModule,
-    ProviderJobsModule,
     PromotionsModule,
     EarningsModule,
-    ReviewModule,
     EmergencyModule,
     DocumentationModule,
     NotificationModule,
     BlogsModule,
     JobsModule,
+    WorkerModule,
   ],
   controllers: [HealthController],
 })

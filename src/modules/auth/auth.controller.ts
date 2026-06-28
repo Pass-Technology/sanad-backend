@@ -20,10 +20,10 @@ import { OtpAuthDto } from '../user/dto/auth-otp.dto';
 import { ForgetPasswordDto } from '../user/dto/forget-password.dto';
 import { ResetPasswordDto } from '../user/dto/reset-password.dto';
 import { ChangePasswordDto } from '../user/dto/change-password.dto';
-import { RegisterWorkerDto } from './dto/register-worker.dto';
 import { JwtAuthGuard } from '../../shared/guards/jwt-auth.guard';
 import { VerificationGuard } from '../../shared/guards/verification.guard';
 import { RegisterResponseDto } from '../user/dto/register-response.dto';
+import { RegisterWorkerDto } from './dto/register-worker.dto';
 import { AuthTokensResponse } from '../user/types/user-token.type';
 import { UserInfoResponseWithTokensDto } from '../user/dto/user-info-response.dto';
 
@@ -39,8 +39,8 @@ export class AuthController {
   }
 
   @Post('register/worker')
-  @ApiOperation({ summary: 'Register a new worker using invitation token' })
-  registerWorker(@Body() dto: RegisterWorkerDto) {
+  @ApiOperation({ summary: 'Register a worker using an organization invitation token' })
+  registerWorker(@Body() dto: RegisterWorkerDto): Promise<{ message: string; userId: string }> {
     return this.authService.registerWorker(dto);
   }
 
