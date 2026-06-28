@@ -18,9 +18,11 @@ import { WorkerContractsController } from './worker-contracts.controller';
 import { ClientModule } from '../client/client.module';
 import { ProfileModule } from '../provider-profile/profile.module';
 import { WorkerModule } from '../worker/worker.module';
+import { SharedAuthModule } from '../../shared/auth/shared-auth.module';
 
 @Module({
     imports: [
+        SharedAuthModule,
         TypeOrmModule.forFeature([
             JobEntity,
             OfferEntity,
