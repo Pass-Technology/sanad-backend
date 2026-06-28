@@ -12,7 +12,7 @@ import { CreateOfferDto } from './dto/create-offer.dto';
 import { CreateReviewDto } from './dto/create-review.dto';
 import { AssignWorkerDto } from './dto/assign-worker.dto';
 
-@ApiTags('Jobs (Simplified MVP)')
+@ApiTags('Jobs & Contracts (Simplified MVP)')
 @ApiBearerAuth()
 @Controller('jobs')
 @UseGuards(JwtAuthGuard, VerificationGuard, UserTypeGuard)
@@ -65,7 +65,7 @@ export class JobsController {
     }
 
     @Post('offers/:offerId/accept')
-    @ApiOperation({ summary: 'Accept a provider offer — sets job to ASSIGNED (Client only)' })
+    @ApiOperation({ summary: 'Accept a provider offer — creates a Contract (Client only)' })
     @UserTypes(UserType.CLIENT)
     acceptOffer(
         @Request() req: { user: UserInfoResponseWithTokensDto },
@@ -84,8 +84,18 @@ export class JobsController {
         return this.jobsService.withdrawOffer(req.user.userId, offerId);
     }
 
-    @Patch(':id/assign-worker')
-    @ApiOperation({ summary: 'Assign a worker to the job (Provider only)' })
+    @Get('contracts/:id')
+    @ApiOperation({ summary: 'Get contract details (Any contract participant)' })
+    @UserTypes(UserType.CLIENT, UserType.PROVIDER, UserType.WORKER)
+    getContractById(
+        @Request() req: { user: UserInfoResponseWithTokensDto },
+        @Param('id') id: string,
+    ) {
+        return this.jobsService.getContractById(id, req.user.userId);
+    }
+
+    @Patch('contracts/:id/assign-worker')
+    @ApiOperation({ summary: 'Assign a worker to the contract (Provider only)' })
     @UserTypes(UserType.PROVIDER)
     assignWorker(
         @Request() req: { user: UserInfoResponseWithTokensDto },
@@ -95,45 +105,45 @@ export class JobsController {
         return this.jobsService.assignWorker(req.user.userId, id, dto);
     }
 
-    @Patch(':id/start')
-    @ApiOperation({ summary: 'Start job working (Provider or Worker only)' })
+    @Patch('contracts/:id/start')
+    @ApiOperation({ summary: 'Start contract working (Provider or Worker only)' })
     @UserTypes(UserType.PROVIDER, UserType.WORKER)
-    startJob(
+    startContract(
         @Request() req: { user: UserInfoResponseWithTokensDto },
         @Param('id') id: string,
     ) {
-        return this.jobsService.startJob(req.user.userId, id);
+        return this.jobsService.startContract(req.user.userId, id);
     }
 
-    @Patch(':id/complete')
-    @ApiOperation({ summary: 'Mark job as finished and write client review (Provider or Worker only)' })
+    @Patch('contracts/:id/complete')
+    @ApiOperation({ summary: 'Mark contract as finished and write client review (Provider or Worker only)' })
     @UserTypes(UserType.PROVIDER, UserType.WORKER)
-    completeJobByProvider(
+    completeContractByProvider(
         @Request() req: { user: UserInfoResponseWithTokensDto },
         @Param('id') id: string,
         @Body() dto: CreateReviewDto,
     ) {
-        return this.jobsService.completeJobByProvider(req.user.userId, id, dto);
+        return this.jobsService.completeContractByProvider(req.user.userId, id, dto);
     }
 
-    @Patch(':id/confirm')
-    @ApiOperation({ summary: 'Confirm job as completed and write provider review (Client only)' })
+    @Patch('contracts/:id/confirm')
+    @ApiOperation({ summary: 'Confirm contract as completed and write provider review (Client only)' })
     @UserTypes(UserType.CLIENT)
-    confirmCompletion(
+    confirmContractCompletion(
         @Request() req: { user: UserInfoResponseWithTokensDto },
         @Param('id') id: string,
         @Body() dto: CreateReviewDto,
     ) {
-        return this.jobsService.confirmCompletion(req.user.userId, id, dto);
+        return this.jobsService.confirmContractCompletion(req.user.userId, id, dto);
     }
 
-    @Patch(':id/cancel')
-    @ApiOperation({ summary: 'Cancel a job post/contract' })
+    @Patch('contracts/:id/cancel')
+    @ApiOperation({ summary: 'Cancel an active contract' })
     @UserTypes(UserType.CLIENT, UserType.PROVIDER)
-    cancelJob(
+    cancelContract(
         @Request() req: { user: UserInfoResponseWithTokensDto },
         @Param('id') id: string,
     ) {
-        return this.jobsService.cancelJob(req.user.userId, id);
+        return this.jobsService.cancelContract(req.user.userId, id);
     }
 }

@@ -1,7 +1,7 @@
 import { Entity, Column, ManyToOne, JoinColumn } from 'typeorm';
 import { BaseEntity } from '../../../database/base-entity';
 import { UserEntity } from '../../user/entities/user.entity';
-import { JobEntity } from './job.entity';
+import { ContractEntity } from './contract.entity';
 
 @Entity('reviews')
 export class ReviewEntity extends BaseEntity {
@@ -11,9 +11,9 @@ export class ReviewEntity extends BaseEntity {
     @Column({ type: 'text', nullable: true })
     comment: string;
 
-    @ManyToOne(() => JobEntity, (job) => job.reviews, { onDelete: 'CASCADE', nullable: false })
-    @JoinColumn({ name: 'job_id' })
-    job: JobEntity;
+    @ManyToOne(() => ContractEntity, (contract) => contract.reviews, { onDelete: 'CASCADE', nullable: false })
+    @JoinColumn({ name: 'contract_id' })
+    contract: ContractEntity;
 
     @ManyToOne(() => UserEntity, { onDelete: 'CASCADE', nullable: false })
     @JoinColumn({ name: 'reviewer_id' })

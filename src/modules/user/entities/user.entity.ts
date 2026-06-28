@@ -1,4 +1,4 @@
-import { Entity, Column, OneToOne, OneToMany } from 'typeorm';
+import { Entity, Column, OneToOne, OneToMany, ManyToOne, JoinColumn } from 'typeorm';
 import { Exclude } from 'class-transformer';
 import { UserIdentifierType } from '../enums/user-identifier-type.enum';
 import { BaseEntity } from '../../../database/base-entity';
@@ -47,6 +47,10 @@ export class UserEntity extends BaseEntity {
         nullable: true,
     })
     providerProfile: ProviderProfileEntity;
+
+    @ManyToOne(() => ProviderProfileEntity, { nullable: true, onDelete: 'SET NULL' })
+    @JoinColumn({ name: 'parent_provider_id' })
+    parentProvider: ProviderProfileEntity | null;
 
     @OneToOne(() => ClientProfileEntity, (profile) => profile.user, {
         nullable: true,

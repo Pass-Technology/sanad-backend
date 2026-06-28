@@ -3,6 +3,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository, Not } from 'typeorm';
 import { JobEntity } from './entities/job.entity';
 import { OfferEntity } from './entities/offer.entity';
+import { ContractEntity } from './entities/contract.entity';
 import { ReviewEntity } from './entities/review.entity';
 import { UserEntity } from '../user/entities/user.entity';
 import { CreateJobDto } from './dto/create-job.dto';
@@ -11,6 +12,7 @@ import { CreateReviewDto } from './dto/create-review.dto';
 import { AssignWorkerDto } from './dto/assign-worker.dto';
 import { JobStatus } from './enums/job-status.enum';
 import { OfferStatus } from './enums/offer-status.enum';
+import { ContractStatus } from './enums/contract-status.enum';
 import { UserType } from '../user/enums/user-type.enum';
 
 @Injectable()
@@ -20,6 +22,8 @@ export class JobsService {
         private readonly jobRepository: Repository<JobEntity>,
         @InjectRepository(OfferEntity)
         private readonly offerRepository: Repository<OfferEntity>,
+        @InjectRepository(ContractEntity)
+        private readonly contractRepository: Repository<ContractEntity>,
         @InjectRepository(ReviewEntity)
         private readonly reviewRepository: Repository<ReviewEntity>,
         @InjectRepository(UserEntity)
@@ -56,10 +60,7 @@ export class JobsService {
             where: { id },
             relations: {
                 client: true,
-                provider: true,
-                assignedWorker: true,
                 offers: { provider: true },
-                reviews: { reviewer: true, reviewee: true },
             },
         });
 
@@ -105,7 +106,7 @@ export class JobsService {
         return await this.offerRepository.save(offer);
     }
 
-    async acceptOffer(clientUserId: string, offerId: string): Promise<JobEntity> {
+    async acceptOffer(clientUserId: string, offerId: string): Promise<ContractEntity> {
         const offer = await this.offerRepository.findOne({
             where: { id: offerId },
             relations: { job: { client: true }, provider: true },
@@ -137,28 +138,67 @@ export class JobsService {
             { status: OfferStatus.REJECTED },
         );
 
-        // Update Job status and set provider
-        offer.job.status = JobStatus.ASSIGNED;
-        offer.job.provider = offer.provider;
-        return await this.jobRepository.save(offer.job);
+        // Update Job status
+        offer.job.status = JobStatus.CONTRACTED;
+        await this.jobRepository.save(offer.job);
+
+        // Create the Contract
+        const contract = this.contractRepository.create({
+            price: offer.price,
+            status: ContractStatus.ACTIVE,
+            job: offer.job,
+            acceptedOffer: offer,
+            client: offer.job.client,
+            provider: offer.provider,
+            assignedWorker: offer.provider, // Default to provider if not worker-assigned
+        });
+
+        return await this.contractRepository.save(contract);
     }
 
-    async assignWorker(providerUserId: string, jobId: string, dto: AssignWorkerDto): Promise<JobEntity> {
-        const job = await this.jobRepository.findOne({
-            where: { id: jobId },
+    async getContractById(id: string, userId: string): Promise<ContractEntity> {
+        const contract = await this.contractRepository.findOne({
+            where: { id },
+            relations: {
+                client: true,
+                provider: true,
+                assignedWorker: true,
+                job: true,
+                reviews: { reviewer: true, reviewee: true },
+            },
+        });
+
+        if (!contract) {
+            throw new NotFoundException('Contract not found');
+        }
+
+        if (
+            contract.client.id !== userId &&
+            contract.provider.id !== userId &&
+            contract.assignedWorker?.id !== userId
+        ) {
+            throw new ForbiddenException('You are not authorized to view this contract');
+        }
+
+        return contract;
+    }
+
+    async assignWorker(providerUserId: string, contractId: string, dto: AssignWorkerDto): Promise<ContractEntity> {
+        const contract = await this.contractRepository.findOne({
+            where: { id: contractId },
             relations: { provider: true },
         });
 
-        if (!job) {
-            throw new NotFoundException('Job not found');
+        if (!contract) {
+            throw new NotFoundException('Contract not found');
         }
 
-        if (!job.provider || job.provider.id !== providerUserId) {
+        if (contract.provider.id !== providerUserId) {
             throw new ForbiddenException('Only the assigned provider can assign a worker');
         }
 
-        if (job.status !== JobStatus.ASSIGNED) {
-            throw new BadRequestException('Workers can only be assigned in ASSIGNED status');
+        if (contract.status !== ContractStatus.ACTIVE) {
+            throw new BadRequestException('Workers can only be assigned to ACTIVE contracts');
         }
 
         const worker = await this.userRepository.findOne({
@@ -169,128 +209,126 @@ export class JobsService {
             throw new NotFoundException('Worker user not found or is not a worker');
         }
 
-        job.assignedWorker = worker;
-        return await this.jobRepository.save(job);
+        contract.assignedWorker = worker;
+        return await this.contractRepository.save(contract);
     }
 
-    async startJob(userId: string, jobId: string): Promise<JobEntity> {
-        const job = await this.jobRepository.findOne({
-            where: { id: jobId },
+    async startContract(userId: string, contractId: string): Promise<ContractEntity> {
+        const contract = await this.contractRepository.findOne({
+            where: { id: contractId },
             relations: { provider: true, assignedWorker: true },
         });
 
-        if (!job) {
-            throw new NotFoundException('Job not found');
+        if (!contract) {
+            throw new NotFoundException('Contract not found');
         }
 
-        const isProvider = job.provider?.id === userId;
-        const isWorker = job.assignedWorker?.id === userId;
+        const isProvider = contract.provider.id === userId;
+        const isWorker = contract.assignedWorker?.id === userId;
 
         if (!isProvider && !isWorker) {
-            throw new ForbiddenException('Only the assigned provider or worker can start the job');
+            throw new ForbiddenException('Only the assigned provider or worker can start the contract');
         }
 
-        if (job.status !== JobStatus.ASSIGNED) {
-            throw new BadRequestException('Job must be in ASSIGNED status to start');
+        if (contract.status !== ContractStatus.ACTIVE) {
+            throw new BadRequestException('Contract must be ACTIVE to start');
         }
 
-        job.status = JobStatus.IN_PROGRESS;
-        return await this.jobRepository.save(job);
+        contract.status = ContractStatus.IN_PROGRESS;
+        return await this.contractRepository.save(contract);
     }
 
-    async completeJobByProvider(userId: string, jobId: string, reviewDto: CreateReviewDto): Promise<JobEntity> {
-        const job = await this.jobRepository.findOne({
-            where: { id: jobId },
+    async completeContractByProvider(userId: string, contractId: string, reviewDto: CreateReviewDto): Promise<ContractEntity> {
+        const contract = await this.contractRepository.findOne({
+            where: { id: contractId },
             relations: { client: true, provider: true, assignedWorker: true },
         });
 
-        if (!job) {
-            throw new NotFoundException('Job not found');
+        if (!contract) {
+            throw new NotFoundException('Contract not found');
         }
 
-        const isProvider = job.provider?.id === userId;
-        const isWorker = job.assignedWorker?.id === userId;
+        const isProvider = contract.provider.id === userId;
+        const isWorker = contract.assignedWorker?.id === userId;
 
         if (!isProvider && !isWorker) {
-            throw new ForbiddenException('Only the assigned provider or worker can complete the job');
+            throw new ForbiddenException('Only the assigned provider or worker can complete the contract');
         }
 
-        if (job.status !== JobStatus.IN_PROGRESS) {
-            throw new BadRequestException('Job must be IN_PROGRESS to mark as complete');
+        if (contract.status !== ContractStatus.IN_PROGRESS) {
+            throw new BadRequestException('Contract must be IN_PROGRESS to mark as complete');
         }
 
-        job.status = JobStatus.PROVIDER_COMPLETED;
-        const savedJob = await this.jobRepository.save(job);
+        contract.status = ContractStatus.PROVIDER_COMPLETED;
+        const savedContract = await this.contractRepository.save(contract);
 
         // Provider reviews the client
         const review = this.reviewRepository.create({
             rating: reviewDto.rating,
             comment: reviewDto.comment,
-            job: savedJob,
+            contract: savedContract,
             reviewer: { id: userId } as any,
-            reviewee: job.client,
+            reviewee: contract.client,
         });
         await this.reviewRepository.save(review);
 
-        return savedJob;
+        return savedContract;
     }
 
-    async confirmCompletion(clientUserId: string, jobId: string, reviewDto: CreateReviewDto): Promise<JobEntity> {
-        const job = await this.jobRepository.findOne({
-            where: { id: jobId },
+    async confirmContractCompletion(clientUserId: string, contractId: string, reviewDto: CreateReviewDto): Promise<ContractEntity> {
+        const contract = await this.contractRepository.findOne({
+            where: { id: contractId },
             relations: { client: true, provider: true },
         });
 
-        if (!job) {
-            throw new NotFoundException('Job not found');
+        if (!contract) {
+            throw new NotFoundException('Contract not found');
         }
 
-        if (job.client.id !== clientUserId) {
+        if (contract.client.id !== clientUserId) {
             throw new ForbiddenException('Only the client who posted the job can confirm completion');
         }
 
-        if (job.status !== JobStatus.PROVIDER_COMPLETED) {
-            throw new BadRequestException('Job must be marked completed by provider first');
+        if (contract.status !== ContractStatus.PROVIDER_COMPLETED) {
+            throw new BadRequestException('Contract must be marked completed by provider first');
         }
 
-        job.status = JobStatus.COMPLETED;
-        const savedJob = await this.jobRepository.save(job);
+        contract.status = ContractStatus.COMPLETED;
+        const savedContract = await this.contractRepository.save(contract);
 
         // Client reviews the provider
-        if (job.provider) {
-            const review = this.reviewRepository.create({
-                rating: reviewDto.rating,
-                comment: reviewDto.comment,
-                job: savedJob,
-                reviewer: { id: clientUserId } as any,
-                reviewee: job.provider,
-            });
-            await this.reviewRepository.save(review);
-        }
+        const review = this.reviewRepository.create({
+            rating: reviewDto.rating,
+            comment: reviewDto.comment,
+            contract: savedContract,
+            reviewer: { id: clientUserId } as any,
+            reviewee: contract.provider,
+        });
+        await this.reviewRepository.save(review);
 
-        return savedJob;
+        return savedContract;
     }
 
-    async cancelJob(userId: string, jobId: string): Promise<JobEntity> {
-        const job = await this.jobRepository.findOne({
-            where: { id: jobId },
+    async cancelContract(userId: string, contractId: string): Promise<ContractEntity> {
+        const contract = await this.contractRepository.findOne({
+            where: { id: contractId },
             relations: { client: true, provider: true },
         });
 
-        if (!job) {
-            throw new NotFoundException('Job not found');
+        if (!contract) {
+            throw new NotFoundException('Contract not found');
         }
 
-        if (job.client.id !== userId && job.provider?.id !== userId) {
-            throw new ForbiddenException('You are not authorized to cancel this job');
+        if (contract.client.id !== userId && contract.provider.id !== userId) {
+            throw new ForbiddenException('You are not authorized to cancel this contract');
         }
 
-        if (job.status === JobStatus.COMPLETED || job.status === JobStatus.CANCELLED) {
-            throw new BadRequestException('Cannot cancel a completed or already cancelled job');
+        if (contract.status === ContractStatus.COMPLETED || contract.status === ContractStatus.CANCELLED) {
+            throw new BadRequestException('Cannot cancel a completed or already cancelled contract');
         }
 
-        job.status = JobStatus.CANCELLED;
-        return await this.jobRepository.save(job);
+        contract.status = ContractStatus.CANCELLED;
+        return await this.contractRepository.save(contract);
     }
 
     async getMyOffers(providerUserId: string): Promise<OfferEntity[]> {
