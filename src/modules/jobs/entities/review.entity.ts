@@ -1,9 +1,13 @@
-import { Entity, Column, ManyToOne, JoinColumn } from 'typeorm';
+import { Entity, Column, ManyToOne, JoinColumn, Index } from 'typeorm';
 import { BaseEntity } from '../../../database/base-entity';
 import { UserEntity } from '../../user/entities/user.entity';
 import { ContractEntity } from './contract.entity';
 
 @Entity('reviews')
+@Index('UQ_review_per_contract_reviewer', ['contract', 'reviewer'], {
+    unique: true,
+    where: '"deleted_at" IS NULL',
+})
 export class ReviewEntity extends BaseEntity {
     @Column({ type: 'int' })
     rating: number; // 1 to 5

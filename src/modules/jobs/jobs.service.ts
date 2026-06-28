@@ -1,6 +1,6 @@
 import { Injectable, NotFoundException, ForbiddenException, BadRequestException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository, Not, In, Between } from 'typeorm';
+import { Repository, Not, In, Between, DataSource } from 'typeorm';
 import { JobEntity } from './entities/job.entity';
 import { OfferEntity } from './entities/offer.entity';
 import { ContractEntity } from './entities/contract.entity';
@@ -19,6 +19,7 @@ import { JobStatus } from './enums/job-status.enum';
 import { OfferStatus } from './enums/offer-status.enum';
 import { ContractStatus } from './enums/contract-status.enum';
 import { ProviderRequestTab } from './enums/provider-request-tab.enum';
+import { ProviderArchivedRequestItem } from './types/provider-archived-request.type';
 import { ClientService } from '../client/client.service';
 import { ProfileService } from '../provider-profile/profile.service';
 import { WorkerService } from '../worker/worker.service';
@@ -43,6 +44,7 @@ export class JobsService {
         private readonly clientService: ClientService,
         private readonly profileService: ProfileService,
         private readonly workerService: WorkerService,
+        private readonly dataSource: DataSource,
     ) {}
 
     async createJob(clientUserId: string, dto: CreateJobDto): Promise<JobEntity> {
@@ -110,6 +112,25 @@ export class JobsService {
         return qb.orderBy('job.createdAt', 'DESC').getMany();
     }
 
+    async getOpenJobForProvider(providerUserId: string, jobId: string): Promise<JobEntity> {
+        const provider = await this.profileService.getMyProfile(providerUserId);
+        const job = await this.getJobById(jobId);
+
+        if (job.status !== JobStatus.OPEN) {
+            throw new NotFoundException('Job not found');
+        }
+
+        const dismissed = await this.dismissalRepository.findOne({
+            where: { provider: { id: provider.id }, job: { id: jobId } },
+        });
+
+        if (dismissed) {
+            throw new NotFoundException('Job not found');
+        }
+
+        return job;
+    }
+
     async dismissJob(providerUserId: string, jobId: string): Promise<{ message: string }> {
         const provider = await this.profileService.getMyProfile(providerUserId);
         const job = await this.getJobById(jobId);
@@ -158,19 +179,29 @@ export class JobsService {
                     query,
                 );
             case ProviderRequestTab.ARCHIVED:
-                return {
-                    withdrawnOffers: this.filterOffers(
-                        await this.getMyOffers(providerUserId, OfferStatus.WITHDRAWN),
-                        query,
-                    ),
-                    cancelledContracts: this.filterContracts(
-                        await this.getProviderContracts(providerUserId, [ContractStatus.CANCELLED]),
-                        query,
-                    ),
-                };
+                return this.getArchivedProviderRequests(providerUserId, query);
             default:
                 return [];
         }
+    }
+
+    private async getArchivedProviderRequests(
+        providerUserId: string,
+        query: GetProviderRequestsQueryDto,
+    ): Promise<ProviderArchivedRequestItem[]> {
+        const withdrawnOffers = this.filterOffers(
+            await this.getMyOffers(providerUserId, OfferStatus.WITHDRAWN),
+            query,
+        );
+        const cancelledContracts = this.filterContracts(
+            await this.getProviderContracts(providerUserId, [ContractStatus.CANCELLED]),
+            query,
+        );
+
+        return [
+            ...withdrawnOffers.map((item) => ({ kind: 'withdrawn_offer' as const, item })),
+            ...cancelledContracts.map((item) => ({ kind: 'cancelled_contract' as const, item })),
+        ].sort((a, b) => b.item.updatedAt.getTime() - a.item.updatedAt.getTime());
     }
 
     async getClientJobs(clientUserId: string, status?: JobStatus): Promise<JobEntity[]> {
@@ -369,37 +400,53 @@ export class JobsService {
             throw new ForbiddenException('Only the job poster can accept offers');
         }
 
-        if (offer.job.status !== JobStatus.OPEN) {
-            throw new BadRequestException('Job is already assigned or completed');
-        }
-
         if (offer.status !== OfferStatus.PENDING) {
             throw new BadRequestException('Offer is no longer pending');
         }
 
-        offer.status = OfferStatus.ACCEPTED;
-        await this.offerRepository.save(offer);
+        return this.dataSource.transaction(async (manager) => {
+            const jobRepo = manager.getRepository(JobEntity);
+            const offerRepo = manager.getRepository(OfferEntity);
+            const contractRepo = manager.getRepository(ContractEntity);
 
-        await this.offerRepository.update(
-            { job: { id: offer.job.id }, status: OfferStatus.PENDING, id: Not(offer.id) },
-            { status: OfferStatus.REJECTED },
-        );
+            const job = await jobRepo.findOne({
+                where: { id: offer.job.id },
+                lock: { mode: 'pessimistic_write' },
+            });
 
-        offer.job.status = JobStatus.CONTRACTED;
-        await this.jobRepository.save(offer.job);
+            if (!job || job.status !== JobStatus.OPEN) {
+                throw new BadRequestException('Job is already assigned or completed');
+            }
 
-        const contract = this.contractRepository.create({
-            price: offer.price,
-            status: ContractStatus.ACTIVE,
-            scheduledAt: offer.proposedScheduledAt,
-            job: offer.job,
-            acceptedOffer: offer,
-            client: offer.job.client,
-            provider: offer.provider,
-            assignedWorker: offer.assignedWorker,
+            const pendingOffer = await offerRepo.findOne({ where: { id: offerId } });
+            if (!pendingOffer || pendingOffer.status !== OfferStatus.PENDING) {
+                throw new BadRequestException('Offer is no longer pending');
+            }
+
+            pendingOffer.status = OfferStatus.ACCEPTED;
+            await offerRepo.save(pendingOffer);
+
+            await offerRepo.update(
+                { job: { id: job.id }, status: OfferStatus.PENDING, id: Not(offerId) },
+                { status: OfferStatus.REJECTED },
+            );
+
+            job.status = JobStatus.CONTRACTED;
+            await jobRepo.save(job);
+
+            const contract = contractRepo.create({
+                price: pendingOffer.price,
+                status: ContractStatus.ACTIVE,
+                scheduledAt: pendingOffer.proposedScheduledAt,
+                job,
+                acceptedOffer: pendingOffer,
+                client: offer.job.client,
+                provider: offer.provider,
+                assignedWorker: offer.assignedWorker,
+            });
+
+            return contractRepo.save(contract);
         });
-
-        return await this.contractRepository.save(contract);
     }
 
     async getMyOffers(providerUserId: string, status?: OfferStatus): Promise<OfferEntity[]> {
@@ -609,6 +656,10 @@ export class JobsService {
             throw new ForbiddenException('Only the assigned provider or worker can start the contract');
         }
 
+        if (contract.status === ContractStatus.IN_PROGRESS) {
+            return contract;
+        }
+
         if (contract.status !== ContractStatus.ACTIVE) {
             throw new BadRequestException('Contract must be ACTIVE to start');
         }
@@ -725,20 +776,28 @@ export class JobsService {
             throw new BadRequestException('Contract must be IN_PROGRESS to mark as complete');
         }
 
-        contract.status = ContractStatus.PROVIDER_COMPLETED;
-        contract.workerEndingDate = new Date();
-        const savedContract = await this.contractRepository.save(contract);
+        return this.dataSource.transaction(async (manager) => {
+            const contractRepo = manager.getRepository(ContractEntity);
+            const reviewRepo = manager.getRepository(ReviewEntity);
 
-        const review = this.reviewRepository.create({
-            rating: reviewDto.rating,
-            comment: reviewDto.comment,
-            contract: savedContract,
-            reviewer: { id: userId } as ReviewEntity['reviewer'],
-            reviewee: contract.client.user,
+            await this.assertNoExistingReview(reviewRepo, contractId, userId);
+
+            contract.status = ContractStatus.PROVIDER_COMPLETED;
+            contract.workerEndingDate = new Date();
+            const savedContract = await contractRepo.save(contract);
+
+            await reviewRepo.save(
+                reviewRepo.create({
+                    rating: reviewDto.rating,
+                    comment: reviewDto.comment,
+                    contract: savedContract,
+                    reviewer: { id: userId } as ReviewEntity['reviewer'],
+                    reviewee: contract.client.user,
+                }),
+            );
+
+            return savedContract;
         });
-        await this.reviewRepository.save(review);
-
-        return savedContract;
     }
 
     async confirmContractCompletion(clientUserId: string, contractId: string, reviewDto: CreateReviewDto): Promise<ContractEntity> {
@@ -760,22 +819,30 @@ export class JobsService {
             throw new BadRequestException('Contract must be marked completed by provider first');
         }
 
-        contract.status = ContractStatus.COMPLETED;
-        contract.clientEndingDate = new Date();
-        contract.hasBeenCompleted = true;
-        contract.completedAt = new Date();
-        const savedContract = await this.contractRepository.save(contract);
+        return this.dataSource.transaction(async (manager) => {
+            const contractRepo = manager.getRepository(ContractEntity);
+            const reviewRepo = manager.getRepository(ReviewEntity);
 
-        const review = this.reviewRepository.create({
-            rating: reviewDto.rating,
-            comment: reviewDto.comment,
-            contract: savedContract,
-            reviewer: contract.client.user,
-            reviewee: contract.provider.user,
+            await this.assertNoExistingReview(reviewRepo, contractId, client.user.id);
+
+            contract.status = ContractStatus.COMPLETED;
+            contract.clientEndingDate = new Date();
+            contract.hasBeenCompleted = true;
+            contract.completedAt = new Date();
+            const savedContract = await contractRepo.save(contract);
+
+            await reviewRepo.save(
+                reviewRepo.create({
+                    rating: reviewDto.rating,
+                    comment: reviewDto.comment,
+                    contract: savedContract,
+                    reviewer: contract.client.user,
+                    reviewee: contract.provider.user,
+                }),
+            );
+
+            return savedContract;
         });
-        await this.reviewRepository.save(review);
-
-        return savedContract;
     }
 
     async cancelContract(userId: string, contractId: string): Promise<ContractEntity> {
@@ -796,10 +863,15 @@ export class JobsService {
             throw new BadRequestException('Cannot cancel a completed or already cancelled contract');
         }
 
-        contract.status = ContractStatus.CANCELLED;
-        contract.job.status = JobStatus.CANCELLED;
-        await this.jobRepository.save(contract.job);
-        return await this.contractRepository.save(contract);
+        return this.dataSource.transaction(async (manager) => {
+            const contractRepo = manager.getRepository(ContractEntity);
+            const jobRepo = manager.getRepository(JobEntity);
+
+            contract.status = ContractStatus.CANCELLED;
+            contract.job.status = JobStatus.CANCELLED;
+            await jobRepo.save(contract.job);
+            return contractRepo.save(contract);
+        });
     }
 
     async getProviderDashboardStats(providerUserId: string) {
@@ -834,6 +906,20 @@ export class JobsService {
             scheduledToday: scheduledTodayContracts.length,
             expectedRevenue,
         };
+    }
+
+    private async assertNoExistingReview(
+        reviewRepo: Repository<ReviewEntity>,
+        contractId: string,
+        reviewerId: string,
+    ): Promise<void> {
+        const existing = await reviewRepo.findOne({
+            where: { contract: { id: contractId }, reviewer: { id: reviewerId } },
+        });
+
+        if (existing) {
+            throw new BadRequestException('Review already submitted for this contract');
+        }
     }
 
     private resolveOfferSchedule(

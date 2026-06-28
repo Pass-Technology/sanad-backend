@@ -24,8 +24,8 @@ export class ProviderJobsService {
         return this.jobsService.getOpenJobsForProvider(userId);
     }
 
-    getOpenJobById(jobId: string) {
-        return this.jobsService.getJobById(jobId);
+    getOpenJobById(userId: string, jobId: string) {
+        return this.jobsService.getOpenJobForProvider(userId, jobId);
     }
 
     getRequests(userId: string, query: GetProviderRequestsQueryDto) {
@@ -52,9 +52,8 @@ export class ProviderJobsService {
         return this.jobsService.withdrawOffer(userId, offerId);
     }
 
-    async getMyOffers(userId: string, status?: OfferStatus) {
-        const offers = await this.jobsService.getMyOffers(userId, status);
-        return status ? offers : offers;
+    getMyOffers(userId: string, status?: OfferStatus) {
+        return this.jobsService.getMyOffers(userId, status);
     }
 
     getWorkerAvailability(userId: string, jobId: string, scheduledAt?: string) {

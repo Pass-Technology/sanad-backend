@@ -40,8 +40,11 @@ export class ProviderJobsController {
 
     @Get('open/:id')
     @ApiOperation({ summary: 'Get open job post details' })
-    getOpenJobById(@Param('id') id: string): Promise<JobEntity> {
-        return this.providerJobsService.getOpenJobById(id);
+    getOpenJobById(
+        @Request() req: { user: UserInfoResponseWithTokensDto },
+        @Param('id') id: string,
+    ): Promise<JobEntity> {
+        return this.providerJobsService.getOpenJobById(req.user.userId, id);
     }
 
     @Post('open/:id/dismiss')

@@ -1,9 +1,9 @@
-import { IsNotEmpty, IsUUID, IsOptional, IsBoolean, ValidateIf } from 'class-validator';
+import { IsNotEmpty, IsUUID, IsBoolean, ValidateIf, Equals } from 'class-validator';
 import { ApiPropertyOptional } from '@nestjs/swagger';
 
 export class AssignWorkerDto {
     @ApiPropertyOptional({ description: 'ID of the worker profile to assign' })
-    @ValidateIf((o) => !o.assignSelf)
+    @ValidateIf((o) => o.assignSelf !== true)
     @IsUUID()
     @IsNotEmpty()
     workerId?: string;
@@ -14,5 +14,6 @@ export class AssignWorkerDto {
     })
     @ValidateIf((o) => !o.workerId)
     @IsBoolean()
+    @Equals(true)
     assignSelf?: boolean;
 }
