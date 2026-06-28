@@ -7,7 +7,6 @@ import { JobEntity } from './job.entity';
 import { OfferEntity } from './offer.entity';
 import { ContractStatus } from '../enums/contract-status.enum';
 import { ReviewEntity } from './review.entity';
-import { ContractAssetEntity } from './contract-asset.entity';
 
 @Entity('contracts')
 export class ContractEntity extends BaseEntity {
@@ -67,7 +66,4 @@ export class ContractEntity extends BaseEntity {
 
     @OneToMany(() => ReviewEntity, (review) => review.contract)
     reviews: ReviewEntity[];
-
-    @OneToMany(() => ContractAssetEntity, (asset) => asset.contract)
-    assets: ContractAssetEntity[];
 }

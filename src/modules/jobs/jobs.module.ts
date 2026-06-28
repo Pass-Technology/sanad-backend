@@ -3,7 +3,6 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { JobEntity } from './entities/job.entity';
 import { OfferEntity } from './entities/offer.entity';
 import { ContractEntity } from './entities/contract.entity';
-import { ContractAssetEntity } from './entities/contract-asset.entity';
 import { ReviewEntity } from './entities/review.entity';
 import { ProviderJobDismissalEntity } from './entities/provider-job-dismissal.entity';
 import { ClientAddressEntity } from '../client/entity/client-address.entity';
@@ -27,7 +26,6 @@ import { SharedAuthModule } from '../../shared/auth/shared-auth.module';
             JobEntity,
             OfferEntity,
             ContractEntity,
-            ContractAssetEntity,
             ReviewEntity,
             ProviderJobDismissalEntity,
             ClientAddressEntity,

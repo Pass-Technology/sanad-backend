@@ -7,7 +7,6 @@ import { UpdateOfferDto } from './dto/update-offer.dto';
 import { GetProviderContractsQueryDto } from './dto/get-provider-contracts-query.dto';
 import { GetProviderRequestsQueryDto } from './dto/get-provider-requests-query.dto';
 import { AssignWorkerDto } from './dto/assign-worker.dto';
-import { AddContractAssetsDto } from './dto/add-contract-assets.dto';
 import { CreateReviewDto } from './dto/create-review.dto';
 import { ContractStatus } from './enums/contract-status.enum';
 import { OfferStatus } from './enums/offer-status.enum';
@@ -74,10 +73,6 @@ export class ProviderJobsService {
 
     cancelContract(userId: string, contractId: string) {
         return this.jobsService.cancelContract(userId, contractId);
-    }
-
-    addContractAssets(userId: string, contractId: string, dto: AddContractAssetsDto) {
-        return this.jobsService.addContractAssets(userId, contractId, dto);
     }
 
     getContracts(userId: string, type: string, query: GetProviderContractsQueryDto) {

@@ -4,7 +4,6 @@ import { Repository, Not, In, Between, DataSource } from 'typeorm';
 import { JobEntity } from './entities/job.entity';
 import { OfferEntity } from './entities/offer.entity';
 import { ContractEntity } from './entities/contract.entity';
-import { ContractAssetEntity } from './entities/contract-asset.entity';
 import { ReviewEntity } from './entities/review.entity';
 import { ProviderJobDismissalEntity } from './entities/provider-job-dismissal.entity';
 import { ClientAddressEntity } from '../client/entity/client-address.entity';
@@ -13,7 +12,6 @@ import { CreateOfferDto } from './dto/create-offer.dto';
 import { UpdateOfferDto } from './dto/update-offer.dto';
 import { CreateReviewDto } from './dto/create-review.dto';
 import { AssignWorkerDto } from './dto/assign-worker.dto';
-import { AddContractAssetsDto } from './dto/add-contract-assets.dto';
 import { GetProviderRequestsQueryDto } from './dto/get-provider-requests-query.dto';
 import { JobStatus } from './enums/job-status.enum';
 import { OfferStatus } from './enums/offer-status.enum';
@@ -33,8 +31,6 @@ export class JobsService {
         private readonly offerRepository: Repository<OfferEntity>,
         @InjectRepository(ContractEntity)
         private readonly contractRepository: Repository<ContractEntity>,
-        @InjectRepository(ContractAssetEntity)
-        private readonly contractAssetRepository: Repository<ContractAssetEntity>,
         @InjectRepository(ReviewEntity)
         private readonly reviewRepository: Repository<ReviewEntity>,
         @InjectRepository(ProviderJobDismissalEntity)
@@ -531,7 +527,6 @@ export class JobsService {
                 client: { user: true },
                 assignedWorker: { user: true },
                 acceptedOffer: true,
-                assets: { uploadedByWorker: true },
             },
             order: { updatedAt: 'DESC' },
         });
@@ -547,7 +542,6 @@ export class JobsService {
                 provider: { user: true },
                 assignedWorker: { user: true },
                 acceptedOffer: true,
-                assets: { uploadedByWorker: true },
             },
             order: { updatedAt: 'DESC' },
         });
@@ -563,7 +557,6 @@ export class JobsService {
                 client: { user: true },
                 provider: { user: true },
                 acceptedOffer: true,
-                assets: { uploadedByWorker: true },
             },
             order: { updatedAt: 'DESC' },
         });
@@ -579,7 +572,6 @@ export class JobsService {
                 job: { clientAddress: true },
                 acceptedOffer: { assignedWorker: { user: true } },
                 reviews: { reviewer: true, reviewee: true },
-                assets: { uploadedByWorker: true },
             },
         });
 
@@ -695,60 +687,6 @@ export class JobsService {
 
         contract.clientStartingDate = new Date();
         return await this.contractRepository.save(contract);
-    }
-
-    async addContractAssets(
-        userId: string,
-        contractId: string,
-        dto: AddContractAssetsDto,
-    ): Promise<ContractEntity> {
-        const contract = await this.contractRepository.findOne({
-            where: { id: contractId },
-            relations: {
-                provider: { user: true },
-                assignedWorker: { user: true },
-            },
-        });
-
-        if (!contract) {
-            throw new NotFoundException('Contract not found');
-        }
-
-        const isProvider = contract.provider.user.id === userId;
-        const isWorker = contract.assignedWorker?.user?.id === userId;
-
-        if (!isProvider && !isWorker) {
-            throw new ForbiddenException('Only the assigned provider or worker can upload documentation assets');
-        }
-
-        if (
-            contract.status !== ContractStatus.IN_PROGRESS &&
-            contract.status !== ContractStatus.PROVIDER_COMPLETED
-        ) {
-            throw new BadRequestException('Documentation can only be uploaded while work is in progress or awaiting client confirmation');
-        }
-
-        let uploadedByWorker = contract.assignedWorker;
-
-        if (isProvider && !uploadedByWorker) {
-            uploadedByWorker = await this.workerService.getOrCreateSelfWorker(contract.provider.id);
-        }
-
-        if (isWorker && contract.assignedWorker) {
-            uploadedByWorker = contract.assignedWorker;
-        }
-
-        const assets = dto.assets.map((asset) =>
-            this.contractAssetRepository.create({
-                imageUrl: asset.imageUrl,
-                caption: asset.caption ?? null,
-                contract,
-                uploadedByWorker,
-            }),
-        );
-
-        await this.contractAssetRepository.save(assets);
-        return this.getContractById(contractId, userId);
     }
 
     async completeContractByProvider(userId: string, contractId: string, reviewDto: CreateReviewDto): Promise<ContractEntity> {

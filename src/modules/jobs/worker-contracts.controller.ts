@@ -1,4 +1,4 @@
-import { Controller, Get, Patch, Post, Body, Param, UseGuards, Query, Request } from '@nestjs/common';
+import { Controller, Get, Patch, Body, Param, UseGuards, Query, Request } from '@nestjs/common';
 import { ApiTags, ApiBearerAuth, ApiOperation } from '@nestjs/swagger';
 import { UserTypes } from '../../shared/decorators/userTypes.decorator';
 import { UserType } from '../user/enums/user-type.enum';
@@ -8,7 +8,6 @@ import { VerificationGuard } from '../../shared/guards/verification.guard';
 import { UserInfoResponseWithTokensDto } from '../user/dto/user-info-response.dto';
 import { JobsService } from './jobs.service';
 import { CreateReviewDto } from './dto/create-review.dto';
-import { AddContractAssetsDto } from './dto/add-contract-assets.dto';
 import { ContractStatus } from './enums/contract-status.enum';
 import { ContractEntity } from './entities/contract.entity';
 
@@ -55,16 +54,6 @@ export class WorkerContractsController {
         @Body() dto: CreateReviewDto,
     ): Promise<ContractEntity> {
         return this.jobsService.completeContractByProvider(req.user.userId, id, dto);
-    }
-
-    @Post(':id/assets')
-    @ApiOperation({ summary: 'Upload service documentation images for a contract' })
-    addContractAssets(
-        @Request() req: { user: UserInfoResponseWithTokensDto },
-        @Param('id') id: string,
-        @Body() dto: AddContractAssetsDto,
-    ): Promise<ContractEntity> {
-        return this.jobsService.addContractAssets(req.user.userId, id, dto);
     }
 
     private resolveStatuses(type: string): ContractStatus[] {
