@@ -1,4 +1,4 @@
-import { Entity, Column, OneToOne, OneToMany } from 'typeorm';
+import { Entity, Column, OneToOne, OneToMany, ManyToOne, JoinColumn } from 'typeorm';
 import { Exclude } from 'class-transformer';
 import { UserIdentifierType } from '../enums/user-identifier-type.enum';
 import { BaseEntity } from '../../../database/base-entity';
@@ -8,6 +8,7 @@ import { SubscriptionEntity } from '../../../subscription/entities/subscription.
 import { RequestServiceEntity } from '../../../modules/service-management/entities/request-service.entity';
 import { UserType } from '../enums/user-type.enum';
 import { ClientProfileEntity } from '../../client/entity/client-profile.entity';
+import { BlogEntity } from '../../blogs/entities/blog.entity';
 
 
 
@@ -47,6 +48,10 @@ export class UserEntity extends BaseEntity {
     })
     providerProfile: ProviderProfileEntity;
 
+    @ManyToOne(() => ProviderProfileEntity, { nullable: true, onDelete: 'SET NULL' })
+    @JoinColumn({ name: 'parent_provider_id' })
+    parentProvider: ProviderProfileEntity | null;
+
     @OneToOne(() => ClientProfileEntity, (profile) => profile.user, {
         nullable: true,
     })
@@ -63,5 +68,8 @@ export class UserEntity extends BaseEntity {
 
     @OneToMany(() => RequestServiceEntity, (requestService) => requestService.user)
     requestServices: RequestServiceEntity[];
+
+    @OneToMany(() => BlogEntity, (blog) => blog.author)
+    blogs: BlogEntity[];
 }
 

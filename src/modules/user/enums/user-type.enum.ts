@@ -1,4 +1,5 @@
 export enum UserType {
     CLIENT = 'client',
-    PROVIDER = 'provider'
+    PROVIDER = 'provider',
+    WORKER = 'worker'
 }

@@ -12,24 +12,30 @@ import { ProviderServicePricingEntity } from './entities/provider-service-pricin
 import { UserModule } from '../user/user.module';
 import { JobEntity } from '../marketplace/entities/job.entity';
 import { PayoutEntity } from '../earnings/entities/payout.entity';
+import { ProviderServiceController } from './provider-service.controller';
+import { RequestServiceController } from './request-service.controller';
 
 @Module({
-    imports: [
-        TypeOrmModule.forFeature([
-            CategoryEntity,
-            ServiceEntity,
-            ProviderProfileEntity,
-            RequestServiceEntity,
-            ProviderServiceEntity,
-            ProviderServicePricingEntity,
-            JobEntity,
-            PayoutEntity,
-        ]),
-        UserModule,
-        AuthModule,
-    ],
-    controllers: [ServiceManagementController],
-    providers: [ServiceManagementService],
-    exports: [ServiceManagementService],
+  imports: [
+    TypeOrmModule.forFeature([
+      CategoryEntity,
+      ServiceEntity,
+      ProviderProfileEntity,
+      RequestServiceEntity,
+      ProviderServiceEntity,
+      ProviderServicePricingEntity,
+      JobEntity,
+      PayoutEntity,
+    ]),
+    UserModule,
+    AuthModule,
+  ],
+  controllers: [
+    ServiceManagementController,
+    ProviderServiceController,
+    RequestServiceController,
+  ],
+  providers: [ServiceManagementService],
+  exports: [ServiceManagementService],
 })
 export class ServiceManagementModule {}

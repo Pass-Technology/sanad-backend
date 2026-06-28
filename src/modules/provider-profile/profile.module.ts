@@ -3,6 +3,9 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { ProfileController } from './profile.controller';
 import { ProfileService } from './profile.service';
 import { ProfileRepository } from './profile.repository';
+import { WorkerInvitationEntity } from './entities/worker-invitation.entity';
+import { InvitationsService } from './invitations.service';
+import { InvitationsController } from './invitations.controller';
 import { ProviderProfileEntity } from './entities/provider-profile.entity';
 import { ProviderUserInfoEntity } from './entities/provider-user-info.entity';
 import { BranchEntity } from './entities/branch.entity';
@@ -35,6 +38,7 @@ import { ProfileBranchService } from './profile-branch.service';
             ProviderServicePricingEntity,
             ProviderWorkerEntity,
             ProviderProfileChangeEntity,
+            WorkerInvitationEntity,
         ]),
         UserModule,
         AuthModule,
@@ -42,8 +46,8 @@ import { ProfileBranchService } from './profile-branch.service';
         LookupsModule,
         PaymentModule,
     ],
-    controllers: [ProfileController],
-    providers: [ProfileService, ProfileRepository, ProfileStagingService, ProfileBranchService],
-    exports: [ProfileService, ProfileRepository, ProfileStagingService, ProfileBranchService],
+    controllers: [ProfileController, InvitationsController],
+    providers: [ProfileService, ProfileRepository, ProfileStagingService, ProfileBranchService, InvitationsService],
+    exports: [ProfileService, ProfileRepository, ProfileStagingService, ProfileBranchService, InvitationsService],
 })
 export class ProfileModule { }

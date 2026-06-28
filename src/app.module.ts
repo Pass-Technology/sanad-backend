@@ -29,6 +29,8 @@ import { ReviewModule } from './modules/reviews/review.module';
 import { EmergencyModule } from './modules/emergency/emergency.module';
 import { DocumentationModule } from './modules/documentation/documentation.module';
 import { NotificationModule } from './modules/notifications/notification.module';
+import { BlogsModule } from './modules/blogs/blogs.module';
+import { JobsModule } from './modules/jobs/jobs.module';
 
 @Module({
   imports: [
@@ -47,6 +49,7 @@ import { NotificationModule } from './modules/notifications/notification.module'
     SubscriptionModule,
     ServiceManagementModule,
     PaymentModule,
+    UploadAssetsModule,
     MailModule,
     TemplateModule,
     ScoringSystemModule,
@@ -63,7 +66,9 @@ import { NotificationModule } from './modules/notifications/notification.module'
     ReviewModule,
     EmergencyModule,
     DocumentationModule,
-    NotificationModule
+    NotificationModule,
+    BlogsModule,
+    JobsModule,
   ],
   controllers: [HealthController],
 })
