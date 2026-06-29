@@ -7,6 +7,7 @@ import { VerificationGuard } from '../../shared/guards/verification.guard';
 import { UserTypeGuard } from '../../shared/guards/user-types.guard';
 import { UserTypes } from '../../shared/decorators/userTypes.decorator';
 import { UserType } from '../user/enums/user-type.enum';
+import { CreateClientProfileDto } from './dto/create-client-profile.dto';
 
 @ApiTags('client')
 @ApiBearerAuth()
@@ -24,7 +25,10 @@ export class ClientController {
 
     @Patch('profile')
     @ApiOperation({ summary: 'Create/Update client profile' })
-    async updateProfile(@Request() req: { user: UserInfoResponseWithTokensDto }) {
-        return await this.clientService.createProfile(req.user.userId);
+    async updateProfile(
+        @Request() req: { user: UserInfoResponseWithTokensDto },
+        @Body() dto: CreateClientProfileDto,
+    ) {
+        return await this.clientService.createProfile(req.user.userId, dto);
     }
 }
