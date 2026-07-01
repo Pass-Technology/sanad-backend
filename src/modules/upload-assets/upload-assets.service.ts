@@ -23,10 +23,10 @@ export class UploadAssetsService {
         ownerId: string,
         ownerType: AssetOwnerTypeEnum,
         typeName: AssetTypeEnum,
+        uploadedByUserId: string | null = null,
     ): Promise<AssetEntity> {
-
         const assetType = await this.assetTypeRepository.findOne({
-            where: { name: typeName }
+            where: { name: typeName },
         });
 
         if (!assetType) {
@@ -41,10 +41,11 @@ export class UploadAssetsService {
             originalName: file.originalname,
             mimeType: file.mimetype,
             size: file.size,
-            path: path,
-            url: url,
-            ownerId: ownerId,
-            ownerType: ownerType,
+            path,
+            url,
+            ownerId,
+            ownerType,
+            uploadedByUserId,
             type: assetType,
         });
 

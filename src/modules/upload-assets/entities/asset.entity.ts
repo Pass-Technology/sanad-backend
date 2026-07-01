@@ -35,6 +35,9 @@ export class AssetEntity extends BaseEntity {
     })
     ownerType: AssetOwnerTypeEnum;
 
+    @Column({ type: 'uuid', nullable: true, name: 'uploaded_by_user_id' })
+    uploadedByUserId: string | null;
+
     @ManyToOne(() => AssetTypeEntity)
     @JoinColumn({ name: 'type_id' })
     type: AssetTypeEntity;
